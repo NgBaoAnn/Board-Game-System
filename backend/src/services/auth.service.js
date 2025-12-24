@@ -40,9 +40,15 @@ class AuthService {
       email: user.email,
     });
 
+    const refreshToken = jwtService.generateRefreshToken({
+      id: user.id,
+      email: user.email,
+    });
+
     return {
       user: sanitizeUser(user),
       accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 }
