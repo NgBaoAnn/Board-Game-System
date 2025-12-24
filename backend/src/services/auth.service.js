@@ -14,7 +14,7 @@ class AuthService {
 
     const hashedPassword = await passwordService.hash(password);
 
-    const [user] = await userRepo.create({
+    const user = await userRepo.create({
       role_id: 2,
       username,
       email,

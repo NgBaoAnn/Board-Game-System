@@ -2,8 +2,8 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class UserRepo {
-  findAll() {
-    return db(MODULE.USER).select("*");
+  findAll({ offset, limit } = {}) {
+    return db(MODULE.USER).select("*").limit(limit).offset(offset);
   }
 
   findById(id) {
@@ -15,11 +15,18 @@ class UserRepo {
   }
 
   create(data) {
-    return db(MODULE.USER).insert(data).returning("*");
+    return db(MODULE.USER)
+      .insert(data)
+      .returning("*")
+      .then(([user]) => user);
   }
 
   update(id, data) {
-    return db(MODULE.USER).where({ id }).update(data).returning("*");
+    return db(MODULE.USER)
+      .where({ id })
+      .update(data)
+      .returning("*")
+      .then(([user]) => user);
   }
 
   remove(id) {
