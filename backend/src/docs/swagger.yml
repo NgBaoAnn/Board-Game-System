@@ -1,0 +1,154 @@
+openapi: 3.0.3
+info:
+  title: SUPABASE KNEX API
+  description: API documentation generated from Postman collection
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://your-production-domain.com
+    description: Production
+
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+      description: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register
+      description: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Register success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Retrieve list of users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get a user by ID
+      description: Retrieve a single user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: user@gmail.com
+        password:
+          type: string
+          example: 123456
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          example: user@gmail.com
+        password:
+          type: string
+          example: 123456
+        name:
+          type: string
+          example: Nguyen Van A
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        email:
+          type: string
+          example: user@gmail.com
+        name:
+          type: string
+          example: Nguyen Van A
+        role:
+          type: string
+          example: USER
+        createdAt:
+          type: string
+          format: date-time
