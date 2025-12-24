@@ -27,7 +27,7 @@ class AuthValidator {
         .isLength({ min: 6 })
         .withMessage("Password must be at least 6 characters"),
 
-      body("name").notEmpty().withMessage("Name is required"),
+      body("username").notEmpty().withMessage("username is required"),
     ];
   }
 }
