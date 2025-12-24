@@ -1,14 +1,12 @@
 openapi: 3.0.3
 info:
-  title: SUPABASE KNEX API
-  description: API documentation generated from Postman collection
+  title: GAME BOARD SYSTEM
+  description: API documentation
   version: 1.0.0
 
 servers:
   - url: http://localhost:8080
     description: Local development
-  - url: https://your-production-domain.com
-    description: Production
 
 paths:
   /api/auth/login:
@@ -29,7 +27,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AuthResponse"
+
         "401":
           description: Invalid credentials
 
@@ -51,50 +55,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+
         "400":
           description: Validation error
 
-  /api/users:
-    get:
-      tags:
-        - Users
-      summary: Get all users
-      description: Retrieve list of users
-      responses:
-        "200":
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-
-  /api/users/{id}:
-    get:
-      tags:
-        - Users
-      summary: Get a user by ID
-      description: Retrieve a single user
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: User detail
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "404":
-          description: User not found
-
 components:
   schemas:
+    BackendResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        status:
+          type: number
+          example: 200
+        message:
+          type: string
+          example: Call api successfully
+        data:
+          nullable: true
+          description: Dynamic response data
+
     LoginRequest:
       type: object
       required:
@@ -103,17 +91,17 @@ components:
       properties:
         email:
           type: string
-          example: user@gmail.com
+          example: admin1@gmail.com
         password:
           type: string
-          example: 123456
+          example: 123456@
 
     RegisterRequest:
       type: object
       required:
         - email
         - password
-        - name
+        - username
       properties:
         email:
           type: string
@@ -121,7 +109,7 @@ components:
         password:
           type: string
           example: 123456
-        name:
+        username:
           type: string
           example: Nguyen Van A
 
@@ -130,7 +118,10 @@ components:
       properties:
         accessToken:
           type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3ZTQzNDJiLWFhNjUtNDk4ZS1iMGM1LTcyNGM1M2U4MDJmMCIsImVtYWlsIjoiYWRtaW4xQGdtYWlsLmNvbSIsImlhdCI6MTc2NjU3Mjg5MiwiZXhwIjoxNzY2NjU5MjkyfQ.S5IPdMKlmIgl5eRQyPchRaPT2Es9-fS8OhkBB7R5IjA
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3ZTQzNDJiLWFhNjUtNDk4ZS1iMGM1LTcyNGM1M2U4MDJmMCIsImVtYWlsIjoiYWRtaW4xQGdtYWlsLmNvbSIsImlhdCI6MTc2NjU3Mjg5MiwiZXhwIjoxNzY2NjU5MjkyfQ.S5IPdMKlmIgl5eRQyPchRaPT2Es9-fS8OhkBB7R5IjA
         user:
           $ref: "#/components/schemas/User"
 
@@ -143,12 +134,21 @@ components:
         email:
           type: string
           example: user@gmail.com
-        name:
+        avatar_url:
+          type: string
+          example: https://swagger.io/swagger/media/images/tools/opensource/swagger-ui.png
+        status:
+          type: string
+          example: active
+        username:
           type: string
           example: Nguyen Van A
-        role:
+        role_id:
+          type: number
+          example: 2
+        created_at:
           type: string
-          example: USER
-        createdAt:
+          format: date-time
+        updated_at:
           type: string
           format: date-time
