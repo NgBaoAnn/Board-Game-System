@@ -52,6 +52,20 @@ class AuthController {
       next(err);
     }
   }
+
+  async account(req, res, next) {
+    try {
+      const id = req.user.id;
+      const response = await authService.account(id);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Fetch account successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

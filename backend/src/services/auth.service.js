@@ -63,6 +63,14 @@ class AuthService {
     }
     return null;
   }
+
+  async account(id) {
+    const user = await userRepo.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found!");
+    }
+    return user;
+  }
 }
 
 module.exports = new AuthService();
