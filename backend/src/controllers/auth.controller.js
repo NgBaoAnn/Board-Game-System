@@ -35,6 +35,23 @@ class AuthController {
       next(err);
     }
   }
+
+  async logout(req, res, next) {
+    try {
+      const id = req.user.id;
+      const response = await authService.logout(id);
+
+      res.clearCookie("refresh_token");
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Log out successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

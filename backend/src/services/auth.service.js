@@ -4,6 +4,7 @@ const DuplicateError = require("../errors/duplicate.exception");
 const UnauthorizedError = require("../errors/unauthorized.exception");
 const sanitizeUser = require("../utils/sanitize-user");
 const userRepo = require("../repositories/user.repo");
+const NotFoundError = require("../errors/notfound.exception");
 
 class AuthService {
   async register({ email, password, username }) {
@@ -53,6 +54,14 @@ class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async logout(id) {
+    const user = await userRepo.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found!");
+    }
+    return null;
   }
 }
 
