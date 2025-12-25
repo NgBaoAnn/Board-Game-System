@@ -6,8 +6,11 @@ const initRoute = require("./routes/index.route");
 const app = express();
 const cors = require("cors");
 const corsConfig = require("./configs/cors.config");
+const cookieParser = require("cookie-parser");
+const cookieConfig = require("./configs/cookie.config");
 
 app.use(cors(corsConfig));
+app.use(cookieParser(cookieConfig.secret));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

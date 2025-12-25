@@ -67,6 +67,7 @@ class AuthController {
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Delete user successfully!",
+        data: response,
       });
     } catch (err) {
       next(err);

@@ -1,3 +1,4 @@
+const cookieConfig = require("../configs/cookie.config");
 const HTTP_STATUS = require("../constants/http-status");
 const authService = require("../services/auth.service");
 const ResponseHandler = require("../utils/response-handler");
@@ -19,10 +20,16 @@ class AuthController {
   async login(req, res, next) {
     try {
       const response = await authService.login(req.body);
+
+      res.cookie("refresh_token", response.refresh_token, cookieConfig.config);
+
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Login successfully!",
-        data: response,
+        data: {
+          access_token: response.access_token,
+          user: response.user,
+        },
       });
     } catch (err) {
       next(err);
