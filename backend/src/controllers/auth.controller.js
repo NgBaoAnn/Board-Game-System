@@ -66,6 +66,20 @@ class AuthController {
       next(err);
     }
   }
+
+  async refreshToken(req, res, next) {
+    try {
+      const refreshToken = req.cookies.refresh_token;
+      const response = await authService.refreshToken(refreshToken);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Refresh token successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

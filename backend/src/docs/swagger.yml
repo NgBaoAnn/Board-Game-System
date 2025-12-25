@@ -135,9 +135,6 @@ components:
         access_token:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3ZTQzNDJiLWFhNjUtNDk4ZS1iMGM1LTcyNGM1M2U4MDJmMCIsImVtYWlsIjoiYWRtaW4xQGdtYWlsLmNvbSIsImlhdCI6MTc2NjU3Mjg5MiwiZXhwIjoxNzY2NjU5MjkyfQ.S5IPdMKlmIgl5eRQyPchRaPT2Es9-fS8OhkBB7R5IjA
-        refresh_token:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3ZTQzNDJiLWFhNjUtNDk4ZS1iMGM1LTcyNGM1M2U4MDJmMCIsImVtYWlsIjoiYWRtaW4xQGdtYWlsLmNvbSIsImlhdCI6MTc2NjU3Mjg5MiwiZXhwIjoxNzY2NjU5MjkyfQ.S5IPdMKlmIgl5eRQyPchRaPT2Es9-fS8OhkBB7R5IjA
         user:
           $ref: "#/components/schemas/User"
 

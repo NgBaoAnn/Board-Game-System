@@ -5,6 +5,8 @@ const UnauthorizedError = require("../errors/unauthorized.exception");
 const sanitizeUser = require("../utils/sanitize-user");
 const userRepo = require("../repositories/user.repo");
 const NotFoundError = require("../errors/notfound.exception");
+const ForbiddenError = require("../errors/forbidden.exception");
+const { decode } = require("jsonwebtoken");
 
 class AuthService {
   async register({ email, password, username }) {
@@ -70,6 +72,27 @@ class AuthService {
       throw new NotFoundError("User not found!");
     }
     return user;
+  }
+
+  async refreshToken(refreshToken) {
+    const decoded = jwtService.verify(refreshToken);
+
+    const user = await userRepo.findById(decoded.id);
+    console.log(user);
+
+    if (!user || !user.active) {
+      throw new ForbiddenError("Your account is blocked or unavailable now!");
+    }
+
+    const newAccessToken = jwtService.generateAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role.name,
+    });
+
+    return {
+      access_token: newAccessToken,
+    };
   }
 }
 
