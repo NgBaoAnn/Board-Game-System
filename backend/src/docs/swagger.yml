@@ -65,6 +65,384 @@ paths:
         "400":
           description: Validation error
 
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout
+      description: Logout current user and clear refresh token
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        nullable: true
+                        example: null
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh access token
+      description: Generate new access token from refresh token (stored in cookie or header)
+      responses:
+        "200":
+          description: Refresh token success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+        "401":
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/auth/account:
+    get:
+      tags:
+        - Auth
+      summary: Get current account
+      description: Get logged-in user information
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Fetch account successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/users:
+    get:
+      tags:
+        - User
+      summary: Get list users
+      description: Get paginated list of users (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            example: 10
+          description: Number of items per page
+      responses:
+        "200":
+          description: Get list users successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/User"
+
+        "401":
+          description: Unauthorized (missing or invalid token)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "403":
+          description: Forbidden (admin role required)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    post:
+      tags:
+        - User
+      summary: Create user
+      description: Create new user with role (Admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - username
+                - password
+                - role_id
+              properties:
+                email:
+                  type: string
+                  example: user3@gmail.com
+                username:
+                  type: string
+                  example: user3
+                password:
+                  type: string
+                  example: 123456
+                role_id:
+                  type: number
+                  example: 2
+      responses:
+        "201":
+          description: Create user successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/users/{id}:
+    get:
+      tags:
+        - User
+      summary: Get a user
+      description: Get user detail by id (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: af88c8de-2cb5-4f3e-a7e3-2a079d080b6b
+      responses:
+        "200":
+          description: Get user successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    put:
+      tags:
+        - User
+      summary: Update user
+      description: Update user information (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: af88c8de-2cb5-4f3e-a7e3-2a079d080b6b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: admin3@gmail.com
+                username:
+                  type: string
+                  example: admin3
+                avatar_url:
+                  type: string
+                  nullable: true
+                role_id:
+                  type: number
+                  example: 1
+                active:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: Update user successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      description: Delete user by id (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: cdad26f1-9f46-40c0-b83b-c6af145c2d46
+      responses:
+        "200":
+          description: Delete user successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        nullable: true
+                        example: null
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
 components:
   schemas:
     BackendResponse:
@@ -150,9 +528,9 @@ components:
         avatar_url:
           type: string
           example: https://swagger.io/swagger/media/images/tools/opensource/swagger-ui.png
-        status:
-          type: string
-          example: active
+        active:
+          type: boolean
+          example: true
         username:
           type: string
           example: Bingsu

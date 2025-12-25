@@ -10,7 +10,7 @@ class UserRepo {
         "u.email",
         "u.username",
         "u.avatar_url",
-        "u.status",
+        "u.active",
         "u.created_at",
         "u.updated_at",
         db.raw(`
@@ -55,7 +55,7 @@ class UserRepo {
         "u.username",
         "u.password",
         "u.avatar_url",
-        "u.status",
+        "u.active",
         "u.created_at",
         "u.updated_at",
         db.raw(`
