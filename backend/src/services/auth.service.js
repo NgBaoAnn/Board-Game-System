@@ -26,6 +26,7 @@ class AuthService {
 
   async login({ email, password }) {
     const user = await userRepo.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedError("Invalid email or password");
     }
@@ -38,17 +39,19 @@ class AuthService {
     const accessToken = jwtService.generateAccessToken({
       id: user.id,
       email: user.email,
+      role: user.role.name,
     });
 
     const refreshToken = jwtService.generateRefreshToken({
       id: user.id,
       email: user.email,
+      role: user.role.name,
     });
 
     return {
       user: sanitizeUser(user),
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 }

@@ -2,23 +2,77 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class UserRepo {
-  findAll({ offset, limit } = {}) {
-    return db(MODULE.USER).select("*").limit(limit).offset(offset);
+  findAll({ offset = 0, limit = 10 } = {}) {
+    return db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .select(
+        "u.id",
+        "u.email",
+        "u.username",
+        "u.avatar_url",
+        "u.status",
+        "u.created_at",
+        "u.updated_at",
+        db.raw(`
+        json_build_object(
+          'id', r.id,
+          'name', r.name
+        ) as role
+      `)
+      )
+      .limit(limit)
+      .offset(offset);
   }
 
   findById(id) {
-    return db(MODULE.USER).where({ id }).first();
+    return db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .select(
+        "u.id",
+        "u.email",
+        "u.username",
+        "u.avatar_url",
+        "u.status",
+        "u.created_at",
+        "u.updated_at",
+        db.raw(`
+        json_build_object(
+          'id', r.id,
+          'name', r.name
+        ) as role
+      `)
+      )
+      .where("u.id", id)
+      .first();
   }
 
   findByEmail(email) {
-    return db(MODULE.USER).where({ email }).first();
+    return db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .select(
+        "u.id",
+        "u.email",
+        "u.username",
+        "u.password",
+        "u.avatar_url",
+        "u.status",
+        "u.created_at",
+        "u.updated_at",
+        db.raw(`
+        json_build_object(
+          'id', r.id,
+          'name', r.name
+        ) as role
+      `)
+      )
+      .where("u.email", email)
+      .first();
   }
 
-  create(data) {
-    return db(MODULE.USER)
-      .insert(data)
-      .returning("*")
-      .then(([user]) => user);
+  async create(data) {
+    const [user] = await db(MODULE.USER).insert(data).returning(["id"]);
+
+    return this.findById(user.id);
   }
 
   update(id, data) {

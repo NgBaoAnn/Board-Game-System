@@ -25,7 +25,7 @@ class AuthMiddleware {
 
   authorize(roles = []) {
     return (req, res, next) => {
-      if (!roles.length || roles.includes(req.user?.role)) {
+      if (!roles.length || roles.includes(req.user.role)) {
         return next();
       }
       next(new ForbiddenError());

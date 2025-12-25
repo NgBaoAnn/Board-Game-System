@@ -83,6 +83,22 @@ components:
           nullable: true
           description: Dynamic response data
 
+    BackendErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        status:
+          type: number
+          example: 500
+        message:
+          type: string
+          example: Call api failed
+        error:
+          nullable: true
+          description: Dynamic error data
+
     LoginRequest:
       type: object
       required:
@@ -105,18 +121,18 @@ components:
       properties:
         email:
           type: string
-          example: user@gmail.com
+          example: user1@gmail.com
         password:
           type: string
-          example: 123456
+          example: 123456@
         username:
           type: string
-          example: Nguyen Van A
+          example: Bingsu
 
     AuthResponse:
       type: object
       properties:
-        accessToken:
+        access_token:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3ZTQzNDJiLWFhNjUtNDk4ZS1iMGM1LTcyNGM1M2U4MDJmMCIsImVtYWlsIjoiYWRtaW4xQGdtYWlsLmNvbSIsImlhdCI6MTc2NjU3Mjg5MiwiZXhwIjoxNzY2NjU5MjkyfQ.S5IPdMKlmIgl5eRQyPchRaPT2Es9-fS8OhkBB7R5IjA
         refresh_token:
@@ -142,10 +158,16 @@ components:
           example: active
         username:
           type: string
-          example: Nguyen Van A
-        role_id:
-          type: number
-          example: 2
+          example: Bingsu
+        role:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 2,
+            name:
+              type: string
+              example: user
         created_at:
           type: string
           format: date-time
