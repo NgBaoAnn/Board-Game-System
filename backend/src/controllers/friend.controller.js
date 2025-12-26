@@ -63,11 +63,11 @@ class FriendController {
     try {
       const userId = req.user.id;
       const requestId = req.params.id;
-      const response = await friendService.acceptRequest({ userId, requestId });
+      await friendService.acceptRequest({ userId, requestId });
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Accepted request successfully!",
-        data: response,
+        data: null,
       });
     } catch (err) {
       next(err);
@@ -78,14 +78,14 @@ class FriendController {
     try {
       const userId = req.user.id;
       const requestId = req.params.id;
-      const response = await friendService.declineRequest({
+      await friendService.declineRequest({
         userId,
         requestId,
       });
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Declined request successfully!",
-        data: response,
+        data: null,
       });
     } catch (err) {
       next(err);
@@ -111,14 +111,14 @@ class FriendController {
     try {
       const userId = req.user.id;
       const friendId = req.params.friendId;
-      const response = await friendService.removeFriend({
+      await friendService.removeFriend({
         userId,
         friendId,
       });
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Removed friend successfully!",
-        data: response,
+        data: null,
       });
     } catch (err) {
       next(err);

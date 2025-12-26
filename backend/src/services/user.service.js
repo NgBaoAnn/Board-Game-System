@@ -38,8 +38,20 @@ class UserService {
 
   async getAllUser({ page = 1, limit = 10 } = {}) {
     const offset = (page - 1) * limit;
-    const listUsers = await userRepo.findAll({ offset, limit });
-    return listUsers.map(sanitizeUser);
+
+    const [listUsers, total] = await Promise.all([
+      userRepo.findAll({ offset, limit }),
+      userRepo.countAll(),
+    ]);
+
+    return {
+      data: listUsers.map(sanitizeUser),
+      pagination: {
+        page,
+        limit,
+        total: Number(total.total),
+      },
+    };
   }
 
   async deleteUser(id) {

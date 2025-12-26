@@ -23,6 +23,9 @@ class UserRepo {
       .limit(limit)
       .offset(offset);
   }
+  countAll() {
+    return db(MODULE.USER).count("* as total").first();
+  }
 
   findById(id) {
     return db({ u: MODULE.USER })

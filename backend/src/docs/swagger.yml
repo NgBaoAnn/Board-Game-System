@@ -186,9 +186,14 @@ paths:
                   - type: object
                     properties:
                       data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/User"
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/User"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
 
         "401":
           description: Unauthorized (missing or invalid token)
@@ -443,6 +448,241 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendErrorResponse"
 
+  /api/friends/request:
+    post:
+      tags:
+        - Friend
+      summary: Send friend request
+      description: Send a friend request to another user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+              properties:
+                to:
+                  type: string
+                  example: 9758f5e4-3dab-4677-8049-3f08ea282144
+                message:
+                  type: string
+                  example: "Hey, let's be friends!"
+      responses:
+        "201":
+          description: Friend request sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/friends/requests/received:
+    get:
+      tags:
+        - Friend
+      summary: Get received friend requests
+      description: Get list of friend requests received by current user (paginated)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get received requests successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/FriendRequest"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+
+  /api/friends/requests/sent:
+    get:
+      tags:
+        - Friend
+      summary: Get sent friend requests
+      description: Get list of friend requests sent by current user (paginated)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get sent requests successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/FriendRequest"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+
+  /api/friends/requests/{id}/accept:
+    patch:
+      tags:
+        - Friend
+      summary: Accept friend request
+      description: Accept a received friend request
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: fd765ca8-2113-4db7-9923-39d8b261aa81
+      responses:
+        "200":
+          description: Friend request accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendResponse"
+        "404":
+          description: Friend request not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/friends/requests/{id}/decline:
+    patch:
+      tags:
+        - Friend
+      summary: Decline friend request
+      description: Decline a received friend request
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: fd765ca8-2113-4db7-9923-39d8b261aa81
+      responses:
+        "200":
+          description: Friend request declined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendResponse"
+
+  /api/friends:
+    get:
+      tags:
+        - Friend
+      summary: Get friends list
+      description: Get list of friends of current user (paginated)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get friends successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/User"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+
+  /api/friends/{friendId}:
+    delete:
+      tags:
+        - Friend
+      summary: Remove friend
+      description: Remove a friend relationship
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: friendId
+          required: true
+          schema:
+            type: string
+            example: 9758f5e4-3dab-4677-8049-3f08ea282144
+      responses:
+        "200":
+          description: Remove friend successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendResponse"
+
 components:
   schemas:
     BackendResponse:
@@ -549,3 +789,35 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    FriendRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          example: fd765ca8-2113-4db7-9923-39d8b261aa81
+        from:
+          type: string
+          example: 3d0c9805-c9c7-4855-b812-26bc276dee47
+        to:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        message:
+          type: string
+          example: "Hey, let's be friends!"
+        created_at:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 42
