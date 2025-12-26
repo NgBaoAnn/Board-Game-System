@@ -1,3 +1,4 @@
+const db = require("../databases/knex");
 const DuplicateError = require("../errors/duplicate.exception");
 const ForbiddenError = require("../errors/forbidden.exception");
 const NotFoundError = require("../errors/notfound.exception");
@@ -30,10 +31,9 @@ class FriendService {
 
     if (existingRequest) {
       if (existingRequest.from === to && existingRequest.to === from) {
-        await friendRepo.acceptRequest({
+        await this.acceptRequest({
+          userId: from,
           requestId: existingRequest.id,
-          userA,
-          userB,
         });
 
         return {
@@ -108,7 +108,7 @@ class FriendService {
       [userA, userB] = [userB, userA];
     }
 
-    await friendRepo.acceptRequest({
+    await friendRepo.acceptFriendAndCreateConversation({
       requestId,
       userA,
       userB,

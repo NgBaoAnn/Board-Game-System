@@ -78,7 +78,6 @@ class AuthService {
     const decoded = jwtService.verify(refreshToken);
 
     const user = await userRepo.findById(decoded.id);
-    console.log(user);
 
     if (!user || !user.active) {
       throw new ForbiddenError("Your account is blocked or unavailable now!");

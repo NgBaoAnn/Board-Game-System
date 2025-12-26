@@ -65,7 +65,7 @@ class AuthController {
       const id = req.params.id;
       const response = await userService.deleteUser(id);
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.NO_CONTENT,
+        status: HTTP_STATUS.OK,
         message: "Delete user successfully!",
         data: response,
       });
