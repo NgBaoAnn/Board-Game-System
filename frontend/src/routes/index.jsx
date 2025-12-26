@@ -3,6 +3,7 @@ import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
+import RegisterPage from '../pages/RegisterPage'
 import AdminPage from '../pages/AdminPage'
 import NotFoundPage from '../pages/NotFoundPage'
 
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
       {
         path: '/login',
         element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <RegisterPage />,
       },
     ],
     errorElement: <NotFoundPage />,

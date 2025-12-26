@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+:root {
+	font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+	color: #0f172a;
+	background-color: #f5f7fb;
+}
+
+body {
+	margin: 0;
+	background-color: #f5f7fb;
+}
+
+.login-page {
+	background: radial-gradient(circle at 12% 18%, rgba(255, 228, 230, 0.65), transparent 30%),
+		radial-gradient(circle at 85% 82%, rgba(224, 242, 254, 0.8), transparent 32%),
+		#f5f7fb ;
+	background-blend-mode: normal;
+}
+
+.dot-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background-image: radial-gradient(circle, #d1d5db 1.5px, transparent 1.5px);
+  background-size: 25px 25px;
+
+  opacity: 0.5;
+}
+
+
+.hero-grid {
+	background-image: linear-gradient(90deg, rgba(226, 232, 240, 0.7) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(226, 232, 240, 0.7) 1px, transparent 1px);
+	background-size: 32px 32px;
+
+}
+
+.glass-card {
+	backdrop-filter: blur(6px);
+}
