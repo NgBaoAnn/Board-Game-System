@@ -65,7 +65,7 @@ class FriendController {
       const requestId = req.params.id;
       await friendService.acceptRequest({ userId, requestId });
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.OK,
+        status: HTTP_STATUS.NO_CONTENT,
         message: "Accepted request successfully!",
         data: null,
       });
@@ -83,7 +83,7 @@ class FriendController {
         requestId,
       });
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.OK,
+        status: HTTP_STATUS.NO_CONTENT,
         message: "Declined request successfully!",
         data: null,
       });
@@ -116,7 +116,7 @@ class FriendController {
         friendId,
       });
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.OK,
+        status: HTTP_STATUS.NO_CONTENT,
         message: "Removed friend successfully!",
         data: null,
       });

@@ -44,7 +44,7 @@ class AuthController {
       res.clearCookie("refresh_token");
 
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.OK,
+        status: HTTP_STATUS.NO_CONTENT,
         message: "Log out successfully!",
         data: response,
       });
