@@ -521,7 +521,7 @@ components:
       properties:
         id:
           type: string
-          example: uuid
+          example: af88c8de-2cb5-4f3e-a7e3-2a079d080b6b
         email:
           type: string
           example: user@gmail.com
