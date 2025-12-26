@@ -12,12 +12,7 @@ router.post(
   userController.createUser
 );
 
-router.get(
-  "/users/:id",
-  userValidator.getById(),
-  authMiddleware.authorize([ROLE.ADMIN]),
-  userController.getUser
-);
+router.get("/users/:id", userValidator.getById(), userController.getUser);
 
 router.put(
   "/users/:id",
