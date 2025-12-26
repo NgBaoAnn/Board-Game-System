@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Button, Checkbox, Divider, Form, Input, Typography } from 'antd'
+import { Link, useNavigate } from 'react-router-dom'
+import { Button, Checkbox, Divider, Form, Input, Typography, message } from 'antd'
 import { Chrome, Facebook, Gamepad2, Lock, Mail, Moon, Sun } from 'lucide-react'
+import { useAuth, useTheme } from '@/context'
 
 const heroDots = [
   { x: 40, y: 24, color: '#ef4444' },
@@ -27,24 +27,37 @@ const heroDots = [
 
 export default function LoginPage() {
   const [form] = Form.useForm()
-  const [darkMode, setDarkMode] = useState(false)
+  const navigate = useNavigate()
+  const { login, loading, isAuthenticated } = useAuth()
+  const { isDarkMode, toggleTheme } = useTheme()
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode)
-    document.body.classList.toggle('dark', darkMode)
-  }, [darkMode])
+  const onFinish = async (values) => {
+    const result = await login(values.email, values.password)
 
-  const toggleTheme = () => setDarkMode((prev) => !prev)
+    if (result.success) {
+      message.success('Login successful!')
+      navigate('/')
+    } else {
+      message.error(result.error || 'Login failed!')
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden">
+    <div className={! isDarkMode ? "min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden"
+      : "min-h-screen flex items-center justify-center bg-[#3d3b3c] px-4 py-10 relative overflow-hidden"}>
       {/* Background Pattern Dots */}
-      <div className="dot-grid" />
+      <div
+          className={! isDarkMode ? " absolute inset-0 pointer-events-none opacity-55 bg-[radial-gradient(circle,_#d1d5db_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
+             : " absolute inset-0 pointer-events-none opacity-100 bg-[radial-gradient(circle,_#4b5563_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
+            }
+      />
 
-      <div className="relative max-w-5xl w-full bg-white/95 shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm">
+      <div className={! isDarkMode ? "relative max-w-5xl w-full bg-white/95 shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"
+        : "relative max-w-5xl w-full bg-[#b7b4b5] shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"}>
 
         <div className="relative grid md:grid-cols-2">
-          <div className="bg-white px-8 py-10 md:px-12 md:py-12">
+          <div className={! isDarkMode ? "bg-white px-8 py-10 md:px-12 md:py-12"
+            : "bg-[#70917f] px-8 py-10 md:px-12 md:py-12"}>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md">
                 <Gamepad2 size={22} />
@@ -64,31 +77,51 @@ export default function LoginPage() {
             <Form
               layout="vertical"
               form={form}
+              onFinish={onFinish}
               className="mt-8 space-y-3"
               requiredMark={false}
             >
-              <Form.Item label="Username or Email" name="username">
+              <Form.Item
+                label={
+                  <div className='text-sm font-medium text-gray-700'>
+                    Email
+                  </div>
+                }
+                name="email"
+                rules={[
+                  { required: true, message: 'Please input your email!' },
+                  { type: 'email', message: 'Please enter a valid email!' }
+                ]}
+              >
                 <Input
                   size="large"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                   prefix={<Mail size={16} className="text-gray-400" />}
                 />
               </Form.Item>
 
               <Form.Item
-                label={
-                  <div className="flex items-center justify-between w-full text-gray-700">
-                    <span>Password</span>
-                    <button
-                      type="button"
-                      className="text-red-500 text-xs font-semibold hover:underline"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                }
                 name="password"
+                label={null}
+                rules={[
+                  { required: true, message: 'Please input your password!' },
+                  { min: 6, message: 'Password must be at least 6 characters!' }
+                ]}
               >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">
+                    Password
+                  </span>
+
+                  <button
+                    type="button"
+                    className="text-red-500 text-xs font-semibold hover:underline"
+                    tabIndex={-1}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
                 <Input.Password
                   size="large"
                   placeholder="Enter your password"
@@ -96,14 +129,13 @@ export default function LoginPage() {
                 />
               </Form.Item>
 
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <Checkbox>Remember me for 30 days</Checkbox>
-              </div>
 
               <Button
                 type="primary"
+                htmlType="submit"
                 size="large"
                 block
+                loading={loading}
                 className="bg-red-500 hover:!bg-red-600 border-none h-11 text-sm font-semibold"
               >
                 Sign In
@@ -146,7 +178,7 @@ export default function LoginPage() {
                 type="text"
                 aria-label="Toggle theme"
                 onClick={toggleTheme}
-                icon={darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
                 className="shadow-sm"
               />
             </div>

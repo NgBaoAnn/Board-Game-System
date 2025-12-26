@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Checkbox, Form, Input, Typography } from 'antd'
+import { Button, Checkbox, Form, Input, Typography, message } from 'antd'
 import { Grid3x3, Mail, Moon, Sun, User, Lock } from 'lucide-react'
+import { useAuth, useTheme } from '@/context'
 
 const heroDots = [
     { x: 40, y: 18, color: '#ec4899', size: 12 },
@@ -33,20 +33,19 @@ const heroDots = [
 
 export default function RegisterPage() {
     const [form] = Form.useForm()
-    const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
+    const { register, loading } = useAuth()
+    const { isDarkMode, toggleTheme } = useTheme()
 
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode)
-        document.body.classList.toggle('dark', darkMode)
-    }, [darkMode])
+    const onFinish = async (values) => {
+        const result = await register(values.username, values.email, values.password)
 
-    const toggleTheme = () => setDarkMode((prev) => !prev)
-
-    const onFinish = (values) => {
-        console.log('Register values:', values)
-        // Handle registration logic here
-        navigate('/login')
+        if (result.success) {
+            message.success('Registration successful! Please login.')
+            navigate('/login')
+        } else {
+            message.error(result.error || 'Registration failed!')
+        }
     }
 
     return (
@@ -55,8 +54,8 @@ export default function RegisterPage() {
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
+                    backgroundImage: 'radial-gradient(circle, #d1d5db 1.5px, transparent 1.5px)',
+                    backgroundSize: '25px 25px',
                     opacity: 0.4,
                 }}
             />
@@ -107,7 +106,7 @@ export default function RegisterPage() {
                                 type="text"
                                 aria-label="Toggle theme"
                                 onClick={toggleTheme}
-                                icon={darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                                icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
                                 className="shadow-sm"
                             />
                         </div>
@@ -237,6 +236,7 @@ export default function RegisterPage() {
                                     htmlType="submit"
                                     size="large"
                                     block
+                                    loading={loading}
                                     className="bg-gradient-to-r from-pink-500 to-pink-600 hover:!from-pink-600 hover:!to-pink-700 border-none h-12 text-base font-semibold mt-2"
                                 >
                                     Create Account

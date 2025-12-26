@@ -6,6 +6,7 @@ import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
 import AdminPage from '../pages/AdminPage'
 import NotFoundPage from '../pages/NotFoundPage'
+import BoardGamePage from '../pages/BoardGamePage'
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
         path: '/register',
         element: <RegisterPage />,
       },
+      {
+        path: '/boardgame',
+        element: <BoardGamePage />,
+      }
     ],
     errorElement: <NotFoundPage />,
   },
