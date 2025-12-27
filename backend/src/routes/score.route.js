@@ -10,6 +10,21 @@ const scoreController = require("../controllers/score.controller");
 router.post("/scores", scoreController.submitScore);
 
 /**
+ * GET /api/scores/me
+ * Get authenticated user's all scores with pagination
+ * Query params: gameType (optional), page (optional, default 1), limit (optional, default 10)
+ * Requires authentication
+ */
+router.get("/scores/me", scoreController.getMyScores);
+
+/**
+ * GET /api/scores/best/:gameType
+ * Get authenticated user's best score for a specific game
+ * Requires authentication
+ */
+router.get("/scores/best/:gameType", scoreController.getMyBestScore);
+
+/**
  * GET /api/scores/ranking/:gameType
  * Get leaderboard for a specific game
  * Query params: limit (optional, default 10)

@@ -67,6 +67,61 @@ class ScoreService {
 
     return scoreModel.findBestByUser(userId, gameType);
   }
+
+  /**
+   * Get user's all scores with optional filtering and pagination
+   * @param {string} userId - User ID (UUID)
+   * @param {Object} query - Query options
+   * @param {string|null} query.gameType - Filter by game type (optional)
+   * @param {number} query.page - Page number (default: 1)
+   * @param {number} query.limit - Items per page (default: 10)
+   * @returns {Promise<Object>} - Paginated scores with pagination info
+   */
+  async getUserScores(userId, { gameType = null, page = 1, limit = 10 } = {}) {
+    // Validate page and limit
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(parseInt(limit) || 10, 100)); // Max 100 per page
+    const offset = (pageNum - 1) * limitNum;
+
+    // Validate gameType if provided
+    if (gameType && !SUPPORTED_GAMES.includes(gameType)) {
+      throw new BadRequestError(
+        `Invalid game type. Supported games: ${SUPPORTED_GAMES.join(", ")}`
+      );
+    }
+
+    // Fetch scores and total count in parallel
+    const [scores, total] = await Promise.all([
+      scoreModel.findByUser(userId, { gameType, offset, limit: limitNum }),
+      scoreModel.countByUser(userId, gameType),
+    ]);
+
+    return {
+      data: scores,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+      },
+    };
+  }
+
+  /**
+   * Get user's best score for a specific game
+   * @param {string} userId - User ID (UUID)
+   * @param {string} gameType - Game type
+   * @returns {Promise<Object|null>} - User's best score or null if not found
+   */
+  async getMyBestScore(userId, gameType) {
+    // Validate gameType
+    if (!SUPPORTED_GAMES.includes(gameType)) {
+      throw new BadRequestError(
+        `Invalid game type. Supported games: ${SUPPORTED_GAMES.join(", ")}`
+      );
+    }
+
+    return scoreModel.findBestByUser(userId, gameType);
+  }
 }
 
 module.exports = new ScoreService();

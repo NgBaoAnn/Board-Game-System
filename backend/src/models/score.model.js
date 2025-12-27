@@ -41,6 +41,45 @@ class ScoreModel {
       .orderBy("score", "desc")
       .first();
   }
+
+  /**
+   * Get all scores by user with pagination
+   * @param {string} userId - User ID (UUID)
+   * @param {Object} options - Query options
+   * @param {string|null} options.gameType - Filter by game type (optional)
+   * @param {number} options.offset - Pagination offset (default: 0)
+   * @param {number} options.limit - Pagination limit (default: 10)
+   * @returns {Promise<Array>} - Array of score records ordered by created_at descending
+   */
+  async findByUser(userId, { gameType = null, offset = 0, limit = 10 } = {}) {
+    let query = db(MODULE.SCORE).where("user_id", userId);
+
+    if (gameType) {
+      query = query.andWhere("game_type", gameType);
+    }
+
+    return query
+      .orderBy("created_at", "desc")
+      .limit(limit)
+      .offset(offset);
+  }
+
+  /**
+   * Count total scores by user
+   * @param {string} userId - User ID (UUID)
+   * @param {string|null} gameType - Filter by game type (optional)
+   * @returns {Promise<number>} - Total count
+   */
+  async countByUser(userId, gameType = null) {
+    let query = db(MODULE.SCORE).where("user_id", userId);
+
+    if (gameType) {
+      query = query.andWhere("game_type", gameType);
+    }
+
+    const result = await query.count("* as total").first();
+    return result.total;
+  }
 }
 
 module.exports = new ScoreModel();

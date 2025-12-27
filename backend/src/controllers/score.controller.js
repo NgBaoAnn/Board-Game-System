@@ -98,6 +98,52 @@ class ScoreController {
       next(err);
     }
   }
+
+  /**
+   * Get authenticated user's all scores with pagination
+   * GET /api/scores/me?gameType=snake&page=1&limit=10
+   */
+  async getMyScores(req, res, next) {
+    try {
+      const user_id = req.user?.id;
+      const { gameType, page, limit } = req.query;
+
+      const result = await scoreService.getUserScores(user_id, {
+        gameType: gameType || null,
+        page: page || 1,
+        limit: limit || 10,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "User scores retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Get authenticated user's best score for a specific game
+   * GET /api/scores/best/:gameType
+   */
+  async getMyBestScore(req, res, next) {
+    try {
+      const user_id = req.user?.id;
+      const { gameType } = req.params;
+
+      const bestScore = await scoreService.getMyBestScore(user_id, gameType);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "User best score retrieved successfully",
+        data: bestScore,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ScoreController();
