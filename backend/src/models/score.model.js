@@ -11,8 +11,13 @@ class ScoreModel {
    * @returns {Promise<number>} - ID of created score record
    */
   async create(data) {
-    const [id] = await db(MODULE.SCORE).insert(data);
-    return id;
+    // Insert và return ID
+    const ids = await db(MODULE.SCORE)
+      .insert(data)
+      .returning(['id']);
+    
+    // Knex returns array of objects like [{ id: 1 }]
+    return ids[0].id;
   }
 
   /**

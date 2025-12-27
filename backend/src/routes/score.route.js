@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const scoreController = require("../controllers/score.controller");
+const authMiddleware = require("../middlewares/auth.middleware");
 
 /**
  * POST /api/scores
  * Submit a score for a game (optionally authenticated)
  * Request body: { game_type, score }
  */
-router.post("/scores", scoreController.submitScore);
+router.post("/scores",authMiddleware.authenticate, scoreController.submitScore);
 
 /**
  * GET /api/scores/me
@@ -15,14 +16,14 @@ router.post("/scores", scoreController.submitScore);
  * Query params: gameType (optional), page (optional, default 1), limit (optional, default 10)
  * Requires authentication
  */
-router.get("/scores/me", scoreController.getMyScores);
+router.get("/scores/me", authMiddleware.authenticate, scoreController.getMyScores);
 
 /**
  * GET /api/scores/best/:gameType
  * Get authenticated user's best score for a specific game
  * Requires authentication
  */
-router.get("/scores/best/:gameType", scoreController.getMyBestScore);
+router.get("/scores/best/:gameType", authMiddleware.authenticate, scoreController.getMyBestScore);
 
 /**
  * GET /api/scores/ranking/:gameType
@@ -43,6 +44,6 @@ router.get("/scores/global-top", scoreController.getGlobalTopScores);
  * Get authenticated user's ranking for a specific game
  * Requires authentication
  */
-router.get("/scores/user-rank/:gameType", scoreController.getUserGameRank);
+router.get("/scores/user-rank/:gameType", authMiddleware.authenticate, scoreController.getUserGameRank);
 
 module.exports = router;
