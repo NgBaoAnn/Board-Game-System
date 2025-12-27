@@ -6,6 +6,7 @@ const MODULE = Object.freeze({
   FRIEND_REQUEST: "friend_requests",
   CONVERSATION: "conversations",
   MESSAGE: "messages",
+  SCORE: "scores",
 });
 
 module.exports = MODULE;
