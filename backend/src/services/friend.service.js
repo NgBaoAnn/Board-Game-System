@@ -1,13 +1,13 @@
-const db = require("../databases/knex");
 const DuplicateError = require("../errors/duplicate.exception");
 const ForbiddenError = require("../errors/forbidden.exception");
 const NotFoundError = require("../errors/notfound.exception");
+
 const friendRepo = require("../repositories/friend.repo");
 const userRepo = require("../repositories/user.repo");
 
 class FriendService {
   async sendRequest({ from, to, message }) {
-    if (from == to) {
+    if (from === to) {
       throw new DuplicateError("Can not send friend request to yourself!");
     }
 
@@ -27,18 +27,17 @@ class FriendService {
     if (alreadyFriend) {
       throw new DuplicateError("You are already friends!");
     }
-    const existingRequest = await friendRepo.findExistingRequest(from, to);
 
+    const existingRequest = await friendRepo.findExistingRequest(from, to);
     if (existingRequest) {
       if (existingRequest.from === to && existingRequest.to === from) {
-        await this.acceptRequest({
-          userId: from,
+        await friendRepo.acceptRequest({
           requestId: existingRequest.id,
+          userA,
+          userB,
         });
 
-        return {
-          message: "Friend request accepted automatically",
-        };
+        return { message: "Friend request accepted automatically" };
       }
 
       throw new DuplicateError("Friend request already exists!");
@@ -50,9 +49,7 @@ class FriendService {
       message,
     });
 
-    return {
-      message: "Friend request sent!",
-    };
+    return { message: "Friend request sent!" };
   }
 
   async getReceivedRequests({ userId, page = 1, limit = 10 }) {
@@ -108,7 +105,7 @@ class FriendService {
       [userA, userB] = [userB, userA];
     }
 
-    await friendRepo.acceptFriendAndCreateConversation({
+    await friendRepo.acceptRequest({
       requestId,
       userA,
       userB,
@@ -134,6 +131,7 @@ class FriendService {
 
   async getFriends({ userId, page = 1, limit = 10 }) {
     const offset = (page - 1) * limit;
+
     const [friends, total] = await Promise.all([
       friendRepo.getFriends({ userId, offset, limit }),
       friendRepo.countFriends(userId),

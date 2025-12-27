@@ -59,16 +59,16 @@ class FriendRepo {
       .first();
   }
 
-  async acceptRequest({ requestId, userA, userB }, trx) {
-    const dbOrTrx = trx || db;
+  async acceptRequest({ requestId, userA, userB }) {
+    return db.transaction(async (trx) => {
+      await trx(MODULE.FRIEND).insert({
+        user_a: userA,
+        user_b: userB,
+        status: "ACCEPTED",
+      });
 
-    await dbOrTrx(MODULE.FRIEND).insert({
-      user_a: userA,
-      user_b: userB,
-      status: "ACCEPTED",
+      await trx(MODULE.FRIEND_REQUEST).where({ id: requestId }).del();
     });
-
-    await dbOrTrx(MODULE.FRIEND_REQUEST).where({ id: requestId }).del();
   }
 
   removeRequest(requestId) {
@@ -100,29 +100,6 @@ class FriendRepo {
 
   removeFriend(userA, userB) {
     return db(MODULE.FRIEND).where({ user_a: userA, user_b: userB }).del();
-  }
-
-  async acceptFriendAndCreateConversation({ requestId, userA, userB }) {
-    return db.transaction(async (trx) => {
-      await trx(MODULE.FRIEND).insert({
-        user_a: userA,
-        user_b: userB,
-        status: "ACCEPTED",
-      });
-
-      await trx(MODULE.FRIEND_REQUEST).where({ id: requestId }).del();
-
-      const existingConversation = await trx(MODULE.CONVERSATION)
-        .where({ user_a: userA, user_b: userB })
-        .first();
-
-      if (!existingConversation) {
-        await trx(MODULE.CONVERSATION).insert({
-          user_a: userA,
-          user_b: userB,
-        });
-      }
-    });
   }
 }
 

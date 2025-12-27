@@ -1,14 +1,36 @@
-# Board Game Backend – Docker Guide
+# 🎲 Board Game Backend – Docker Guide
 
-Hướng dẫn run môi trường node
+Hướng dẫn run môi trường **Node.js backend (Knex + Docker)**
 
-## Development
+---
+
+## 🚀 Chạy bằng Node (không dùng Docker)
+
+### 1️⃣ Cài đặt dependencies
+
+```bash
+npm install
+```
+
+### 2️⃣ Chạy migration (tạo bảng)
+
+```bash
+npx knex migrate:latest
+```
+
+### 3️⃣ Chạy seed (dữ liệu mẫu)
+
+```bash
+npx knex seed:run
+```
+
+### 4️⃣ Run server (development)
 
 ```bash
 npm run dev
 ```
 
-## Preview & Production
+### ▶️ Preview / Production
 
 ```bash
 npm run start
@@ -16,7 +38,9 @@ npm run start
 
 ---
 
-Hướng dẫn chạy project backend bằng Docker theo 2 cách:
+## 🐳 Chạy project backend bằng Docker
+
+Hỗ trợ **2 cách**:
 
 - Dockerfile
 - Docker Compose
@@ -41,7 +65,19 @@ docker run \
   board-game-backend
 ```
 
-### 3️⃣ Dừng & xoá container
+### 3️⃣ Chạy migration trong container
+
+```bash
+docker exec -it board-game-backend npx knex migrate:latest
+```
+
+### 4️⃣ Chạy seed trong container
+
+```bash
+docker exec -it board-game-backend npx knex seed:run
+```
+
+### 5️⃣ Dừng & xoá container
 
 ```bash
 docker stop board-game-backend
@@ -50,7 +86,7 @@ docker rm board-game-backend
 
 ---
 
-## 🐳 Cách 2: Chạy bằng Docker Compose
+## 🐳 Cách 2: Chạy bằng Docker Compose (Khuyến nghị)
 
 ### 1️⃣ Build & run
 
@@ -64,7 +100,21 @@ docker compose up --build
 docker compose up -d --build
 ```
 
-### 3️⃣ Stop & remove containers
+### 3️⃣ Chạy migration
+
+```bash
+docker compose exec backend npx knex migrate:latest
+```
+
+### 4️⃣ Chạy seed
+
+```bash
+docker compose exec backend npx knex seed:run
+```
+
+> `backend` là **service name** trong `docker-compose.yml`
+
+### 5️⃣ Stop & remove containers
 
 ```bash
 docker compose down
@@ -74,7 +124,7 @@ docker compose down
 
 ## 🌐 Truy cập ứng dụng
 
-Sau khi chạy thành công, backend sẽ hoạt động tại:
+Sau khi chạy thành công, backend hoạt động tại:
 
 ```
 http://localhost:8080
@@ -82,8 +132,28 @@ http://localhost:8080
 
 ---
 
-## 📌 Lưu ý
+## 📌 Lưu ý quan trọng
 
-- Đảm bảo file `.env.development` tồn tại
+- Phải **chạy migration trước seed**
+- Đảm bảo tồn tại file:
+  ```
+  .env.development
+  ```
 - Port `8080` chưa bị chiếm
-- Docker version >= 20.x
+- Docker version **>= 20.x**
+- Nếu đổi environment:
+
+```bash
+npx knex migrate:latest --env production
+```
+
+---
+
+## ✅ Thứ tự chuẩn khi setup DB mới
+
+```text
+npm install
+→ migrate
+→ seed
+→ run server
+```
