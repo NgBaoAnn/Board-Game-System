@@ -1,4 +1,4 @@
-const scoreModel = require("../models/score.model");
+const scoreRepo = require("../repositories/score.repo");
 const BadRequestError = require("../errors/badrequest.exception");
 const { SUPPORTED_GAMES } = require("../constants/game.constants");
 
@@ -21,8 +21,8 @@ class RankingService {
     // Clamp limit between 1 and 100
     const clampedLimit = Math.max(1, Math.min(limit, 100));
 
-    // Fetch top scores from model
-    const scores = await scoreModel.findTopByGame(gameType, clampedLimit);
+    // Fetch top scores from repository
+    const scores = await scoreRepo.findTopByGame(gameType, clampedLimit);
 
     // Format with rank
     const leaderboard = scores.map((entry, index) => ({
@@ -47,7 +47,7 @@ class RankingService {
     // Get top scores for each game and flatten
     const allScores = await Promise.all(
       SUPPORTED_GAMES.map((gameType) =>
-        scoreModel.findTopByGame(gameType, clampedLimit)
+        scoreRepo.findTopByGame(gameType, clampedLimit)
       )
     );
 
@@ -86,7 +86,7 @@ class RankingService {
 
     // Get top 1000 scores to find user's rank
     // (assuming not many players will be in top 1000)
-    const topScores = await scoreModel.findTopByGame(gameType, 1000);
+    const topScores = await scoreRepo.findTopByGame(gameType, 1000);
 
     // Find user's best score
     const userScore = topScores.find((entry) => entry.user_id === userId);
