@@ -1,8 +1,8 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/styles/index.css'
 import App from '@/App.jsx'
 import { AuthProvider, ThemeProvider, GameProvider, BoardProvider, UserProvider } from '@/context'
+import { StrictMode } from 'react'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -17,5 +17,5 @@ createRoot(document.getElementById('root')).render(
         </GameProvider>
       </ThemeProvider>
     </AuthProvider>
-  </StrictMode>,
+  </StrictMode>
 )

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { authApi } from '@/api'
 
 const AuthContext = createContext()
 
@@ -20,33 +21,24 @@ export const AuthProvider = ({ children }) => {
         setLoading(false)
     }, [])
 
-    const login = async (username, password) => {
+    const persistAuth = (userData, jwtToken) => {
+        if (!userData || !jwtToken) {
+            throw new Error('Invalid authentication response')
+        }
+
+        setUser(userData)
+        setToken(jwtToken)
+        localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('token', jwtToken)
+    }
+
+    const login = async (email, password) => {
         setLoading(true)
         try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/auth/login', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({ username, password }),
-            // })
-            // const data = await response.json()
+            const result = await authApi.login({ email, password })
+            persistAuth(result.user, result.token)
 
-            // Mock response - remove when backend is ready
-            const mockUser = {
-                id: '1',
-                username,
-                email: `${username}@example.com`,
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-                createdAt: new Date().toISOString(),
-            }
-            const mockToken = 'mock-jwt-token-' + Date.now()
-
-            setUser(mockUser)
-            setToken(mockToken)
-            localStorage.setItem('user', JSON.stringify(mockUser))
-            localStorage.setItem('token', mockToken)
-
-            return { success: true, user: mockUser }
+            return { success: true, user: result.user }
         } catch (error) {
             console.error('Login error:', error)
             return { success: false, error: error.message }
@@ -58,30 +50,10 @@ export const AuthProvider = ({ children }) => {
     const register = async (username, email, password) => {
         setLoading(true)
         try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/auth/register', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({ username, email, password }),
-            // })
-            // const data = await response.json()
-
-            // Mock response - remove when backend is ready
-            const mockUser = {
-                id: Date.now().toString(),
-                username,
-                email,
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-                createdAt: new Date().toISOString(),
-            }
-            const mockToken = 'mock-jwt-token-' + Date.now()
-
-            setUser(mockUser)
-            setToken(mockToken)
-            localStorage.setItem('user', JSON.stringify(mockUser))
-            localStorage.setItem('token', mockToken)
-
-            return { success: true, user: mockUser }
+            const result = await authApi.register({ username, email, password })
+            // Don't persist auth after register - user needs to login
+            // Backend doesn't return token on register
+            return { success: true, user: result.user }
         } catch (error) {
             console.error('Register error:', error)
             return { success: false, error: error.message }
@@ -90,27 +62,25 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const logout = () => {
-        setUser(null)
-        setToken(null)
-        localStorage.removeItem('user')
-        localStorage.removeItem('token')
+    const logout = async () => {
+        try {
+            if (token) {
+                await authApi.logout()
+            }
+        } catch (error) {
+            console.error('Logout error:', error)
+        } finally {
+            setUser(null)
+            setToken(null)
+            localStorage.removeItem('user')
+            localStorage.removeItem('token')
+        }
     }
 
     const updateProfile = async (updates) => {
         try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/auth/profile', {
-            //   method: 'PUT',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify(updates),
-            // })
-            // const data = await response.json()
-
-            const updatedUser = { ...user, ...updates }
+            const result = await authApi.updateProfile(updates)
+            const updatedUser = result.user || { ...user, ...updates }
             setUser(updatedUser)
             localStorage.setItem('user', JSON.stringify(updatedUser))
 

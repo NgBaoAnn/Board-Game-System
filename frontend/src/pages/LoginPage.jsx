@@ -28,35 +28,46 @@ const heroDots = [
 export default function LoginPage() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
-  const { login, loading, isAuthenticated } = useAuth()
+  const { login, loading } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
 
   const onFinish = async (values) => {
-    const result = await login(values.email, values.password)
+    console.log('Form submitted with values:', values)
+    try {
+      const result = await login(values.email, values.password)
+      console.log('Login result:', result)
 
-    if (result.success) {
-      message.success('Login successful!')
-      navigate('/')
-    } else {
-      message.error(result.error || 'Login failed!')
+      if (result.success) {
+        message.success('Login successful!')
+        navigate('/boardgame')
+      } else {
+        message.error(result.error || 'Login failed!')
+      }
+    } catch (error) {
+      console.error('Login error caught:', error)
+      message.error(error.message || 'Login failed!')
     }
   }
 
+  const onFinishFailed = (errorInfo) => {
+    console.log('Form validation failed:', errorInfo)
+  }
+
   return (
-    <div className={! isDarkMode ? "min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden"
+    <div className={!isDarkMode ? "min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden"
       : "min-h-screen flex items-center justify-center bg-[#3d3b3c] px-4 py-10 relative overflow-hidden"}>
       {/* Background Pattern Dots */}
       <div
-          className={! isDarkMode ? " absolute inset-0 pointer-events-none opacity-55 bg-[radial-gradient(circle,_#d1d5db_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
-             : " absolute inset-0 pointer-events-none opacity-100 bg-[radial-gradient(circle,_#4b5563_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
-            }
+        className={!isDarkMode ? " absolute inset-0 pointer-events-none opacity-55 bg-[radial-gradient(circle,_#d1d5db_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
+          : " absolute inset-0 pointer-events-none opacity-100 bg-[radial-gradient(circle,_#4b5563_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
+        }
       />
 
-      <div className={! isDarkMode ? "relative max-w-5xl w-full bg-white/95 shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"
+      <div className={!isDarkMode ? "relative max-w-5xl w-full bg-white/95 shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"
         : "relative max-w-5xl w-full bg-[#b7b4b5] shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"}>
 
         <div className="relative grid md:grid-cols-2">
-          <div className={! isDarkMode ? "bg-white px-8 py-10 md:px-12 md:py-12"
+          <div className={!isDarkMode ? "bg-white px-8 py-10 md:px-12 md:py-12"
             : "bg-[#70917f] px-8 py-10 md:px-12 md:py-12"}>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md">
@@ -78,6 +89,7 @@ export default function LoginPage() {
               layout="vertical"
               form={form}
               onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
               className="mt-8 space-y-3"
               requiredMark={false}
             >
@@ -102,26 +114,25 @@ export default function LoginPage() {
 
               <Form.Item
                 name="password"
-                label={null}
+                label={
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">
+                      Password
+                    </span>
+                    <button
+                      type="button"
+                      className="text-red-500 text-xs font-semibold hover:underline"
+                      tabIndex={-1}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                }
                 rules={[
                   { required: true, message: 'Please input your password!' },
                   { min: 6, message: 'Password must be at least 6 characters!' }
                 ]}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700">
-                    Password
-                  </span>
-
-                  <button
-                    type="button"
-                    className="text-red-500 text-xs font-semibold hover:underline"
-                    tabIndex={-1}
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
                 <Input.Password
                   size="large"
                   placeholder="Enter your password"
@@ -206,6 +217,7 @@ export default function LoginPage() {
                 Join thousands of players in epic strategy battles. Connect the dots and claim victory.
               </Typography.Text>
             </div>
+            
           </div>
         </div>
       </div>

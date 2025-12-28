@@ -1,7 +1,9 @@
+import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Checkbox, Form, Input, Typography, message } from 'antd'
 import { Grid3x3, Mail, Moon, Sun, User, Lock } from 'lucide-react'
-import { useAuth, useTheme } from '@/context'
+import { useTheme } from '@/context'
+import { authApi } from '@/api'
 
 const heroDots = [
     { x: 40, y: 18, color: '#ec4899', size: 12 },
@@ -33,18 +35,29 @@ const heroDots = [
 
 export default function RegisterPage() {
     const [form] = Form.useForm()
+    const [loading, setLoading] = React.useState(false)
     const navigate = useNavigate()
-    const { register, loading } = useAuth()
     const { isDarkMode, toggleTheme } = useTheme()
 
     const onFinish = async (values) => {
-        const result = await register(values.username, values.email, values.password)
+        setLoading(true)
+        try {
+            const result = await authApi.register({
+                email: values.email,
+                username: values.username,
+                password: values.password,
+            })
 
-        if (result.success) {
-            message.success('Registration successful! Please login.')
-            navigate('/login')
-        } else {
-            message.error(result.error || 'Registration failed!')
+            message.success(result.message || 'Registration successful! Please login.')
+            form.resetFields()
+            // Navigate to login after a short delay
+            setTimeout(() => {
+                navigate('/login')
+            }, 1000)
+        } catch (error) {
+            message.error(error.message || 'Registration failed!')
+        } finally {
+            setLoading(false)
         }
     }
 

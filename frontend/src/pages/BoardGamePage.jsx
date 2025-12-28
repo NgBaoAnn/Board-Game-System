@@ -18,6 +18,7 @@ import {
     Sun,
 } from 'lucide-react'
 
+import BoardGrid from '../components/Board/BoardGrid.jsx'
 export default function BoardGamePage() {
     const games = [
         { title: 'Pixel Heart', subtitle: 'Currently Selected', icon: <Heart size={18} className="text-rose-400" /> },
@@ -70,16 +71,8 @@ export default function BoardGamePage() {
             {/* Main */}
             <main className="flex-1 px-8 py-8 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
                 {/* Left panel with board background */}
-                <div
-                    className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-2xl overflow-hidden relative min-h-[623px]"
-                    style={{
-                        backgroundImage: "url('/boardgame.png')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                >
-                    <div className="absolute inset-0 bg-white/10" />
-                    <div className="relative h-full w-full"></div>
+                <div>
+                    <BoardGrid />
                 </div>
 
                 {/* Right panel */}
