@@ -1,4 +1,4 @@
-const scoreModel = require("../models/score.model");
+const scoreRepo = require("../repositories/score.repo");
 const BadRequestError = require("../errors/badrequest.exception");
 const { SUPPORTED_GAMES, GAME_CONFIG } = require("../constants/game.constants");
 
@@ -37,14 +37,14 @@ class ScoreService {
     const normalizedScore = Math.min(score, maxScore);
 
     // Persist to database
-    const id = await scoreModel.create({
+    const record = await scoreRepo.create({
       user_id,
       game_type,
       score: normalizedScore,
     });
 
     return {
-      id,
+      id: record.id,
       user_id,
       game_type,
       score: normalizedScore,
@@ -65,7 +65,7 @@ class ScoreService {
       );
     }
 
-    return scoreModel.findBestByUser(userId, gameType);
+    return scoreRepo.findBestByUser(userId, gameType);
   }
 
   /**
@@ -91,10 +91,12 @@ class ScoreService {
     }
 
     // Fetch scores and total count in parallel
-    const [scores, total] = await Promise.all([
-      scoreModel.findByUser(userId, { gameType, offset, limit: limitNum }),
-      scoreModel.countByUser(userId, gameType),
+    const [scores, countResult] = await Promise.all([
+      scoreRepo.findByUser(userId, { gameType, offset, limit: limitNum }),
+      scoreRepo.countByUser(userId, gameType),
     ]);
+
+    const total = parseInt(countResult.total);
 
     return {
       data: scores,
@@ -120,7 +122,7 @@ class ScoreService {
       );
     }
 
-    return scoreModel.findBestByUser(userId, gameType);
+    return scoreRepo.findBestByUser(userId, gameType);
   }
 }
 
