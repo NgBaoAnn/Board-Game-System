@@ -1,7 +1,8 @@
-import { Select } from "antd";
+import { Select, ConfigProvider, theme } from "antd";
 import { Column, Pie } from "@ant-design/plots";
 import { Gamepad2, HardDrive, Timer, UserPlus, TrendingUp, TrendingDown } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 export const sampleAdminDashboardData = {
     stats: {
@@ -38,6 +39,8 @@ export const sampleAdminDashboardData = {
 };
 
 export default function AdminDashboardPage({ data } = {}) {
+    const { isDarkTheme } = useTheme();
+
     const dashboard = data ?? sampleAdminDashboardData;
     const [range, setRange] = useState("7");
 
@@ -57,10 +60,8 @@ export default function AdminDashboardPage({ data } = {}) {
 
     const chartData = dashboard.chartData ?? computedChartData;
 
-    const isDark = document.documentElement.classList.contains("dark");
-
     const columnConfig = {
-        theme: isDark ? { type: "dark" } : { type: "light" },
+        theme: isDarkTheme() ? { type: "dark" } : { type: "light" },
         data: chartData,
         xField: "month",
         yField: "value",
@@ -96,7 +97,7 @@ export default function AdminDashboardPage({ data } = {}) {
         }, []);
 
     const pieConfig = {
-        theme: isDark ? { type: "dark" } : { type: "light" },
+        theme: isDarkTheme() ? { type: "dark" } : { type: "light" },
         appendPadding: 8,
         data: pieData,
         angleField: "value",
@@ -124,19 +125,30 @@ export default function AdminDashboardPage({ data } = {}) {
                 </div>
                 <div className="flex items-center space-x-3">
                     <div className="w-48">
-                        <Select
-                            size="middle"
-                            value={range}
-                            onChange={setRange}
-                            options={[
-                                { label: "Last 7 Days", value: "7" },
-                                { label: "Last 30 Days", value: "30" },
-                                { label: "Last 3 Months", value: "90" },
-                                { label: "Year to Date", value: "ytd" },
-                                { label: "All Time", value: "all" },
-                            ]}
-                            className="min-w-full"
-                        />
+                        <ConfigProvider
+                            theme={{
+                                token: {
+                                    colorPrimary: "#ec4899",
+                                    colorBgContainer: isDarkTheme() ? "#212f4d" : "#fbfbfb",
+                                    colorText: isDarkTheme() ? "#fff" : "#000",
+                                },
+                                algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                            }}
+                        >
+                            <Select
+                                size="middle"
+                                value={range}
+                                onChange={setRange}
+                                options={[
+                                    { label: "Last 7 Days", value: "7" },
+                                    { label: "Last 30 Days", value: "30" },
+                                    { label: "Last 3 Months", value: "90" },
+                                    { label: "Year to Date", value: "ytd" },
+                                    { label: "All Time", value: "all" },
+                                ]}
+                                className="min-w-full"
+                            />
+                        </ConfigProvider>
                     </div>
                 </div>
             </div>

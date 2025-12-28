@@ -1,6 +1,7 @@
 import { Users, Radio, Star, Ban, Search, LockKeyholeOpen, EllipsisVertical, LockKeyhole } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Select, Input, Pagination, Spin, message } from "antd";
+import { Select, Input, Pagination, Spin, message, ConfigProvider, theme } from "antd";
+import { useTheme } from "@/context/ThemeContext";
 import "@/styles/index.css";
 
 const SAMPLE_USERS = [
@@ -98,6 +99,8 @@ export default function AdminUsersPage() {
     const [total, setTotal] = useState(SAMPLE_USERS.length);
     const [counts, setCounts] = useState(computeCountsFrom(SAMPLE_USERS));
     const [loading, setLoading] = useState(false);
+
+    const { isDarkTheme } = useTheme();
 
     const searchDebounceRef = useRef(null);
 
@@ -246,39 +249,50 @@ export default function AdminUsersPage() {
 
             <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark mb-6">
                 <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="relative w-full md:w-96">
-                        <Input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} prefix={<Search className="p-1" />} placeholder="Search by name, email, or ID..." />
-                    </div>
-                    <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0">
-                        <Select
-                            value={role}
-                            onChange={(v) => {
-                                setRole(v);
-                                setPage(1);
-                            }}
-                            options={[
-                                { value: "all", label: "All Roles" },
-                                { value: "admin", label: "Admin" },
-                                { value: "player", label: "Player" },
-                                { value: "premium", label: "Premium" },
-                            ]}
-                            style={{ minWidth: "120px" }}
-                        />
-                        <Select
-                            value={status}
-                            onChange={(v) => {
-                                setStatus(v);
-                                setPage(1);
-                            }}
-                            options={[
-                                { value: "all", label: "All Status" },
-                                { value: "active", label: "Active" },
-                                { value: "inactive", label: "Offline" },
-                                { value: "banned", label: "Banned" },
-                            ]}
-                            style={{ minWidth: "120px" }}
-                        />
-                    </div>
+                    <ConfigProvider
+                        theme={{
+                            token: {
+                                colorPrimary: "#ec4899",
+                                colorBgContainer: isDarkTheme() ? "#212f4d" : "#fbfbfb",
+                                colorText: isDarkTheme() ? "#fff" : "#000",
+                            },
+                            algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                        }}
+                    >
+                        <div className="relative w-full md:w-96">
+                            <Input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} prefix={<Search className="p-1" />} placeholder="Search by name, email, or ID..." />
+                        </div>
+                        <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0">
+                            <Select
+                                value={role}
+                                onChange={(v) => {
+                                    setRole(v);
+                                    setPage(1);
+                                }}
+                                options={[
+                                    { value: "all", label: "All Roles" },
+                                    { value: "admin", label: "Admin" },
+                                    { value: "player", label: "Player" },
+                                    { value: "premium", label: "Premium" },
+                                ]}
+                                style={{ minWidth: "120px" }}
+                            />
+                            <Select
+                                value={status}
+                                onChange={(v) => {
+                                    setStatus(v);
+                                    setPage(1);
+                                }}
+                                options={[
+                                    { value: "all", label: "All Status" },
+                                    { value: "active", label: "Active" },
+                                    { value: "inactive", label: "Offline" },
+                                    { value: "banned", label: "Banned" },
+                                ]}
+                                style={{ minWidth: "120px" }}
+                            />
+                        </div>
+                    </ConfigProvider>
                 </div>
 
                 <div>
