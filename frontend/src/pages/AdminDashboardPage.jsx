@@ -117,7 +117,7 @@ export default function AdminDashboardPage({ data } = {}) {
     };
 
     return (
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div className="flex-1 pt-20 xl:pt-6 p-6 overflow-y-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
@@ -152,8 +152,8 @@ export default function AdminDashboardPage({ data } = {}) {
                     </div>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Plays</p>
@@ -171,7 +171,7 @@ export default function AdminDashboardPage({ data } = {}) {
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
                     </div>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">New Registrations</p>
@@ -189,7 +189,7 @@ export default function AdminDashboardPage({ data } = {}) {
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
                     </div>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg. Session Time</p>
@@ -207,7 +207,7 @@ export default function AdminDashboardPage({ data } = {}) {
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
                     </div>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Server Uptime</p>

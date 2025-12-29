@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
     };
 
     return (
-        <div className="flex-1 p-4 md:p-8">
+        <div className="flex-1 p-6 pt-20 xl:pt-6 overflow-y-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
@@ -205,8 +205,8 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Users</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.totalUsers?.toLocaleString() ?? "—"}</div>
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
 
-                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Now</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.activeNow ?? "—"}</div>
@@ -226,7 +226,7 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
 
-                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Premium</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.premium ?? "—"}</div>
@@ -236,7 +236,7 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
 
-                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
+                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Banned</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.banned ?? "—"}</div>
@@ -247,7 +247,7 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark mb-6">
+            <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark mb-6">
                 <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <ConfigProvider
                         theme={{
@@ -295,7 +295,7 @@ export default function AdminUsersPage() {
                     </ConfigProvider>
                 </div>
 
-                <div>
+                <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-800 border-b border-border-light dark:border-border-dark">
@@ -362,7 +362,9 @@ export default function AdminUsersPage() {
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex items-center justify-end gap-4">
                                                 <div
-                                                    className={`text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors ${u.status === "banned" ? "text-red-400" : ""}`}
+                                                    className={`text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors hover:scale-110 active:scale-95 duration-200 ${
+                                                        u.status === "banned" ? "text-red-400" : ""
+                                                    }`}
                                                     title="Lock Account"
                                                     onClick={() => toggleLock(u)}
                                                     style={{ cursor: "pointer" }}
@@ -388,9 +390,18 @@ export default function AdminUsersPage() {
                         <span className="font-medium text-gray-900 dark:text-white ml-1">{total.toLocaleString()}</span> results
                     </p>
 
-                    <div>
+                    <ConfigProvider
+                        theme={{
+                            token: {
+                                colorPrimary: "#ec4899",
+                                colorBgContainer: isDarkTheme() ? "#212f4d" : "#f8f8f8",
+                                colorText: isDarkTheme() ? "#fff" : "#000",
+                            },
+                            algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                        }}
+                    >
                         <Pagination current={page} pageSize={pageSize} total={total} showSizeChanger={false} onChange={(p) => setPage(p)} />
-                    </div>
+                    </ConfigProvider>
                 </div>
             </div>
         </div>
