@@ -2,89 +2,10 @@ import { Users, Radio, Star, Ban, Search, LockKeyholeOpen, EllipsisVertical, Loc
 import { useState, useEffect, useRef } from "react";
 import { Select, Input, Pagination, Spin, message, ConfigProvider, theme } from "antd";
 import { useTheme } from "@/context/ThemeContext";
+import { fetchUsers } from "@/services/userService";
 import "@/styles/index.css";
 
-const SAMPLE_USERS = [
-    {
-        id: 1,
-        name: "Alex Morgan",
-        email: "alex.m@example.com",
-        avatar: "https://i.pravatar.cc/150?img=32",
-        role: "admin",
-        status: "active",
-        lastActive: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 2,
-        name: "Sarah Connor",
-        email: "sarah.c@skynet.net",
-        avatar: "https://i.pravatar.cc/150?img=12",
-        role: "player",
-        status: "inactive",
-        lastActive: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 3,
-        name: "Michael Jordan",
-        email: "mj23@bulls.com",
-        avatar: "https://i.pravatar.cc/150?img=5",
-        role: "premium",
-        status: "active",
-        lastActive: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 4,
-        name: "Bad Actor",
-        email: "hacker@anon.com",
-        avatar: "https://i.pravatar.cc/150?img=40",
-        role: "player",
-        status: "banned",
-        lastActive: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 5,
-        name: "Emily Lin",
-        email: "emily.l@design.io",
-        avatar: "https://i.pravatar.cc/150?img=16",
-        role: "player",
-        status: "banned",
-        lastActive: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 6,
-        name: "Carlos Vega",
-        email: "c.vega@cards.io",
-        avatar: "https://i.pravatar.cc/150?img=18",
-        role: "premium",
-        status: "active",
-        lastActive: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 7,
-        name: "Linh Tran",
-        email: "linh.tran@vnmail.com",
-        avatar: "https://i.pravatar.cc/150?img=25",
-        role: "player",
-        status: "active",
-        lastActive: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    },
-    {
-        id: 8,
-        name: "Jana Novak",
-        email: "jana.n@europe.io",
-        avatar: "https://i.pravatar.cc/150?img=45",
-        role: "player",
-        status: "inactive",
-        lastActive: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-];
 
-const computeCountsFrom = (arr) => ({
-    totalUsers: arr.length,
-    activeNow: arr.filter((u) => u.status === "active").length,
-    premium: arr.filter((u) => u.role === "premium").length,
-    banned: arr.filter((u) => u.status === "banned").length,
-});
 
 export default function AdminUsersPage() {
     const [role, setRole] = useState("all");
@@ -95,49 +16,46 @@ export default function AdminUsersPage() {
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
 
-    const [users, setUsers] = useState(SAMPLE_USERS);
-    const [total, setTotal] = useState(SAMPLE_USERS.length);
-    const [counts, setCounts] = useState(computeCountsFrom(SAMPLE_USERS));
+    const [users, setUsers] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [counts, setCounts] = useState({ totalUsers: 0, activeNow: 0, premium: 0, banned: 0 });
     const [loading, setLoading] = useState(false);
 
-    const { isDarkTheme } = useTheme();
+    const { isDarkMode } = useTheme();
 
     const searchDebounceRef = useRef(null);
 
     useEffect(() => {
         const controller = new AbortController();
-        const fetchUsers = async () => {
+        const loadUsers = async () => {
             setLoading(true);
             try {
-                const params = new URLSearchParams();
-                params.set("page", page);
-                params.set("pageSize", pageSize);
-                if (role && role !== "all") params.set("role", role);
-                if (status && status !== "all") params.set("status", status);
-                if (search) params.set("search", search);
+                const filters = {};
+                //if (role && role !== "all") filters.role = role;
+                //if (status && status !== "all") filters.status = status;
+                //if (search) filters.search = search;
 
-                // Adjust endpoint as needed: expects { data: [], total: number, counts: { totalUsers,... } }
-                const res = await fetch(`/api/admin/users?${params.toString()}`, { signal: controller.signal });
-                if (!res.ok) throw new Error("Không thể tải danh sách người dùng");
-                const json = await res.json();
-                setUsers(json.data || []);
-                setTotal(json.total ?? 0);
-                setCounts(json.counts || { totalUsers: 0, activeNow: 0, premium: 0, banned: 0 });
+                const res = await fetchUsers(page, pageSize, filters);
+                if (!res || res.success === false) throw new Error(res.message || res.error || "Không thể tải danh sách người dùng");
+
+                const payload = res.data || {};
+                const items = payload.data || [];
+                const pagination = payload.pagination || {};
+                setUsers(items);
+                setTotal(pagination.total);
+                setCounts({totalUsers: pagination.total, activeNow: 3, premium: 0, banned: 0});  
             } catch (err) {
-                if (err.name !== "AbortError") {
-                    console.error(err);
-                    // Fallback to sample data for local/demo purposes
-                    setUsers(SAMPLE_USERS);
-                    setTotal(SAMPLE_USERS.length);
-                    setCounts(computeCountsFrom(SAMPLE_USERS));
-                    message.warn(err.message || "Không thể tải dữ liệu người dùng. Hiển thị data mẫu.");
-                }
+                console.error(err);
+                message.error(err.message || "Không thể tải dữ liệu người dùng. Hiển thị data mẫu.");
+                setUsers([]);
+                setTotal(0);
+                setCounts({totalUsers: 0, activeNow: 0, premium: 0, banned: 0});
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUsers();
+        loadUsers();
         return () => controller.abort();
     }, [page, role, status, search]);
 
@@ -176,24 +94,24 @@ export default function AdminUsersPage() {
     };
 
     const toggleLock = async (user) => {
-        try {
-            const res = await fetch(`/api/admin/users/${user.id}/lock`, { method: "POST" });
-            if (!res.ok) throw new Error("Không thể thay đổi trạng thái tài khoản");
-            message.success("Đã cập nhật trạng thái tài khoản");
-            // refresh list
-            setPage(1);
-            setSearch((s) => s);
-        } catch (err) {
-            console.error(err);
-            message.error(err.message || "Lỗi khi thay đổi trạng thái");
-            // If backend fails, apply the change locally to sample/mock data so UI remains interactive
-            setUsers((prev) => {
-                const next = prev.map((u) => (u.id === user.id ? { ...u, status: u.status === "banned" ? "active" : "banned" } : u));
-                setCounts(computeCountsFrom(next));
-                return next;
-            });
-            message.warn("Thay đổi được áp dụng cục bộ (mock) do lỗi kết nối");
-        }
+        // try {
+        //     const res = await fetch(`/api/admin/users/${user.id}/lock`, { method: "POST" });
+        //     if (!res.ok) throw new Error("Không thể thay đổi trạng thái tài khoản");
+        //     message.success("Đã cập nhật trạng thái tài khoản");
+        //     // refresh list
+        //     setPage(1);
+        //     setSearch((s) => s);
+        // } catch (err) {
+        //     console.error(err);
+        //     message.error(err.message || "Lỗi khi thay đổi trạng thái");
+        //     // If backend fails, apply the change locally to sample/mock data so UI remains interactive
+        //     setUsers((prev) => {
+        //         const next = prev.map((u) => (u.id === user.id ? { ...u, status: u.status === "banned" ? "active" : "banned" } : u));
+        //         setCounts(computeCountsFrom(next));
+        //         return next;
+        //     });
+        //     message.warn("Thay đổi được áp dụng cục bộ (mock) do lỗi kết nối");
+        // }
     };
 
     return (
@@ -253,10 +171,10 @@ export default function AdminUsersPage() {
                         theme={{
                             token: {
                                 colorPrimary: "#ec4899",
-                                colorBgContainer: isDarkTheme() ? "#212f4d" : "#fbfbfb",
-                                colorText: isDarkTheme() ? "#fff" : "#000",
+                                colorBgContainer: isDarkMode ? "#212f4d" : "#fbfbfb",
+                                colorText: isDarkMode ? "#fff" : "#000",
                             },
-                            algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                            algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
                         }}
                     >
                         <div className="relative w-full md:w-96">
@@ -327,17 +245,15 @@ export default function AdminUsersPage() {
                                             <div className="flex items-center space-x-3">
                                                 <div className="relative">
                                                     <img
-                                                        alt={`${u.name} avatar`}
+                                                        alt={`${u.username} avatar`}
                                                         className="h-10 w-10 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
-                                                        src={u.avatar || "https://via.placeholder.com/40"}
+                                                        src={u.avatar_url}
                                                     />
                                                     {/* online indicator if active */}
-                                                    {u.status === "active" && (
-                                                        <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-800"></div>
-                                                    )}
+                                                    {u.active && <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-800"></div>}
                                                 </div>
                                                 <div>
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{u.name}</div>
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{u.username}</div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">{u.email}</div>
                                                 </div>
                                             </div>
@@ -345,31 +261,31 @@ export default function AdminUsersPage() {
 
                                         <td className="py-4 px-6">
                                             <div className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                                                {u.role === "admin" ? "Administrator" : u.role === "premium" ? "Premium" : "Player"}
+                                                {u.role.name === "admin" ? "Administrator" : u.role.name === "premium" ? "Premium" : "Player"}
                                             </div>
                                         </td>
 
                                         <td className="py-4 px-6">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(u.status)}`}>
-                                                {u.status === "active" ? "Active" : u.status === "banned" ? "Banned" : "Offline"}
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(u.active ? "active" : u.status === "banned" ? "banned" : "inactive")}`}>
+                                                {u.active ? "Active" : u.active === "banned" ? "Banned" : "Offline"}
                                             </span>
                                         </td>
 
                                         <td className="py-4 px-6">
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">{timeAgo(u.lastActive)}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{timeAgo(u.updated_at)}</div>
                                         </td>
 
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex items-center justify-end gap-4">
                                                 <div
                                                     className={`text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors hover:scale-110 active:scale-95 duration-200 ${
-                                                        u.status === "banned" ? "text-red-400" : ""
+                                                        !u.active  ? "text-red-400" : ""
                                                     }`}
                                                     title="Lock Account"
                                                     onClick={() => toggleLock(u)}
                                                     style={{ cursor: "pointer" }}
                                                 >
-                                                    {u.status === "banned" ? <LockKeyhole /> : <LockKeyholeOpen />}
+                                                    {!u.active ? <LockKeyhole /> : <LockKeyholeOpen />}
                                                 </div>
                                                 <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="More">
                                                     <EllipsisVertical />
@@ -394,10 +310,10 @@ export default function AdminUsersPage() {
                         theme={{
                             token: {
                                 colorPrimary: "#ec4899",
-                                colorBgContainer: isDarkTheme() ? "#212f4d" : "#f8f8f8",
-                                colorText: isDarkTheme() ? "#fff" : "#000",
+                                colorBgContainer: isDarkMode ? "#212f4d" : "#f8f8f8",
+                                colorText: isDarkMode ? "#fff" : "#000",
                             },
-                            algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                            algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
                         }}
                     >
                         <Pagination current={page} pageSize={pageSize} total={total} showSizeChanger={false} onChange={(p) => setPage(p)} />

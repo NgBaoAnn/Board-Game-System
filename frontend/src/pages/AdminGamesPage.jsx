@@ -4,7 +4,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useState } from "react";
 
 export default function AdminGamesPage() {
-    const { isDarkTheme } = useTheme();
+    const { isDarkMode } = useTheme();
 
     const [games, setGames] = useState([
         { id: "GM-101", name: "Caro hàng 5", rows: 5, cols: 5, enabled: true },

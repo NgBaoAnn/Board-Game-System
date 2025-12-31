@@ -4,9 +4,12 @@ import AdminLayout from '../components/layout/AdminLayout'
 import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
-import AdminPage from '../pages/AdminPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import BoardGamePage from '../pages/BoardGamePage'
+import AdminUsersPage from '../pages/AdminUsersPage'
+import AdminDashboardPage from '../pages/AdminDashboardPage'
+import AdminGamesPage from '../pages/AdminGamesPage'
+import RequireAdmin from '../components/common/RequireAdmin'
 
 export const router = createBrowserRouter([
   {
@@ -33,12 +36,24 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminLayout />,
-    children: [
-      {
-        index: true,
-        element: <AdminPage />,
-      },
-    ],
+      element: (
+          <RequireAdmin>
+              <AdminLayout />
+          </RequireAdmin>
+      ),
+      children: [
+          {
+              path: "/admin/users",
+              element: <AdminUsersPage />,
+          },
+          {
+              path: "/admin/dashboard",
+              element: <AdminDashboardPage />,
+          },
+          {
+              path: "/admin/games",
+              element: <AdminGamesPage />,
+          },
+      ],
   },
 ])
