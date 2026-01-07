@@ -1,18 +1,20 @@
 const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
-class ScoreModel {
+class ScoreRepo {
   /**
    * Create a new score record
    * @param {Object} data - Score data
    * @param {string|null} data.user_id - User ID (UUID or null for anonymous)
-   * @param {string} data.game_type - Game type (tic_tac_toe, caro_4, caro_5, snake, match_3, memory, free_draw)
-   * @param {number} data.score - Score value (non-negative integer)
-   * @returns {Promise<number>} - ID of created score record
+   * @param {string} data.game_type - Game type
+   * @param {number} data.score - Score value
+   * @returns {Promise<Object>} - Created score record
    */
-  async create(data) {
-    const [id] = await db(MODULE.SCORE).insert(data);
-    return id;
+  create(data) {
+    return db(MODULE.SCORE)
+      .insert(data)
+      .returning("*")
+      .then(([row]) => row);
   }
 
   /**
@@ -21,7 +23,7 @@ class ScoreModel {
    * @param {number} limit - Maximum number of records to return (default: 10)
    * @returns {Promise<Array>} - Array of top scores ordered by score descending
    */
-  async findTopByGame(gameType, limit = 10) {
+  findTopByGame(gameType, limit = 10) {
     return db(MODULE.SCORE)
       .where("game_type", gameType)
       .orderBy("score", "desc")
@@ -34,7 +36,7 @@ class ScoreModel {
    * @param {string} gameType - Game type to query
    * @returns {Promise<Object|null>} - Best score record or null if not found
    */
-  async findBestByUser(userId, gameType) {
+  findBestByUser(userId, gameType) {
     return db(MODULE.SCORE)
       .where("user_id", userId)
       .andWhere("game_type", gameType)
@@ -51,7 +53,7 @@ class ScoreModel {
    * @param {number} options.limit - Pagination limit (default: 10)
    * @returns {Promise<Array>} - Array of score records ordered by created_at descending
    */
-  async findByUser(userId, { gameType = null, offset = 0, limit = 10 } = {}) {
+  findByUser(userId, { gameType = null, offset = 0, limit = 10 } = {}) {
     let query = db(MODULE.SCORE).where("user_id", userId);
 
     if (gameType) {
@@ -68,18 +70,17 @@ class ScoreModel {
    * Count total scores by user
    * @param {string} userId - User ID (UUID)
    * @param {string|null} gameType - Filter by game type (optional)
-   * @returns {Promise<number>} - Total count
+   * @returns {Promise<Object>} - Object with total count
    */
-  async countByUser(userId, gameType = null) {
+  countByUser(userId, gameType = null) {
     let query = db(MODULE.SCORE).where("user_id", userId);
 
     if (gameType) {
       query = query.andWhere("game_type", gameType);
     }
 
-    const result = await query.count("* as total").first();
-    return result.total;
+    return query.count("* as total").first();
   }
 }
 
-module.exports = new ScoreModel();
+module.exports = new ScoreRepo();

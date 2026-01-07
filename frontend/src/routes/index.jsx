@@ -4,9 +4,13 @@ import AdminLayout from '../components/layout/AdminLayout'
 import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
-import AdminPage from '../pages/AdminPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import BoardGamePage from '../pages/BoardGamePage'
+import AdminPage from '../pages/AdminPage'
+import AdminUsersPage from '../pages/AdminUsersPage'
+import AdminDashboardPage from '@/pages/AdminDashboardPage'
+import AdminGamesPage from '@/pages/AdminGamesPage'
+import RequireAdmin from '@/components/common/RequireAdmin'
 
 export const router = createBrowserRouter([
   // Routes with shared ClientLayout (sidebar + header)
@@ -36,12 +40,16 @@ export const router = createBrowserRouter([
   // Admin routes
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: (
+      <RequireAdmin>
+        <AdminLayout />
+      </RequireAdmin>
+    ),
     children: [
-      {
-        index: true,
-        element: <AdminPage />,
-      },
+      { index: true, element: <AdminPage /> },
+      { path: '/admin/users', element: <AdminUsersPage /> },
+      { path: '/admin/dashboard', element: <AdminDashboardPage /> },
+      { path: '/admin/games', element: <AdminGamesPage /> },
     ],
   },
 ])

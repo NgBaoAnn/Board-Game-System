@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
 	font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -33,6 +34,7 @@ body {
 	backdrop-filter: blur(6px);
 }
 
+
 /* Arcade button press effect */
 .arcade-btn:active {
 	transform: translateY(2px);
@@ -47,3 +49,21 @@ body {
 		linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
 	background-position: center;
 }
+
+
+@theme {
+  /* primary */
+  --color-primary: #ec4899;
+  --color-primary-hover: #db2777;
+
+  /* light mode */
+  --color-background-light: #f3f4f6; /* Gray-100 */
+  --color-surface-light: #ffffff;
+  --color-border-light: #e5e7eb;     /* Gray-200 */
+
+  /* dark mode */
+  --color-background-dark: #111827;  /* Gray-900 */
+  --color-surface-dark: #1f2937;     /* Gray-800 */
+  --color-border-dark: #374151;      /* Gray-700 */
+}
+

@@ -9,13 +9,13 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const initRoute = (app) => {
   app.use("/docs", swaggerRoute);
   app.use("/api/auth", authRoute);
-
+  app.use("/api", scoreRoute);
   app.use(authMiddleware.authenticate);
 
   app.use("/api", userRoute);
   app.use("/api", friendRoute);
   app.use("/api", conversationRoute);
-  app.use("/api", scoreRoute);
+
 };
 
 module.exports = initRoute;
