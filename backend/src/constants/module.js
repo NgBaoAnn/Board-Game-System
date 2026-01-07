@@ -6,7 +6,12 @@ const MODULE = Object.freeze({
   FRIEND_REQUEST: "friend_requests",
   CONVERSATION: "conversations",
   MESSAGE: "messages",
-  SCORE: "scores",
+  GAME: "games",
+  GAME_SESSION: "game_sessions",
+  GAME_SAVE: "game_saves",
+  GAME_BEST_SCORE: "game_best_scores",
+  ACHIEVEMENT: "achievements",
+  USER_ACHIEVEMENT: "user_achievements",
 });
 
 module.exports = MODULE;
