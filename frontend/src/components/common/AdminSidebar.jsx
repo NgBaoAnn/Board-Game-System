@@ -1,12 +1,15 @@
-import { LayoutDashboard, UserCog, Dice5, LogOut, Settings } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, UserCog, Dice5, LogOut, Settings, Menu } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 export default function AdminSidebar() {
     const location = useLocation();
-    const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+    const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
-    return (
-        <aside className="hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark h-screen sticky top-0 overflow-y-auto">
+    const [drawerVisible, setDrawerVisible] = useState(false);
+
+    const navContent = (
+        <>
             <div className="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
                 <div className="w-8 h-8 mr-3 grid grid-cols-3 gap-0.5">
                     <div className="bg-primary rounded-full"></div>
@@ -29,6 +32,7 @@ export default function AdminSidebar() {
                         "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors " +
                         (isActive("/admin/dashboard") ? "bg-primary/10 text-primary dark:text-primary" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700")
                     }
+                    onClick={() => setDrawerVisible(false)}
                 >
                     <LayoutDashboard className={"w-5 h-5 " + (isActive("/admin/dashboard") ? "text-primary" : "text-gray-400")} />
                     <span className="font-medium">Dashboard</span>
@@ -40,9 +44,10 @@ export default function AdminSidebar() {
                         "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors " +
                         (isActive("/admin/users") ? "bg-primary/10 text-primary dark:text-primary" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700")
                     }
+                    onClick={() => setDrawerVisible(false)}
                 >
                     <UserCog className={"w-5 h-5 " + (isActive("/admin/users") ? "text-primary" : "text-gray-400")} />
-                    <span className="font-medium">User Management</span>
+                    <span className={"font-medium"}>User Management</span>
                 </Link>
 
                 <Link
@@ -51,6 +56,7 @@ export default function AdminSidebar() {
                         "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors " +
                         (isActive("/admin/games") ? "bg-primary/10 text-primary dark:text-primary" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700")
                     }
+                    onClick={() => setDrawerVisible(false)}
                 >
                     <Dice5 className={"w-5 h-5 " + (isActive("/admin/games") ? "text-primary" : "text-gray-400")} />
                     <span className="font-medium">Games</span>
@@ -58,15 +64,44 @@ export default function AdminSidebar() {
             </nav>
 
             <div className="px-4 py-1 border-t border-border-light dark:border-border-dark">
-                {/* <a className="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" href="#">
-                    <Settings />
-                    <span class="font-medium">Settings</span>
-                </a> */}
-                <a class="flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" href="#">
+                <a
+                    className="flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    href="#"
+                    onClick={() => setDrawerVisible(false)}
+                >
                     <LogOut />
-                    <span class="font-medium">Logout</span>
+                    <span className="font-medium">Logout</span>
                 </a>
             </div>
-        </aside>
+        </>
+    );
+
+    return (
+        <>
+            {/* Hamburger button for mobile */}
+            <button
+                className="xl:hidden fixed top-4 left-4 z-50 p-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg shadow-lg"
+                onClick={() => setDrawerVisible(true)}
+            >
+                <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </button>
+
+            {/* Desktop sidebar */}
+            <aside className="hidden xl:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark h-screen sticky top-0 overflow-y-auto">
+                {navContent}
+            </aside>
+
+            {/* Mobile drawer */}
+            <div
+                className={`fixed top-0 left-0 h-full w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark transform transition-transform duration-300 z-50 ${
+                    drawerVisible ? "translate-x-0" : "-translate-x-full"
+                }`}
+            >
+                {navContent}
+            </div>
+
+            {/* Backdrop */}
+            {drawerVisible && <div className="fixed inset-0 bg-stone-600/20 z-40" onClick={() => setDrawerVisible(false)}></div>}
+        </>
     );
 }
