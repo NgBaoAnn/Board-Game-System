@@ -91,7 +91,7 @@ class GameController {
       const result = await gameService.startSession(userId, mode, game_id);
 
       return ResponseHandler.success(res, {
-        status: HTTP_STATUS.CREATED,
+        status: HTTP_STATUS.OK,
         message:
           mode === "new"
             ? "New game session started successfully"
@@ -131,6 +131,39 @@ class GameController {
         status: HTTP_STATUS.OK,
         message: "Game session finished successfully",
         data: session,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async isSessionSavedExists(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const gameId = req.params.id;
+
+      const result = await gameService.isSessionSavedExists(userId, gameId);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Game session saved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async countGameSession(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      const result = await gameService.countGameSession(id);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Game session count successfully",
+        data: result,
       });
     } catch (err) {
       next(err);

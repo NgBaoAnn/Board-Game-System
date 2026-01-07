@@ -41,4 +41,16 @@ router.put(
   gameController.finishSession
 );
 
+router.get(
+  "/games/sessions/exists/:id",
+  authMiddleware.authenticate,
+  gameController.isSessionSavedExists
+);
+
+router.get(
+  "/games/sessions/count/:id",
+  authMiddleware.authenticate,
+  gameController.countGameSession
+);
+
 module.exports = router;

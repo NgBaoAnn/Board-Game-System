@@ -116,6 +116,14 @@ class GameRepo {
       .orderBy("game_best_scores.best_score", "desc")
       .limit(limit);
   }
+
+  async countGameSession(gameId) {
+    const result = await db(MODULE.GAME_SESSION)
+      .where("game_id", gameId)
+      .count("id as total");
+
+    return Number(result[0].total);
+  }
 }
 
 module.exports = new GameRepo();

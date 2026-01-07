@@ -193,6 +193,30 @@ class GameService {
 
     return existing;
   }
+
+  async isSessionSavedExists(userId, gameId) {
+    const session = await gameRepo.findSessionByUserAndGameAndStatus(
+      userId,
+      gameId,
+      GAME_SESSION_STATUS.PAUSED
+    );
+    if (!session) {
+      return {
+        isSavedExists: false,
+        message: "No paused session found to resume",
+      };
+    }
+    return {
+      isSavedExists: true,
+      message: "Paused session found",
+    };
+  }
+
+  async countGameSession(gameId) {
+    return {
+      turn_count: await gameRepo.countGameSession(gameId),
+    };
+  }
 }
 
 module.exports = new GameService();
