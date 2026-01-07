@@ -1,7 +1,6 @@
-import axiosInstance from './http'
+import axiosInstance from '../configs/axios.config'
 export { authApi } from './auth'
 export { gameApi } from './game'
 export { userApi } from './user'
 
-export { default as axiosInstance } from './http'
 export default axiosInstance

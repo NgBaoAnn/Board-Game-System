@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Checkbox, Form, Input, Typography, message } from 'antd'
-import { Grid3x3, Mail, Moon, Sun, User, Lock } from 'lucide-react'
+import { Grid3x3, Mail, Moon, Sun, User, Lock, Home } from 'lucide-react'
 import { useTheme } from '@/context'
 import { authApi } from '@/api'
 
@@ -63,6 +63,15 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden">
+            {/* Back to Home Button */}
+            <Link
+                to="/"
+                className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white rounded-lg shadow-md text-gray-700 hover:text-gray-900 transition-all z-10"
+            >
+                <Home size={18} />
+                <span className="text-sm font-medium">Back to Home</span>
+            </Link>
+
             {/* Background Pattern Dots */}
             <div
                 className="absolute inset-0 pointer-events-none"

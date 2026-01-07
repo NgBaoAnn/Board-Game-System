@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Checkbox, Divider, Form, Input, Typography, message } from 'antd'
-import { Chrome, Facebook, Gamepad2, Lock, Mail, Moon, Sun } from 'lucide-react'
+import { Chrome, Facebook, Gamepad2, Lock, Mail, Moon, Sun, Home } from 'lucide-react'
 import { useAuth, useTheme } from '@/context'
 
 const heroDots = [
@@ -56,6 +56,15 @@ export default function LoginPage() {
   return (
     <div className={!isDarkMode ? "min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden"
       : "min-h-screen flex items-center justify-center bg-[#3d3b3c] px-4 py-10 relative overflow-hidden"}>
+      {/* Back to Home Button */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white rounded-lg shadow-md text-gray-700 hover:text-gray-900 transition-all z-10"
+      >
+        <Home size={18} />
+        <span className="text-sm font-medium">Back to Home</span>
+      </Link>
+
       {/* Background Pattern Dots */}
       <div
         className={!isDarkMode ? " absolute inset-0 pointer-events-none opacity-55 bg-[radial-gradient(circle,_#d1d5db_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
@@ -217,7 +226,7 @@ export default function LoginPage() {
                 Join thousands of players in epic strategy battles. Connect the dots and claim victory.
               </Typography.Text>
             </div>
-            
+
           </div>
         </div>
       </div>

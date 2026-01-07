@@ -1,4 +1,4 @@
-import axiosInstance from './http'
+import axiosInstance from '../configs/axios.config'
 
 export const userApi = {
     /**

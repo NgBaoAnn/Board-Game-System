@@ -14,7 +14,7 @@ body {
 .login-page {
 	background: radial-gradient(circle at 12% 18%, rgba(255, 228, 230, 0.65), transparent 30%),
 		radial-gradient(circle at 85% 82%, rgba(224, 242, 254, 0.8), transparent 32%),
-		#fbf5f6  ;
+		#fbf5f6;
 
 	background-blend-mode: normal;
 }
@@ -31,4 +31,19 @@ body {
 
 .glass-card {
 	backdrop-filter: blur(6px);
+}
+
+/* Arcade button press effect */
+.arcade-btn:active {
+	transform: translateY(2px);
+	box-shadow: inset 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid background pattern for board display */
+.grid-bg {
+	background-size: 40px 40px;
+	background-image:
+		linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+	background-position: center;
 }

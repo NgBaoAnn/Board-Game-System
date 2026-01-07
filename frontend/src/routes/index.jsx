@@ -9,6 +9,7 @@ import NotFoundPage from '../pages/NotFoundPage'
 import BoardGamePage from '../pages/BoardGamePage'
 
 export const router = createBrowserRouter([
+  // Routes with shared ClientLayout (sidebar + header)
   {
     element: <ClientLayout />,
     children: [
@@ -17,20 +18,22 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: '/login',
-        element: <LoginPage />,
-      },
-      {
-        path: '/register',
-        element: <RegisterPage />,
-      },
-      {
         path: '/boardgame',
         element: <BoardGamePage />,
       }
     ],
     errorElement: <NotFoundPage />,
   },
+  // Auth routes without shared layout
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
+  },
+  // Admin routes
   {
     path: '/admin',
     element: <AdminLayout />,

@@ -1,175 +1,176 @@
-
-
 import { useState } from 'react'
 import {
-    Gamepad2,
-    Wifi,
-    ChevronRight,
     Heart,
     Grid3x3,
-    AppWindow,
-    Dice6,
     Circle,
-    ArrowLeft,
-    ArrowRight,
+    Dice6,
+    ChevronLeft,
+    ChevronRight,
     Play,
-    Pause,
     HelpCircle,
-    Sun,
+    Undo2,
 } from 'lucide-react'
 
 import BoardGrid from '../components/Board/BoardGrid.jsx'
+
 export default function BoardGamePage() {
     const games = [
-        { title: 'Pixel Heart', subtitle: 'Currently Selected', icon: <Heart size={18} className="text-rose-400" /> },
-        { title: 'Tic-tac-toe', subtitle: 'Classic Mode', icon: <Grid3x3 size={18} className="text-slate-300" /> },
-        { title: 'Caro / Gomoku', subtitle: '5-in-a-row', icon: <AppWindow size={18} className="text-slate-300" /> },
-        { title: 'Random Game', subtitle: 'Surprise me', icon: <Dice6 size={18} className="text-slate-300" /> },
+        { id: 'pixel-heart', title: 'Pixel Heart', subtitle: 'Selected', icon: Heart, iconColor: 'text-rose-500' },
+        { id: 'tictactoe', title: 'Tic-tac-toe', subtitle: 'Classic', icon: Grid3x3, iconColor: '' },
+        { id: 'gomoku', title: 'Gomoku', subtitle: 'Strategy', icon: Circle, iconColor: '' },
+        { id: 'random', title: 'Random', subtitle: 'Surprise', icon: Dice6, iconColor: '' },
     ]
 
-    const [activeIndex, setActiveIndex] = useState(0)
+    const [activeGame, setActiveGame] = useState(0)
 
-    const selectIndex = (idx) => {
-        setActiveIndex((idx + games.length) % games.length)
+    const selectGame = (idx) => {
+        setActiveGame((idx + games.length) % games.length)
     }
 
-    const handleRight = () => selectIndex(activeIndex + 1) // right = xuống dưới
-    const handleLeft = () => selectIndex(activeIndex - 1) // left = lên trên
+    const handleLeft = () => selectGame(activeGame - 1)
+    const handleRight = () => selectGame(activeGame + 1)
     const handleStart = () => {
-        // TODO: start selected game
+        // TODO: Start selected game
     }
 
     return (
-        <div className="min-h-screen bg-[#0e152a] text-slate-100 flex flex-col">
-            {/* Header */}
-            <header className="h-16 px-8 flex items-center justify-between bg-[#1e293b] backdrop-blur border-b border-slate-800">
-                <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Gamepad2 size={20} />
-                    </div>
-                    <div className="flex flex-col leading-tight">
-                        <span className="text-sm uppercase tracking-[0.18em] text-slate-400">Retro</span>
-                        <span className="text-lg font-semibold text-white">Board</span>
-                    </div>
-                </div>
-                
-                <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1 text-emerald-400">
-                        <Circle size={10} className="fill-emerald-400 text-emerald-400" />
-                        <span className="hidden sm:inline">Connected</span>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-2 text-slate-300">
-                        <Wifi size={16} />
-                        <span>Player One</span>
-                        <span className="text-slate-500">|</span>
-                        <span className="text-xs text-slate-400">Level 42</span>
-                        <div className="ml-2 h-9 w-9 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold">P1</div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Main */}
-            <main className="flex-1 px-8 py-8 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
-                {/* Left panel with board background */}
-                <div>
-                    <BoardGrid />
-                </div>
-
-                {/* Right panel */}
-                <div className="rounded-2xl border border-slate-800 bg-[#1e293b] shadow-xl overflow-hidden flex flex-col">
-                    <div className="px-6 py-4 border-b border-slate-800">
-                        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Select Cartridge</p>
+        <div className="flex flex-col h-full">
+            {/* Game Selector */}
+            <section className="shrink-0 bg-white border-b border-slate-100 p-4 rounded-xl mb-4 shadow-sm">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col md:flex-row items-center justify-between mb-3">
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-500 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                            Select Cartridge
+                        </h2>
+                        <div className="hidden md:flex text-[10px] font-bold text-slate-400 gap-4">
+                            <span className="flex items-center gap-1">
+                                <span className="text-indigo-500">●</span> ACTIVE
+                            </span>
+                            <span className="flex items-center gap-1">
+                                <span className="text-slate-300">●</span> AVAILABLE
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-                        {games.map((item, idx) => {
-                            const active = idx === activeIndex
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {games.map((game, idx) => {
+                            const isActive = idx === activeGame
+                            const IconComponent = game.icon
                             return (
                                 <button
-                                    key={item.title}
-                                    onClick={() => selectIndex(idx)}
-                                    className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 transition-all text-left ${active
-                                        ? 'bg-slate-800/80 border-blue-500/50 shadow-[0_0_0_1px_rgba(59,130,246,0.3)]'
-                                        : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
+                                    key={game.id}
+                                    onClick={() => selectGame(idx)}
+                                    className={`group flex items-center gap-3 p-3 rounded-xl text-left transition-all relative overflow-hidden ${isActive
+                                            ? 'bg-white border-2 border-indigo-500 shadow-sm'
+                                            : 'border border-slate-100 bg-white hover:bg-slate-50 hover:border-indigo-200 hover:shadow-sm'
                                         }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`h-9 w-9 rounded-xl flex items-center justify-center ${active ? 'bg-blue-600/80 text-white' : 'bg-slate-800 text-slate-200'
+                                    <div
+                                        className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
+                                                ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ring-2 ring-rose-100'
+                                                : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
+                                            }`}
+                                    >
+                                        <IconComponent size={18} />
+                                    </div>
+                                    <div className="z-10">
+                                        <h3
+                                            className={`font-bold text-sm leading-tight ${isActive ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'
                                                 }`}
                                         >
-                                            {item.icon}
-                                        </div>
-                                        <div className="leading-tight">
-                                            <p className="text-sm font-semibold text-white">{item.title}</p>
-                                            <p className="text-xs text-slate-400">{item.subtitle}</p>
-                                        </div>
+                                            {game.title}
+                                        </h3>
+                                        <p
+                                            className={`text-[10px] font-semibold ${isActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-500'
+                                                }`}
+                                        >
+                                            {isActive ? 'Selected' : game.subtitle}
+                                        </p>
                                     </div>
-                                    <ChevronRight size={18} className="text-slate-500" />
                                 </button>
                             )
                         })}
                     </div>
+                </div>
+            </section>
 
-                    <div className="relative border-t border-slate-800 bg-[#192332] pt-6 pb-15 px-6 rounded-b-2xl overflow-hidden">
-                        {/* top pill indicator */}
-                        <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-1 w-24 rounded-full bg-slate-700" />
+            {/* Board Display Area */}
+            <section className="flex-grow relative flex items-center justify-center p-4 lg:p-6 bg-slate-50 rounded-xl overflow-hidden">
+                {/* Background pattern */}
+                <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
 
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 text-center mb-4">Controller</p>
-
-                        <div className="grid grid-cols-3 items-center gap-3 mb-5">
-                            <div className="col-span-1 flex justify-center">
-                                <button className="h-14 w-14 rounded-2xl bg-slate-800 text-slate-200 border border-slate-700 flex items-center justify-center hover:border-slate-500 shadow-inner">
-                                    <HelpCircle size={20} />
-                                </button>
-                            </div>
-                            <div className="col-span-1" />
-                            <div className="col-span-1 flex justify-center">
-                                <button className="h-14 px-5 rounded-2xl bg-rose-600 text-white border border-rose-500/70 hover:border-rose-400 text-sm font-semibold shadow-lg shadow-rose-500/30">
-                                    BACK
-                                </button>
-                            </div>
+                {/* Board container */}
+                <div className="relative z-10 bg-white p-2 sm:p-3 rounded-2xl shadow-lg border border-slate-100/60 ring-1 ring-slate-100 max-h-full flex items-center justify-center">
+                    <div className="bg-indigo-50/50 rounded-xl p-4 sm:p-6 border border-indigo-100/50 relative overflow-hidden">
+                        {/* Label */}
+                        <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-300 tracking-widest z-20">
+                            MATRIX DISPLAY 13×13
                         </div>
 
-                        <div className="grid grid-cols-3 gap-1 items-center justify-center">
-                            <div className="col-span-1 flex justify-center">
-                                <button
-                                    onClick={handleLeft}
-                                    className="h-14 w-14 rounded-full bg-slate-800 text-slate-100 border border-slate-700 flex items-center justify-center hover:border-slate-500 shadow-inner"
-                                >
-                                    <ArrowLeft size={20} />
-                                </button>
-                            </div>
+                        {/* Grid background */}
+                        <div className="absolute inset-0 grid-bg pointer-events-none"></div>
 
-                            <div className="col-span-1 flex items-center justify-center gap-4">
-
-                                <button
-                                    onClick={handleStart}
-                                    className="h-16 w-16 rounded-full bg-[#1da1f2] text-white shadow-[0_8px_24px_rgba(29,161,242,0.35)] flex items-center justify-center border border-[#1b8cd9]"
-                                >
-                                    <Play size={20} />
-                                </button>
-
-                            </div>
-
-                            <div className="col-span-1 flex justify-center">
-                                <button
-                                    onClick={handleRight}
-                                    className="h-14 w-14 rounded-full bg-slate-800 text-slate-100 border border-slate-700 flex items-center justify-center hover:border-slate-500 shadow-inner"
-                                >
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
+                        {/* Board Grid */}
+                        <div className="relative z-10 mt-4">
+                            <BoardGrid />
                         </div>
-
-
-
-
                     </div>
                 </div>
-            </main>
+            </section>
+
+            {/* Controls Section */}
+            <section className="shrink-0 bg-white border-t border-slate-100 p-4 mt-4 rounded-xl shadow-sm">
+                <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                    {/* Help button */}
+                    <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
+                        <button
+                            aria-label="Help"
+                            className="arcade-btn px-4 py-3 rounded-xl bg-slate-100 text-slate-500 shadow-[0_3px_0_#cbd5e1] hover:bg-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
+                        >
+                            <HelpCircle size={16} /> HELP
+                        </button>
+                    </div>
+
+                    {/* Navigation controls */}
+                    <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
+                        <button
+                            onClick={handleLeft}
+                            aria-label="Left"
+                            className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                        >
+                            <ChevronLeft size={28} />
+                        </button>
+
+                        <button
+                            onClick={handleStart}
+                            aria-label="Start"
+                            className="arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-indigo-500 to-indigo-600 text-white shadow-[0_6px_0_#3730a3] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 border-indigo-100"
+                        >
+                            <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">START</span>
+                            <Play size={28} />
+                        </button>
+
+                        <button
+                            onClick={handleRight}
+                            aria-label="Right"
+                            className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                        >
+                            <ChevronRight size={28} />
+                        </button>
+                    </div>
+
+                    {/* Back button */}
+                    <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
+                        <button
+                            aria-label="Back"
+                            className="arcade-btn px-4 py-3 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors tracking-wide"
+                        >
+                            BACK <Undo2 size={16} />
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
     )
 }
-
-
