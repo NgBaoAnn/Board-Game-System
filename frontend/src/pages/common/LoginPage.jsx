@@ -218,12 +218,12 @@ export default function LoginPage() {
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox className="text-slate-500 dark:text-gray-400">Remember me</Checkbox>
             </Form.Item>
-            <a
-              href="#"
+            <Link
+              to="/forgot-password"
               className="font-medium text-[#1d7af2] hover:text-blue-700 transition-colors"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <Form.Item>

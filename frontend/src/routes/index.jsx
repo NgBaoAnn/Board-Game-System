@@ -5,6 +5,9 @@ import HomePage from '../pages/user/HomePage'
 import LoginPage from '../pages/common/LoginPage'
 import RegisterPage from '../pages/common/RegisterPage'
 import SettingPage from '../pages/common/SettingPage'
+import ForgotPasswordPage from '../pages/common/ForgotPasswordPage'
+import VerifyOTPPage from '../pages/common/VerifyOTPPage'
+import ResetPasswordPage from '../pages/common/ResetPasswordPage'
 import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
 import CommunityPage from '../pages/user/CommunityPage'
@@ -46,6 +49,18 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: '/verify-otp',
+    element: <VerifyOTPPage />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
   },
   // Admin routes
   {
