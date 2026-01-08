@@ -6,6 +6,7 @@ const conversationRoute = require("./conversation.route");
 const gameRoute = require("./game.route");
 const uploadRoute = require("./upload.route");
 const authMiddleware = require("../middlewares/auth.middleware");
+const rankingRoute = require("../routes/ranking.route");
 
 const initRoute = (app) => {
   app.use("/docs", swaggerRoute);
@@ -17,6 +18,7 @@ const initRoute = (app) => {
 
   app.use(authMiddleware.authenticate);
 
+  app.use("/api", rankingRoute);
   app.use("/api", userRoute);
   app.use("/api", friendRoute);
   app.use("/api", conversationRoute);

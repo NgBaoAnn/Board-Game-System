@@ -98,6 +98,20 @@ class FriendRepo {
       .first();
   }
 
+  /**
+   * Get all friend IDs for a user (no pagination)
+   */
+  async getAllFriendIds(userId) {
+    const friends = await db(MODULE.FRIEND)
+      .where("status", "ACCEPTED")
+      .andWhere(function () {
+        this.where("user_a", userId).orWhere("user_b", userId);
+      })
+      .select("user_a", "user_b");
+
+    return friends.map((f) => (f.user_a === userId ? f.user_b : f.user_a));
+  }
+
   removeFriend(userA, userB) {
     return db(MODULE.FRIEND).where({ user_a: userA, user_b: userB }).del();
   }
