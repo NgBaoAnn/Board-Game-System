@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Checkbox, Form, Input, Typography } from 'antd'
-import { Grid3x3, Mail, Moon, Sun, User, Lock } from 'lucide-react'
+import { Button, Checkbox, Form, Input, Typography, message } from 'antd'
+import { Grid3x3, Mail, Moon, Sun, User, Lock, Home } from 'lucide-react'
+import { useTheme } from '@/context'
+import { authApi } from '@/api'
 
 const heroDots = [
     { x: 40, y: 18, color: '#ec4899', size: 12 },
@@ -33,30 +35,49 @@ const heroDots = [
 
 export default function RegisterPage() {
     const [form] = Form.useForm()
-    const [darkMode, setDarkMode] = useState(false)
+    const [loading, setLoading] = React.useState(false)
     const navigate = useNavigate()
+    const { isDarkMode, toggleTheme } = useTheme()
 
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode)
-        document.body.classList.toggle('dark', darkMode)
-    }, [darkMode])
+    const onFinish = async (values) => {
+        setLoading(true)
+        try {
+            const result = await authApi.register({
+                email: values.email,
+                username: values.username,
+                password: values.password,
+            })
 
-    const toggleTheme = () => setDarkMode((prev) => !prev)
-
-    const onFinish = (values) => {
-        console.log('Register values:', values)
-        // Handle registration logic here
-        navigate('/login')
+            message.success(result.message || 'Registration successful! Please login.')
+            form.resetFields()
+            // Navigate to login after a short delay
+            setTimeout(() => {
+                navigate('/login')
+            }, 1000)
+        } catch (error) {
+            message.error(error.message || 'Registration failed!')
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
         <div className="min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden">
+            {/* Back to Home Button */}
+            <Link
+                to="/"
+                className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white rounded-lg shadow-md text-gray-700 hover:text-gray-900 transition-all z-10"
+            >
+                <Home size={18} />
+                <span className="text-sm font-medium">Back to Home</span>
+            </Link>
+
             {/* Background Pattern Dots */}
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
+                    backgroundImage: 'radial-gradient(circle, #d1d5db 1.5px, transparent 1.5px)',
+                    backgroundSize: '25px 25px',
                     opacity: 0.4,
                 }}
             />
@@ -107,7 +128,7 @@ export default function RegisterPage() {
                                 type="text"
                                 aria-label="Toggle theme"
                                 onClick={toggleTheme}
-                                icon={darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                                icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
                                 className="shadow-sm"
                             />
                         </div>
@@ -237,6 +258,7 @@ export default function RegisterPage() {
                                     htmlType="submit"
                                     size="large"
                                     block
+                                    loading={loading}
                                     className="bg-gradient-to-r from-pink-500 to-pink-600 hover:!from-pink-600 hover:!to-pink-700 border-none h-12 text-base font-semibold mt-2"
                                 >
                                     Create Account
