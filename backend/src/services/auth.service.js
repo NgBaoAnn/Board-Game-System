@@ -1,12 +1,11 @@
 const passwordService = require("./password.service");
 const jwtService = require("./jwt.service");
-const DuplicateError = require("../errors/duplicate.exception");
-const UnauthorizedError = require("../errors/unauthorized.exception");
-const sanitizeUser = require("../utils/sanitize-user");
 const userRepo = require("../repositories/user.repo");
+const sanitizeUser = require("../utils/sanitize-user");
 const NotFoundError = require("../errors/notfound.exception");
 const ForbiddenError = require("../errors/forbidden.exception");
-const { decode } = require("jsonwebtoken");
+const DuplicateError = require("../errors/duplicate.exception");
+const UnauthorizedError = require("../errors/unauthorized.exception");
 
 class AuthService {
   async register({ email, password, username }) {

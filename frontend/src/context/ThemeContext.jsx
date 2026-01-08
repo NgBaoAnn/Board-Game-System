@@ -5,29 +5,27 @@ const ThemeContext = createContext()
 export const ThemeProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(false)
 
-    // Initialize from localStorage
+    // Initialize from localStorage or system preference
     useEffect(() => {
-        const storedTheme = localStorage.getItem('theme')
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const storedTheme = localStorage.getItem('theme') || localStorage.getItem('app_theme')
+        const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
 
         if (storedTheme) {
             setIsDarkMode(storedTheme === 'dark')
         } else {
-            setIsDarkMode(prefersDark)
+            setIsDarkMode(!!prefersDark)
         }
     }, [])
 
     // Update DOM and localStorage when theme changes
     useEffect(() => {
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark')
-            document.body.classList.add('dark')
-            localStorage.setItem('theme', 'dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-            document.body.classList.remove('dark')
-            localStorage.setItem('theme', 'light')
+        if (typeof document !== 'undefined') {
+            document.documentElement.classList.toggle('dark', isDarkMode)
+            document.body?.classList.toggle('dark', isDarkMode)
         }
+        const value = isDarkMode ? 'dark' : 'light'
+        localStorage.setItem('theme', value)
+        localStorage.setItem('app_theme', value) // keep compatibility
     }, [isDarkMode])
 
     const toggleTheme = () => {
@@ -39,9 +37,8 @@ export const ThemeProvider = ({ children }) => {
     }
 
     const antdTheme = {
-        algorithm: isDarkMode ? undefined : undefined, // Ant Design theme algorithm
         token: {
-            colorPrimary: isDarkMode ? '#ff4757' : '#ff4757',
+            colorPrimary: '#ff4757',
             colorBgBase: isDarkMode ? '#1f2937' : '#ffffff',
             colorTextBase: isDarkMode ? '#f3f4f6' : '#1f2937',
             borderRadius: 8,
@@ -55,6 +52,9 @@ export const ThemeProvider = ({ children }) => {
                 toggleTheme,
                 setTheme,
                 antdTheme,
+                // compatibility surface
+                theme: isDarkMode ? 'dark' : 'light',
+                isDarkTheme: () => isDarkMode,
             }}
         >
             {children}
@@ -62,10 +62,6 @@ export const ThemeProvider = ({ children }) => {
     )
 }
 
-export const useTheme = () => {
-    const context = useContext(ThemeContext)
-    if (!context) {
-        throw new Error('useTheme must be used within ThemeProvider')
-    }
-    return context
-}
+export const useTheme = () => useContext(ThemeContext)
+
+export default ThemeProvider
