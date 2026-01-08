@@ -822,21 +822,6 @@ components:
           type: integer
           example: 42
 
-    SubmitScoreRequest:
-      type: object
-      required:
-        - game_type
-        - score
-      properties:
-        game_type:
-          type: string
-          example: snake
-          description: Game type (tic_tac_toe, caro_4, caro_5, snake, match_3, memory, free_draw)
-        score:
-          type: integer
-          example: 4500
-          description: Score value (non-negative integer)
-
   securitySchemes:
     BearerAuth:
       type: http
