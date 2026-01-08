@@ -1,235 +1,294 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Checkbox, Divider, Form, Input, Typography, message } from 'antd'
-import { Chrome, Facebook, Gamepad2, Lock, Mail, Moon, Sun, Home } from 'lucide-react'
-import { useAuth, useTheme } from '@/context'
+import { Form, Input, Checkbox, message } from 'antd'
+import { Gamepad2, Mail, Lock } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Joi from 'joi'
+import { useAuth } from '@/context'
+import AuthLayout from '@/components/layout/AuthLayout'
+import SocialLoginButtons from '@/components/common/SocialLoginButtons'
+import { joiValidator, commonSchemas } from '@/utils/validation'
 
-const heroDots = [
-  { x: 40, y: 24, color: '#ef4444' },
-  { x: 50, y: 20, color: '#ef4444' },
-  { x: 60, y: 24, color: '#ef4444' },
-  { x: 70, y: 34, color: '#ef4444' },
-  { x: 60, y: 42, color: '#ef4444' },
-  { x: 50, y: 48, color: '#ef4444' },
-  { x: 40, y: 54, color: '#ef4444' },
-  { x: 55, y: 32, color: '#0ea5e9' },
-  { x: 65, y: 42, color: '#0ea5e9' },
-  { x: 55, y: 52, color: '#0ea5e9' },
-  { x: 45, y: 62, color: '#0ea5e9' },
-  { x: 52, y: 60, color: '#22c55e' },
-  { x: 62, y: 58, color: '#22c55e' },
-  { x: 72, y: 56, color: '#22c55e' },
-  { x: 32, y: 38, color: '#6366f1' },
-  { x: 32, y: 50, color: '#6366f1' },
-  { x: 32, y: 62, color: '#6366f1' },
-  { x: 26, y: 30, color: '#f97316' },
-  { x: 22, y: 44, color: '#f97316' },
-]
+// Validation schema
+const loginSchema = Joi.object({
+  email: commonSchemas.email,
+  password: commonSchemas.password,
+  remember: Joi.boolean().optional(),
+})
+
+// Animation variants
+const formVariants = {
+  idle: { scale: 1 },
+  loading: { opacity: 0.7 },
+  error: { x: [0, -8, 8, -6, 6, 0], transition: { duration: 0.4 } },
+  success: { scale: 1.02, opacity: 0 },
+}
+
+const buttonVariants = {
+  idle: { scale: 1 },
+  hover: { scale: 1.03, boxShadow: '0 10px 40px -10px rgba(29, 122, 242, 0.5)' },
+  tap: { scale: 0.97 },
+}
 
 export default function LoginPage() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const { login, loading } = useAuth()
-  const { isDarkMode, toggleTheme } = useTheme()
+  const [formState, setFormState] = useState('idle') // idle | loading | error | success
 
   const onFinish = async (values) => {
-    console.log('Form submitted with values:', values)
+    setFormState('loading')
     try {
       const result = await login(values.email, values.password)
-      console.log('Login result:', result)
-
       if (result.success) {
+        setFormState('success')
         message.success('Login successful!')
-        navigate('/boardgame')
+        setTimeout(() => navigate('/boardgame'), 300)
       } else {
+        setFormState('error')
         message.error(result.error || 'Login failed!')
+        setTimeout(() => setFormState('idle'), 400)
       }
     } catch (error) {
-      console.error('Login error caught:', error)
+      setFormState('error')
       message.error(error.message || 'Login failed!')
+      setTimeout(() => setFormState('idle'), 400)
     }
   }
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Form validation failed:', errorInfo)
-  }
-
-  return (
-    <div className={!isDarkMode ? "min-h-screen flex items-center justify-center login-page px-4 py-10 relative overflow-hidden"
-      : "min-h-screen flex items-center justify-center bg-[#3d3b3c] px-4 py-10 relative overflow-hidden"}>
-      {/* Back to Home Button */}
-      <Link
-        to="/"
-        className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white rounded-lg shadow-md text-gray-700 hover:text-gray-900 transition-all z-10"
-      >
-        <Home size={18} />
-        <span className="text-sm font-medium">Back to Home</span>
-      </Link>
-
-      {/* Background Pattern Dots */}
-      <div
-        className={!isDarkMode ? " absolute inset-0 pointer-events-none opacity-55 bg-[radial-gradient(circle,_#d1d5db_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
-          : " absolute inset-0 pointer-events-none opacity-100 bg-[radial-gradient(circle,_#4b5563_1.5px,_transparent_1.5px)] [background-size:25px_25px]"
-        }
+  const rightContent = (
+    <>
+      <img
+        alt="Catan board game close up with depth of field"
+        className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay"
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0rYUZTmwMe11ZhJQSf5l8BZPDiLW22TF5V0RoiJKOPguv2CPq2CZuiFd5FkZIbJABPMNg_3zT6q0FBIWmd62l_IveebetIvauJc1NpZP0NPFPJLSVHOQDBtrvbPLullL4pkM-rv1EyEG2IUD4lCxbST_a9gmJTWvx7g_6YX1ZnJ1YgY2Xw85cseQTHAycvAkumrzXL85T_h9Mfg14HVoo-3JUxcqJXstXiu3XWg8joz9UVRyzw0EVp17rNS5_Uwli3n4RDew5jVE"
       />
-
-      <div className={!isDarkMode ? "relative max-w-5xl w-full bg-white/95 shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"
-        : "relative max-w-5xl w-full bg-[#b7b4b5] shadow-2xl rounded-3xl overflow-hidden border border-neutral-200 glass-card backdrop-blur-sm"}>
-
-        <div className="relative grid md:grid-cols-2">
-          <div className={!isDarkMode ? "bg-white px-8 py-10 md:px-12 md:py-12"
-            : "bg-[#70917f] px-8 py-10 md:px-12 md:py-12"}>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md">
-                <Gamepad2 size={22} />
-              </div>
-              <Typography.Title level={4} className="!mb-0">
-                GameGrid
-              </Typography.Title>
-            </div>
-
-            <Typography.Title level={2} className="!mb-1">
-              Welcome back!
-            </Typography.Title>
-            <Typography.Text className="text-gray-500">
-              Enter your credentials to access your games.
-            </Typography.Text>
-
-            <Form
-              layout="vertical"
-              form={form}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              className="mt-8 space-y-3"
-              requiredMark={false}
-            >
-              <Form.Item
-                label={
-                  <div className='text-sm font-medium text-gray-700'>
-                    Email
-                  </div>
-                }
-                name="email"
-                rules={[
-                  { required: true, message: 'Please input your email!' },
-                  { type: 'email', message: 'Please enter a valid email!' }
-                ]}
-              >
-                <Input
-                  size="large"
-                  placeholder="Enter your email"
-                  prefix={<Mail size={16} className="text-gray-400" />}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                label={
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium text-gray-700">
-                      Password
-                    </span>
-                    <button
-                      type="button"
-                      className="text-red-500 text-xs font-semibold hover:underline"
-                      tabIndex={-1}
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                }
-                rules={[
-                  { required: true, message: 'Please input your password!' },
-                  { min: 6, message: 'Password must be at least 6 characters!' }
-                ]}
-              >
-                <Input.Password
-                  size="large"
-                  placeholder="Enter your password"
-                  prefix={<Lock size={16} className="text-gray-400" />}
-                />
-              </Form.Item>
-
-
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="large"
-                block
-                loading={loading}
-                className="bg-red-500 hover:!bg-red-600 border-none h-11 text-sm font-semibold"
-              >
-                Sign In
-              </Button>
-
-              <div className="text-center text-sm text-gray-600">
-                Don&apos;t have an account?{' '}
-                <Link to="/register" className="text-red-500 font-semibold">
-                  Create an account
-                </Link>
-              </div>
-            </Form>
-
-            <Divider plain className="!text-xs !text-gray-400">
-              Or continue with
-            </Divider>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                size="large"
-                className="!h-11 flex items-center justify-center gap-2 border border-gray-200 text-gray-700"
-                icon={<img src="/google.png" alt="Google" className="w-5 h-5" />}
-              >
-                Google
-              </Button>
-              <Button
-                size="large"
-                className="!h-11 flex items-center justify-center gap-2 border border-gray-200 text-gray-700"
-                icon={<img src="/facebook.png" alt="Facebook" className="w-5 h-5" />}
-              >
-                Facebook
-              </Button>
-            </div>
-          </div>
-
-          <div className="relative hero-grid bg-gradient-to-br from-purple-50/50 to-blue-50/50 md:bg-gradient-to-br md:from-purple-50/30 md:to-blue-50/30 flex flex-col items-center justify-center px-6 py-12 md:px-10">
-            <div className="absolute top-4 right-4">
-              <Button
-                shape="circle"
-                type="text"
-                aria-label="Toggle theme"
-                onClick={toggleTheme}
-                icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                className="shadow-sm"
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-purple-900/90 mix-blend-multiply" />
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+      <div className="relative h-full flex flex-col justify-between p-12 text-white z-10">
+        <div className="flex justify-end">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 text-xs font-medium border border-white/20"
+          >
+            <span className="text-yellow-300 mr-1">★</span> Top Rated Strategy Platform
+          </motion.div>
+        </div>
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <img
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full border-2 border-blue-500"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuADRY_n1xchUMFKp_tm-tC82w-0cRvV-mSE_Hmi62A4x38PwBnfr6AaRaqfdNyGvRpDFOPnTm4Qxj2XZePwBEXhcXdzCAikpEe8nwvQwlu9tMjx6qRPC1YwLRm3HrfJqdESMRarUWVsD9SYPUrPcqHNGSQRfn2N_lTIPX0jMX40MdTHtuFB7TayIRC0BKcascq0gdyEoLvbHsmCdQsvA4aGgQ4GS3bBv1HlkQL7tPvSDHN162njVDZUgV1H83HdGwHrw1znwd60np4"
               />
+              <div>
+                <h3 className="font-bold text-sm">Marcus Chen</h3>
+                <p className="text-xs text-blue-200">Chess Grandmaster</p>
+              </div>
             </div>
-
-            <div className="relative w-56 h-64 mb-8">
-              {heroDots.map((dot, idx) => (
-                <span
-                  key={`${dot.x}-${dot.y}-${idx}`}
-                  className="absolute w-3 h-3 rounded-full"
-                  style={{
-                    top: `${dot.y}%`,
-                    left: `${dot.x}%`,
-                    backgroundColor: dot.color,
-                    boxShadow: `0 6px 14px ${dot.color}33`,
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="text-center max-w-sm">
-              <Typography.Title level={4} className="!mb-2">
-                Ready for your next move?
-              </Typography.Title>
-              <Typography.Text className="text-gray-600">
-                Join thousands of players in epic strategy battles. Connect the dots and claim victory.
-              </Typography.Text>
-            </div>
-
-          </div>
+            <p className="text-blue-100 text-sm italic leading-relaxed">
+              &quot;BoardGameHub has completely transformed how I practice. The matchmaking is instant
+              and the community is incredibly welcoming.&quot;
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <h2 className="text-3xl font-bold mb-2">Join the Community</h2>
+            <p className="text-blue-200 text-sm max-w-sm">
+              Connect with over 10,000 players worldwide. Challenge friends, join tournaments, and
+              master your favorite games.
+            </p>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </>
+  )
+
+  return (
+    <AuthLayout rightContent={rightContent}>
+      <motion.div
+        variants={formVariants}
+        animate={formState}
+        className="space-y-0"
+      >
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center space-x-3 mb-10"
+        >
+          <motion.div
+            whileHover={{ rotate: 10 }}
+            className="bg-[#1d7af2] w-10 h-10 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30 text-white"
+          >
+            <Gamepad2 size={24} />
+          </motion.div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+              BoardGameHub
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-wide">
+              Strategy Awaits
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
+            Welcome back
+          </h2>
+          <p className="text-slate-500 dark:text-gray-400 text-sm">
+            Please enter your details to sign in.
+          </p>
+        </motion.div>
+
+        {/* Form */}
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          requiredMark={false}
+          className="space-y-2"
+        >
+          <Form.Item
+            name="email"
+            label={
+              <span className="block text-sm font-semibold text-slate-900 dark:text-gray-200">
+                Email Address
+              </span>
+            }
+            rules={[joiValidator(loginSchema.extract('email'))]}
+          >
+            <Input
+              size="large"
+              prefix={<Mail className="text-gray-400" size={18} />}
+              placeholder="you@example.com"
+              className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            label={
+              <span className="block text-sm font-semibold text-slate-900 dark:text-gray-200">
+                Password
+              </span>
+            }
+            rules={[joiValidator(loginSchema.extract('password'))]}
+          >
+            <Input.Password
+              size="large"
+              prefix={<Lock className="text-gray-400" size={18} />}
+              placeholder="••••••••"
+              className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
+            />
+          </Form.Item>
+
+          <div className="flex items-center justify-between text-sm mb-6">
+            <Form.Item name="remember" valuePropName="checked" noStyle>
+              <Checkbox className="text-slate-500 dark:text-gray-400">Remember me</Checkbox>
+            </Form.Item>
+            <a
+              href="#"
+              className="font-medium text-[#1d7af2] hover:text-blue-700 transition-colors"
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          <Form.Item>
+            <motion.button
+              type="submit"
+              variants={buttonVariants}
+              initial="idle"
+              whileHover="hover"
+              whileTap="tap"
+              disabled={loading}
+              className="w-full h-12 rounded-xl text-base font-bold bg-[#1d7af2] text-white shadow-lg shadow-blue-500/30 border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ rotate: { repeat: Infinity, duration: 1, ease: 'linear' } }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                ) : (
+                  <motion.span
+                    key="text"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    Sign in
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </Form.Item>
+        </Form>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-3 bg-white dark:bg-[#1e293b] text-slate-500 dark:text-gray-400 font-medium">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        {/* Social Buttons */}
+        <SocialLoginButtons
+          onGoogleClick={() => message.info('Google login clicked')}
+          onFacebookClick={() => message.info('Facebook login clicked')}
+        />
+
+        {/* Register Link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center mt-6 text-sm text-slate-500 dark:text-gray-400"
+        >
+          Don&apos;t have an account?{' '}
+          <Link
+            to="/register"
+            className="font-bold text-[#1d7af2] hover:text-blue-700 transition-colors"
+          >
+            Create free account
+          </Link>
+        </motion.div>
+      </motion.div>
+    </AuthLayout>
   )
 }

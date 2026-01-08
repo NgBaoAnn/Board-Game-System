@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Button, Dropdown, Avatar, message } from 'antd'
+import { Button, Dropdown, Avatar, message, Input } from 'antd'
 import {
   Gamepad2,
   Home,
@@ -7,12 +7,13 @@ import {
   Users,
   Trophy,
   Settings,
-  Plus,
   Bell,
   MessageSquare,
   LogOut,
   User,
   ChevronDown,
+  Search,
+  Menu,
 } from 'lucide-react'
 import { useAuth } from '@/context'
 
@@ -64,103 +65,138 @@ export default function ClientLayout() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] flex">
+    <div className="min-h-screen bg-[#f5f7f8] flex">
       {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-slate-100 flex flex-col fixed h-full z-40">
-        {/* Logo */}
-        <div className="p-5 border-b border-slate-100">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white">
-              <Gamepad2 size={22} />
-            </div>
-            <div className="leading-tight">
-              <h1 className="font-bold text-slate-800 text-base">BoardGameHub</h1>
-              <p className="text-xs text-slate-400">Strategy Awaits</p>
-            </div>
-          </Link>
-        </div>
+      <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col border-r border-[#f0f2f5] bg-white fixed h-full z-40">
+        <div className="flex h-full flex-col justify-between p-4">
+          <div className="flex flex-col gap-4">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 px-2 py-2">
+              <div className="flex items-center justify-center size-10 rounded-xl bg-[#0d7ff2] text-white">
+                <Gamepad2 size={24} />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-lg font-bold leading-tight tracking-tight text-[#111418]">BoardGameHub</h1>
+                <p className="text-xs font-normal text-[#60758a]">Strategy Awaits</p>
+              </div>
+            </Link>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-1">
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.key
-              const IconComponent = item.icon
-              return (
-                <li key={item.key}>
+            {/* Navigation */}
+            <nav className="flex flex-col gap-2 mt-4">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.key
+                const IconComponent = item.icon
+                return (
                   <Link
+                    key={item.key}
                     to={item.key}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                      }`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-[#eff6ff] text-[#0d7ff2]'
+                        : 'text-[#60758a] hover:bg-gray-100 hover:text-[#111418]'
+                    }`}
                   >
-                    <IconComponent size={20} />
-                    {item.label}
+                    <IconComponent size={24} />
+                    <span className={isActive ? 'font-bold' : 'font-medium'}>{item.label}</span>
                   </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
+                )
+              })}
+            </nav>
+          </div>
 
-
+          {/* Logout Button */}
+          {isAuthenticated && (
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 py-3 text-sm font-bold text-white shadow-lg shadow-red-500/30 transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-red-600"
+            >
+              <LogOut size={20} />
+              <span>Log Out</span>
+            </button>
+          )}
+        </div>
       </aside>
 
-      {/* Main container */}
-      <div className="flex-1 ml-56 flex flex-col min-h-screen">
-        {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-100 px-6 flex items-center justify-end gap-4 sticky top-0 z-30">
-          {isAuthenticated ? (
-            <>
-              {/* Notification icons */}
-              <button className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors">
-                <Bell size={20} />
-              </button>
-              <button className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors">
-                <MessageSquare size={20} />
-              </button>
+      {/* Main Content Wrapper */}
+      <main className="flex flex-1 flex-col min-w-0 lg:ml-64 bg-[#f5f7f8] transition-colors">
+        {/* Top Header */}
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#f0f2f5] bg-white/90 px-6 backdrop-blur-md">
+          {/* Mobile menu button */}
+          <div className="flex items-center gap-4 lg:hidden">
+            <button className="text-[#111418]">
+              <Menu size={24} />
+            </button>
+            <span className="text-lg font-bold text-[#111418]">Home</span>
+          </div>
 
-              {/* User dropdown */}
-              <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
-                <button className="flex items-center gap-2 pl-4 border-l border-slate-100 cursor-pointer">
-                  <Avatar
-                    size={36}
-                    className="bg-gradient-to-tr from-blue-500 to-indigo-500"
-                  >
-                    {user?.username?.[0]?.toUpperCase() || 'U'}
-                  </Avatar>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-slate-800 leading-tight">
-                      {user?.username || 'User'}
-                    </p>
-                    <p className="text-xs text-slate-400">Level 12</p>
-                  </div>
-                  <ChevronDown size={16} className="text-slate-400" />
-                </button>
-              </Dropdown>
-            </>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button type="default" className="h-9 rounded-lg font-medium">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button type="primary" className="h-9 rounded-lg font-medium" style={{ backgroundColor: '#3b82f6' }}>
-                  Register
-                </Button>
-              </Link>
-            </>
-          )}
+          {/* Search Bar (Desktop) */}
+          <div className="hidden flex-1 max-w-md lg:block">
+            <Input
+              prefix={<Search size={18} className="text-[#60758a]" />}
+              placeholder="Search games, players..."
+              className="h-10 rounded-lg border-none bg-[#f0f2f5] text-sm"
+              style={{ backgroundColor: '#f0f2f5' }}
+            />
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <>
+                {/* Notification icons */}
+                <div className="flex items-center gap-2">
+                  <button className="flex size-10 items-center justify-center rounded-full bg-[#f0f2f5] text-[#111418] hover:bg-gray-200 transition-colors">
+                    <Bell size={20} />
+                  </button>
+                  <button className="flex size-10 items-center justify-center rounded-full bg-[#f0f2f5] text-[#111418] hover:bg-gray-200 transition-colors">
+                    <MessageSquare size={20} />
+                  </button>
+                </div>
+
+                <div className="h-8 w-px bg-[#f0f2f5]" />
+
+                {/* User dropdown */}
+                <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
+                  <button className="flex items-center gap-3 rounded-full pl-1 pr-2 hover:bg-gray-50 cursor-pointer">
+                    <Avatar
+                      size={36}
+                      className="ring-2 ring-white"
+                      style={{ backgroundColor: '#0d7ff2' }}
+                    >
+                      {user?.username?.[0]?.toUpperCase() || 'U'}
+                    </Avatar>
+                    <div className="hidden text-left sm:block">
+                      <p className="text-sm font-bold text-[#111418] leading-tight">
+                        {user?.username || 'User'}
+                      </p>
+                      <p className="text-xs text-[#60758a]">Level 12</p>
+                    </div>
+                    <ChevronDown size={16} className="hidden sm:block text-[#60758a]" />
+                  </button>
+                </Dropdown>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button type="default" className="h-9 rounded-lg font-medium">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button type="primary" className="h-9 rounded-lg font-medium" style={{ backgroundColor: '#0d7ff2' }}>
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </header>
 
-        {/* Main content */}
-        <main className="flex-1 p-6">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }
