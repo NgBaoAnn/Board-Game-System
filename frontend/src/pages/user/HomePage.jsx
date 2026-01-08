@@ -1,6 +1,8 @@
 import { LayoutGrid, PlusCircle, Shuffle } from 'lucide-react'
-import { GameCard, NewArrivalCard } from '@/components/Game'
-import { HeroSection, QuickActions } from '@/components/Home'
+import GameCard from '@/components/Game/GameCard'
+import NewArrivalCard from '@/components/Game/NewArrivalCard'
+import HeroSection from '@/components/Home/HeroSection'
+import QuickActions from '@/components/Home/QuickActions'
 import SectionHeader from '@/components/common/SectionHeader'
 
 // Hero image for featured game
