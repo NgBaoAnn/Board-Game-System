@@ -11,7 +11,7 @@ import {
     Undo2,
 } from 'lucide-react'
 
-import BoardGrid from '../components/Board/BoardGrid.jsx'
+import BoardGrid from '../../components/Board/BoardGrid.jsx'
 
 export default function BoardGamePage() {
     const games = [

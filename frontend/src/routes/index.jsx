@@ -1,15 +1,16 @@
 import { createBrowserRouter } from 'react-router-dom'
 import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
-import HomePage from '../pages/HomePage'
-import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
-import NotFoundPage from '../pages/NotFoundPage'
-import BoardGamePage from '../pages/BoardGamePage'
-import AdminPage from '../pages/AdminPage'
-import AdminUsersPage from '../pages/AdminUsersPage'
-import AdminDashboardPage from '@/pages/AdminDashboardPage'
-import AdminGamesPage from '@/pages/AdminGamesPage'
+import HomePage from '../pages/user/HomePage'
+import LoginPage from '../pages/common/LoginPage'
+import RegisterPage from '../pages/common/RegisterPage'
+import SettingPage from '../pages/common/SettingPage'
+import NotFoundPage from '../pages/common/NotFoundPage'
+import BoardGamePage from '../pages/user/BoardGamePage'
+import AdminPage from '../pages/admin/AdminPage'
+import AdminUsersPage from '../pages/admin/AdminUsersPage'
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
+import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
 
 export const router = createBrowserRouter([
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: '/boardgame',
         element: <BoardGamePage />,
+      },
+      {
+        path: '/settings',
+        element: <SettingPage />,
       }
     ],
     errorElement: <NotFoundPage />,

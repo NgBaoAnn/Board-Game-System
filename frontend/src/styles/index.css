@@ -53,17 +53,83 @@ body {
 
 @theme {
   /* primary */
-  --color-primary: #ec4899;
-  --color-primary-hover: #db2777;
+  --color-primary: #1d7af2;
+  --color-primary-hover: #1664c9;
 
   /* light mode */
-  --color-background-light: #f3f4f6; /* Gray-100 */
-  --color-surface-light: #ffffff;
-  --color-border-light: #e5e7eb;     /* Gray-200 */
+  --color-background-light: #f4f6f8;
+  --color-card-light: #ffffff;
+  --color-text-light: #1f2937;
+  --color-muted-light: #6b7280;
 
   /* dark mode */
-  --color-background-dark: #111827;  /* Gray-900 */
-  --color-surface-dark: #1f2937;     /* Gray-800 */
-  --color-border-dark: #374151;      /* Gray-700 */
+  --color-background-dark: #0f172a;
+  --color-card-dark: #1e293b;
+  --color-text-dark: #f3f4f6;
+  --color-muted-dark: #9ca3af;
 }
 
+/* ===== Animation Keyframes ===== */
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Gradient shift for background */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Float animation for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Pulse glow effect */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(29, 122, 242, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(29, 122, 242, 0); }
+}
+
+/* Utility Classes */
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Input focus glow effect */
+.input-focus-glow:focus-within {
+  box-shadow: 0 0 0 3px rgba(29, 122, 242, 0.15);
+  border-color: #1d7af2 !important;
+}
+
+/* Button hover effects */
+.btn-animated {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-animated:hover {
+  transform: scale(1.03);
+}
+.btn-animated:active {
+  transform: scale(0.97);
+}

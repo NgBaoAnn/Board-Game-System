@@ -2,22 +2,19 @@
 import { createRoot } from 'react-dom/client'
 import '@/styles/index.css'
 import App from '@/App.jsx'
-import { AuthProvider, ThemeProvider, GameProvider, BoardProvider, UserProvider } from '@/context'
 import { StrictMode } from 'react'
+import AuthProvider from './context/AuthProvider'
+import ThemeProvider from './context/ThemeContext'
+
+// Initialize auth state on app load
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
-      <ThemeProvider>
-        <GameProvider>
-          <BoardProvider>
-            <UserProvider>
-              <App />
-            </UserProvider>
-          </BoardProvider>
-        </GameProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+         <AuthProvider>
+            <App />
+         </AuthProvider>
+    </ThemeProvider>
   </StrictMode>
 )
 
