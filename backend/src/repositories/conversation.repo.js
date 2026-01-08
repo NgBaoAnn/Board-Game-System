@@ -51,7 +51,6 @@ class ConversationRepo {
         "c.id",
         "c.created_at",
         "c.updated_at",
-
         db.raw(`
         json_build_object(
           'id', ua.id,
@@ -59,7 +58,6 @@ class ConversationRepo {
           'avatar_url', ua.avatar_url
         ) as user_a
       `),
-
         db.raw(`
         json_build_object(
           'id', ub.id,
@@ -72,20 +70,67 @@ class ConversationRepo {
       .first();
   }
 
-  findByUsers(userA, userB, trx = db) {
-    return trx(MODULE.CONVERSATION)
-      .where({ user_a: userA, user_b: userB })
+  findByUsers(userA, userB) {
+    return db(MODULE.CONVERSATION)
+      .where(function () {
+        this.where({ user_a: userA, user_b: userB }).orWhere({
+          user_a: userB,
+          user_b: userA,
+        });
+      })
       .first();
   }
 
-  create({ userA, userB }, trx = db) {
-    return trx(MODULE.CONVERSATION)
+  create({ userA, userB }) {
+    return db(MODULE.CONVERSATION)
       .insert({
+        id: db.raw("uuid_generate_v4()"),
         user_a: userA,
         user_b: userB,
       })
       .returning("*")
       .then(([row]) => row);
+  }
+
+  updateTimestamp(conversationId) {
+    return db(MODULE.CONVERSATION)
+      .where("id", conversationId)
+      .update({ updated_at: db.fn.now() });
+  }
+
+  createMessage({ senderId, conversationId, content }) {
+    return db(MODULE.MESSAGE)
+      .insert({
+        sender_id: senderId,
+        conversation_id: conversationId,
+        content,
+      })
+      .returning("*")
+      .then(([row]) => row);
+  }
+
+  getMessages({ conversationId, offset = 0, limit = 50 }) {
+    return db(MODULE.MESSAGE)
+      .select(
+        "messages.id",
+        "messages.content",
+        "messages.created_at",
+        "messages.sender_id",
+        "users.username as sender_username",
+        "users.avatar_url as sender_avatar"
+      )
+      .leftJoin("users", "messages.sender_id", "users.id")
+      .where("messages.conversation_id", conversationId)
+      .orderBy("messages.created_at", "desc")
+      .limit(limit)
+      .offset(offset);
+  }
+
+  countMessages(conversationId) {
+    return db(MODULE.MESSAGE)
+      .where("conversation_id", conversationId)
+      .count("* as total")
+      .first();
   }
 }
 
