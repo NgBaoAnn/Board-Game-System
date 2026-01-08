@@ -243,7 +243,7 @@ export default function AdminGamesPage() {
                         <Form.Item label="Description" name="description" rules={[{ max: 500, message: "Description must not exceed 500 characters" }]}>
                             <TextArea rows={4} placeholder="Enter game description" maxLength={500} showCount />
                         </Form.Item>
-                        <div className="flex flex-row w-full justify-around">
+                        <div className="flex flex-row w-full gap-4">
                             <Form.Item
                                 label="Number of Rows [3-20]"
                                 name="board_row"

@@ -404,7 +404,7 @@ export default function AdminUsersPage() {
                                             className="h-10 w-10 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-pink-600 flex items-center justify-center text-white font-semibold text-sm">
+                                        <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary to-pink-600 flex items-center justify-center text-white font-semibold text-sm">
                                             {getInitials(selectedUser.username)}
                                         </div>
                                     )}
