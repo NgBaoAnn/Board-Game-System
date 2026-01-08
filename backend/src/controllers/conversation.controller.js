@@ -43,6 +43,71 @@ class ConversationController {
       next(err);
     }
   }
+
+  async getOrCreateConversation(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const { targetUserId } = req.body;
+
+      const response = await conversationService.getOrCreateConversation({
+        userId,
+        targetUserId,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Conversation retrieved successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async sendMessage(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const conversationId = req.params.id;
+      const { content } = req.body;
+
+      const response = await conversationService.sendMessage({
+        userId,
+        conversationId,
+        content,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.CREATED,
+        message: "Message sent successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMessages(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const conversationId = req.params.id;
+      const { page = 1, limit = 50 } = req.query;
+
+      const response = await conversationService.getMessages({
+        userId,
+        conversationId,
+        page: Number(page),
+        limit: Number(limit),
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Get messages successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ConversationController();

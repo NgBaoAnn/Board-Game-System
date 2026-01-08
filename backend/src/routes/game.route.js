@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const gameController = require("../controllers/game.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
+const ROLE = require("../constants/role");
 
 router.get("/games", gameController.getAllGames);
 
@@ -9,17 +10,24 @@ router.get("/games/active", gameController.getActiveGames);
 
 router.get("/games/:id", gameController.getGameById);
 
-router.post("/games", authMiddleware.authenticate, gameController.createGame);
+router.post(
+  "/games",
+  authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
+  gameController.createGame
+);
 
 router.put(
   "/games/:id",
   authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
   gameController.updateGame
 );
 
 router.delete(
   "/games/:id",
   authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
   gameController.deleteGame
 );
 
