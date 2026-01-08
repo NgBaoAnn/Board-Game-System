@@ -4,11 +4,11 @@ import { Form, Input, Checkbox, message } from 'antd'
 import { Gamepad2, Mail, Lock, User, KeyRound, Star, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
-import { useAuth } from '@/context'
 import AuthLayout from '@/components/layout/AuthLayout'
 import SocialLoginButtons from '@/components/common/SocialLoginButtons'
 import PasswordStrength from '@/components/common/PasswordStrength'
 import { joiValidator, commonSchemas } from '@/utils/validation'
+import authApi from '@/api/api-auth'
 
 // Validation schema
 const registerSchema = Joi.object({
@@ -46,29 +46,26 @@ const buttonVariants = {
 }
 
 export default function RegisterPage() {
-  const [form] = Form.useForm()
-  const navigate = useNavigate()
-  const { register, loading } = useAuth()
-  const [formState, setFormState] = useState('idle')
-  const [password, setPassword] = useState('')
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [formState, setFormState] = useState('idle');
+  const [password, setPassword] = useState('');
+  const loading = formState === 'loading';
 
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      const result = await register(values.username, values.email, values.password)
+      const result = await authApi.register(values.email, values.password, values.username)
       if (result.success) {
-        setFormState('success')
+        navigate('/login');
         message.success('Registration successful!')
-        setTimeout(() => navigate('/login'), 300)
       } else {
         setFormState('error')
         message.error(result.error || 'Registration failed!')
-        setTimeout(() => setFormState('idle'), 400)
       }
     } catch (error) {
       setFormState('error')
       message.error(error.message || 'Registration failed!')
-      setTimeout(() => setFormState('idle'), 400)
     }
   }
 

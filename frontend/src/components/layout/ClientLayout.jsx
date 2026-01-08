@@ -15,8 +15,8 @@ import {
   Search,
   Menu,
 } from 'lucide-react'
-import { useAuth } from '@/context'
-
+import { useAuth } from '@/store/useAuth'
+import authApi from '@/api/api-auth'
 const menuItems = [
   { key: '/', icon: Home, label: 'Home' },
   { key: '/boardgame', icon: Gamepad2, label: 'Board Game' },
@@ -27,13 +27,17 @@ const menuItems = [
 ]
 
 export default function ClientLayout() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { user, isAuthenticated, logout } = useAuth()
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, authenticated,setUser, setAuthenticated } = useAuth();
+ 
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await authApi.logout();
+      setUser(null);
+      setAuthenticated(false);
+      localStorage.removeItem("access_token");
       message.success('Logged out successfully')
       navigate('/')
     } catch (e) {
@@ -59,7 +63,7 @@ export default function ClientLayout() {
       key: 'logout',
       label: 'Logout',
       icon: <LogOut size={16} />,
-      danger: true,
+      danger: true, 
       onClick: handleLogout,
     },
   ]
@@ -105,7 +109,7 @@ export default function ClientLayout() {
           </div>
 
           {/* Logout Button */}
-          {isAuthenticated && (
+          {authenticated && (
             <button
               onClick={handleLogout}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 py-3 text-sm font-bold text-white shadow-lg shadow-red-500/30 transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-red-600"
@@ -141,7 +145,7 @@ export default function ClientLayout() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            {isAuthenticated ? (
+            {authenticated ? (
               <>
                 {/* Notification icons */}
                 <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 import { Moon, Sun, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useTheme } from '@/context'
+import { useTheme } from '@/context/ThemeContext'
 import NeonParticles from '@/components/common/NeonParticles'
 
 /**

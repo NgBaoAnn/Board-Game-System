@@ -4,16 +4,16 @@ import { Form, Input, Checkbox, message } from 'antd'
 import { Gamepad2, Mail, Lock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
-import { useAuth } from '@/context'
 import AuthLayout from '@/components/layout/AuthLayout'
 import SocialLoginButtons from '@/components/common/SocialLoginButtons'
 import { joiValidator, commonSchemas } from '@/utils/validation'
+import authApi from '@/api/api-auth'
+import { useAuth } from '@/store/useAuth'
 
 // Validation schema
 const loginSchema = Joi.object({
   email: commonSchemas.email,
   password: commonSchemas.password,
-  remember: Joi.boolean().optional(),
 })
 
 // Animation variants
@@ -33,18 +33,24 @@ const buttonVariants = {
 export default function LoginPage() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
-  const { login, loading } = useAuth()
+  const { setUser, setAuthenticated, setAppLoading } = useAuth()
   const [formState, setFormState] = useState('idle') // idle | loading | error | success
+  const loading = formState === 'loading'
 
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      const result = await login(values.email, values.password)
-      if (result.success) {
+      const result = await authApi.login(values.email, values.password)
+      if (result.status === 200) {
+        localStorage.setItem('access_token', result.data.access_token)
+        setUser(result.data.user)
+        setAuthenticated(true)
+        setAppLoading(false)
         setFormState('success')
         message.success('Login successful!')
         setTimeout(() => navigate('/boardgame'), 300)
       } else {
+        setAppLoading(false)
         setFormState('error')
         message.error(result.error || 'Login failed!')
         setTimeout(() => setFormState('idle'), 400)

@@ -6,6 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
     timeout: 15000,
+    withCredentials: true, // Enable sending cookies for refresh token
     headers: {
         'Content-Type': 'application/json',
     },
@@ -14,7 +15,7 @@ const axiosInstance = axios.create({
 // Request interceptor to add token to headers
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
@@ -34,9 +35,10 @@ axiosInstance.interceptors.response.use(
         // Handle 401 Unauthorized - logout user
         if (error.response?.status === 401) {
             localStorage.removeItem('user')
-            localStorage.removeItem('token')
-            // Only redirect if not already on login page
-            if (!window.location.pathname.includes('/login')) {
+            localStorage.removeItem('access_token')
+            // Only redirect if not already on login/register page
+            const currentPath = window.location.pathname
+            if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
                 window.location.href = '/login'
             }
         }
