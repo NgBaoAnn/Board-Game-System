@@ -1,4 +1,4 @@
-import { LayoutDashboard, UserCog, Dice5, LogOut, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, UserCog, Dice5, LogOut, Menu, Award } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
@@ -60,6 +60,18 @@ export default function AdminSidebar() {
                 >
                     <Dice5 className={"w-5 h-5 " + (isActive("/admin/games") ? "text-primary" : "text-gray-400")} />
                     <span className="font-medium">Games</span>
+                </Link>
+
+                <Link
+                    to="/admin/achievements"
+                    className={
+                        "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors " +
+                        (isActive("/admin/achievements") ? "bg-primary/10 text-primary dark:text-primary" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700")
+                    }
+                    onClick={() => setDrawerVisible(false)}
+                >
+                    <Award className={"w-5 h-5 " + (isActive("/admin/achievements") ? "text-primary" : "text-gray-400")} />
+                    <span className="font-medium">Achievements</span>
                 </Link>
             </nav>
 

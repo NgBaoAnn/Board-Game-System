@@ -11,6 +11,7 @@ import AdminUsersPage from '../pages/AdminUsersPage'
 import AdminDashboardPage from '@/pages/AdminDashboardPage'
 import AdminGamesPage from '@/pages/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
+import AdminAchievementsPage from '@/pages/AdminAchievementsPage'
 
 export const router = createBrowserRouter([
   // Routes with shared ClientLayout (sidebar + header)
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
       { path: '/admin/users', element: <AdminUsersPage /> },
       { path: '/admin/dashboard', element: <AdminDashboardPage /> },
       { path: '/admin/games', element: <AdminGamesPage /> },
+      { path: '/admin/achievements', element: <AdminAchievementsPage /> },
     ],
   },
 ])
