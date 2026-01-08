@@ -683,6 +683,474 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendResponse"
 
+  # Game Module
+  /api/games:
+    get:
+      tags:
+        - Game
+      summary: Get all games
+      description: Get list of all games
+      responses:
+        "200":
+          description: Get games successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Game"
+
+    post:
+      tags:
+        - Game
+      summary: Create game
+      description: Create a new game (Admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGameRequest"
+      responses:
+        "201":
+          description: Game created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Game"
+        "400":
+          description: Game code already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/active:
+    get:
+      tags:
+        - Game
+      summary: Get active games
+      description: Get list of all active games
+      responses:
+        "200":
+          description: Get active games successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Game"
+
+  /api/games/{id}:
+    get:
+      tags:
+        - Game
+      summary: Get game by ID
+      description: Get game detail by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Get game successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Game"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    put:
+      tags:
+        - Game
+      summary: Update game
+      description: Update game information (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGameRequest"
+      responses:
+        "200":
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Game"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    delete:
+      tags:
+        - Game
+      summary: Delete game
+      description: Delete a game (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Game deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/sessions:
+    post:
+      tags:
+        - Game Session
+      summary: Start game session
+      description: Start a new game session or resume an existing paused session
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mode
+                - game_id
+              properties:
+                mode:
+                  type: string
+                  enum: [new, resume]
+                  example: new
+                  description: "Mode: 'new' to start fresh, 'resume' to continue from saved state"
+                game_id:
+                  type: integer
+                  example: 1
+      responses:
+        "200":
+          description: Session started/resumed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/StartSessionResponse"
+        "400":
+          description: Invalid mode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Game not found or no paused session to resume
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/sessions/{id}/save:
+    put:
+      tags:
+        - Game Session
+      summary: Save game session
+      description: Save current game state and pause the session
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - save_state
+              properties:
+                save_state:
+                  type: object
+                  description: Game state to save (varies by game type)
+                  example:
+                    score: 1500
+                    level: 3
+                    time_remaining_seconds: 180
+      responses:
+        "200":
+          description: Session saved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SaveSessionResponse"
+        "400":
+          description: Can only save a playing session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/sessions/{id}/finish:
+    put:
+      tags:
+        - Game Session
+      summary: Finish game session
+      description: Finish the game session with final score
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - score
+              properties:
+                score:
+                  type: integer
+                  example: 2500
+      responses:
+        "200":
+          description: Session finished successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GameSession"
+        "400":
+          description: Session already finished
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/sessions/exists/{id}:
+    get:
+      tags:
+        - Game Session
+      summary: Check saved session exists
+      description: Check if user has a saved (paused) session for a game
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isSavedExists:
+                            type: boolean
+                            example: true
+                          message:
+                            type: string
+                            example: "Paused session found"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/sessions/count/{id}:
+    get:
+      tags:
+        - Game Session
+      summary: Count game sessions
+      description: Get total number of sessions for a game
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+      responses:
+        "200":
+          description: Count result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          turn_count:
+                            type: integer
+                            example: 156
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
   # Conversation Module
   /api/conversations:
     get:
@@ -1133,6 +1601,150 @@ components:
           type: string
           example: https://example.com/avatar.png
         created_at:
+          type: string
+          format: date-time
+
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: snake
+        name:
+          type: string
+          example: Snake Game
+        description:
+          type: string
+          example: Classic snake game
+        is_active:
+          type: boolean
+          example: true
+        board_row:
+          type: integer
+          example: 20
+        board_col:
+          type: integer
+          example: 20
+
+    CreateGameRequest:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: snake
+        name:
+          type: string
+          example: Snake Game
+        description:
+          type: string
+          example: Classic snake game
+        is_active:
+          type: boolean
+          example: true
+        board_row:
+          type: integer
+          example: 20
+        board_col:
+          type: integer
+          example: 20
+
+    UpdateGameRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          example: snake
+        name:
+          type: string
+          example: Snake Game Updated
+        description:
+          type: string
+          example: Updated description
+        is_active:
+          type: boolean
+          example: true
+        board_row:
+          type: integer
+          example: 25
+        board_col:
+          type: integer
+          example: 25
+
+    GameSession:
+      type: object
+      properties:
+        id:
+          type: string
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        user_id:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        game_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [playing, paused, finished]
+          example: playing
+        time_limit_seconds:
+          type: integer
+          example: 300
+        time_remaining_seconds:
+          type: integer
+          example: 180
+        final_score:
+          type: integer
+          example: 2500
+        ended_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    StartSessionResponse:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/GameSession"
+        save_state:
+          type: object
+          nullable: true
+          description: Saved game state (if resuming)
+          example: null
+
+    SaveSessionResponse:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/GameSession"
+        save:
+          $ref: "#/components/schemas/GameSave"
+
+    GameSave:
+      type: object
+      properties:
+        id:
+          type: string
+          example: s1b2c3d4-e5f6-7890-abcd-ef1234567890
+        session_id:
+          type: string
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        save_state:
+          type: object
+          example:
+            score: 1500
+            level: 3
+        saved_at:
           type: string
           format: date-time
 
