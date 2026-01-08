@@ -2,8 +2,8 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class UserRepo {
-  findAll({ offset = 0, limit = 10 } = {}) {
-    return db({ u: MODULE.USER })
+  findAll({ offset = 0, limit = 10, search, role, active } = {}) {
+    let query = db({ u: MODULE.USER })
       .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
       .select(
         "u.id",
@@ -19,12 +19,57 @@ class UserRepo {
           'name', r.name
         ) as role
       `)
-      )
-      .limit(limit)
-      .offset(offset);
+      );
+
+    // Apply filters
+    if (search) {
+      query = query.where(function () {
+        this.where("u.username", "ilike", `%${search}%`).orWhere(
+          "u.email",
+          "ilike",
+          `%${search}%`
+        );
+      });
+    }
+
+    if (role) {
+      query = query.where("r.name", role);
+    }
+
+    if (active !== undefined && active !== "") {
+      query = query.where("u.active", active === "true");
+    }
+
+    return query.limit(limit).offset(offset).orderBy("u.created_at", "desc");
   }
-  countAll() {
-    return db(MODULE.USER).count("* as total").first();
+
+  countAll({ search, role, active } = {}) {
+    let query = db({ u: MODULE.USER }).leftJoin(
+      { r: MODULE.ROLE },
+      "u.role_id",
+      "r.id"
+    );
+
+    // Apply same filters
+    if (search) {
+      query = query.where(function () {
+        this.where("u.username", "ilike", `%${search}%`).orWhere(
+          "u.email",
+          "ilike",
+          `%${search}%`
+        );
+      });
+    }
+
+    if (role) {
+      query = query.where("r.name", role);
+    }
+
+    if (active !== undefined && active !== "") {
+      query = query.where("u.active", active === "true");
+    }
+
+    return query.count("* as total").first();
   }
 
   findById(id) {
@@ -141,6 +186,26 @@ class UserRepo {
       reset_token: null,
       reset_token_expires_at: null,
     });
+  }
+  async getUserCounts() {
+    const result = await db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .select(
+        db.raw("COUNT(*) as total_users"),
+        db.raw("COUNT(CASE WHEN r.name = 'user' THEN 1 END) as total_players"),
+        db.raw(
+          "COUNT(CASE WHEN DATE(u.created_at) = CURRENT_DATE THEN 1 END) as total_users_created_today"
+        ),
+        db.raw("COUNT(CASE WHEN u.active = false THEN 1 END) as total_banned")
+      )
+      .first();
+
+    return {
+      totalUsers: parseInt(result.total_users) || 0,
+      totalPlayers: parseInt(result.total_players) || 0,
+      totalUsersCreatedToday: parseInt(result.total_users_created_today) || 0,
+      totalBanned: parseInt(result.total_banned) || 0,
+    };
   }
 }
 
