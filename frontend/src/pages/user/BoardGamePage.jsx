@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import {
     Heart,
     Grid3x3,
@@ -7,31 +7,69 @@ import {
     ChevronLeft,
     ChevronRight,
     Play,
+    Pause,
     HelpCircle,
     Undo2,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
+import { GameTimer, GameScore } from '../../components/Game'
 
 export default function BoardGamePage() {
     const games = [
-        { id: 'pixel-heart', title: 'Pixel Heart', subtitle: 'Selected', icon: Heart, iconColor: 'text-rose-500' },
-        { id: 'tictactoe', title: 'Tic-tac-toe', subtitle: 'Classic', icon: Grid3x3, iconColor: '' },
-        { id: 'gomoku', title: 'Gomoku', subtitle: 'Strategy', icon: Circle, iconColor: '' },
-        { id: 'random', title: 'Random', subtitle: 'Surprise', icon: Dice6, iconColor: '' },
+        { id: 'pixel-heart', title: 'Pixel Heart', subtitle: 'Selected', icon: Heart, iconColor: 'text-rose-500', timeLimit: 300 },
+        { id: 'tictactoe', title: 'Tic-tac-toe', subtitle: 'Classic', icon: Grid3x3, iconColor: '', timeLimit: 180 },
+        { id: 'gomoku', title: 'Gomoku', subtitle: 'Strategy', icon: Circle, iconColor: '', timeLimit: 600 },
+        { id: 'random', title: 'Random', subtitle: 'Surprise', icon: Dice6, iconColor: '', timeLimit: 240 },
     ]
 
     const [activeGame, setActiveGame] = useState(0)
 
+    // Game state - timeLimit will be loaded from database per game
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [score, setScore] = useState(0)
+    const [timeRemaining, setTimeRemaining] = useState(games[0].timeLimit)
+
     const selectGame = (idx) => {
-        setActiveGame((idx + games.length) % games.length)
+        const newIdx = (idx + games.length) % games.length
+        setActiveGame(newIdx)
+        // Reset game state when switching games
+        if (!isPlaying) {
+            setTimeRemaining(games[newIdx].timeLimit)
+            setScore(0)
+        }
     }
 
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
+
     const handleStart = () => {
-        // TODO: Start selected game
+        if (!isPlaying) {
+            // Start game
+            setIsPlaying(true)
+            setTimeRemaining(games[activeGame].timeLimit)
+            setScore(0)
+        } else {
+            // Pause game
+            setIsPlaying(false)
+        }
     }
+
+    const handleTimeUp = useCallback(() => {
+        setIsPlaying(false)
+        // TODO: Show game over modal
+    }, [])
+
+    const handleTick = useCallback(() => {
+        setTimeRemaining(prev => Math.max(0, prev - 1))
+    }, [])
+
+    // Demo: Add score when clicking on board (will be replaced by actual game logic)
+    const handleCellClick = useCallback((row, col) => {
+        if (isPlaying) {
+            setScore(prev => prev + 10)
+        }
+    }, [isPlaying])
 
     return (
         <div className="flex flex-col h-full">
@@ -62,14 +100,14 @@ export default function BoardGamePage() {
                                     key={game.id}
                                     onClick={() => selectGame(idx)}
                                     className={`group flex items-center gap-3 p-3 rounded-xl text-left transition-all relative overflow-hidden ${isActive
-                                            ? 'bg-white border-2 border-indigo-500 shadow-sm'
-                                            : 'border border-slate-100 bg-white hover:bg-slate-50 hover:border-indigo-200 hover:shadow-sm'
+                                        ? 'bg-white border-2 border-indigo-500 shadow-sm'
+                                        : 'border border-slate-100 bg-white hover:bg-slate-50 hover:border-indigo-200 hover:shadow-sm'
                                         }`}
                                 >
                                     <div
                                         className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
-                                                ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ring-2 ring-rose-100'
-                                                : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
+                                            ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ring-2 ring-rose-100'
+                                            : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
                                             }`}
                                     >
                                         <IconComponent size={18} />
@@ -96,9 +134,23 @@ export default function BoardGamePage() {
             </section>
 
             {/* Board Display Area */}
-            <section className="flex-grow relative flex items-center justify-center p-4 lg:p-6 bg-slate-50 rounded-xl overflow-hidden">
+            <section className="flex-grow relative flex flex-col items-center justify-center p-4 lg:p-6 bg-slate-50 rounded-xl overflow-hidden">
                 {/* Background pattern */}
                 <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+
+                {/* Game Stats Bar - Timer & Score */}
+                <div className="relative z-20 flex flex-wrap items-center justify-center gap-4 mb-4">
+                    <GameTimer
+                        timeRemaining={timeRemaining}
+                        isPlaying={isPlaying}
+                        onTimeUp={handleTimeUp}
+                        onTick={handleTick}
+                    />
+                    <GameScore
+                        score={score}
+                        label="Score"
+                    />
+                </div>
 
                 {/* Board container */}
                 <div className="relative z-10 bg-white p-2 sm:p-3 rounded-2xl shadow-lg border border-slate-100/60 ring-1 ring-slate-100 max-h-full flex items-center justify-center">
@@ -113,7 +165,7 @@ export default function BoardGamePage() {
 
                         {/* Board Grid */}
                         <div className="relative z-10 mt-4">
-                            <BoardGrid />
+                            <BoardGrid onCellClick={handleCellClick} />
                         </div>
                     </div>
                 </div>
@@ -144,11 +196,16 @@ export default function BoardGamePage() {
 
                         <button
                             onClick={handleStart}
-                            aria-label="Start"
-                            className="arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-indigo-500 to-indigo-600 text-white shadow-[0_6px_0_#3730a3] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 border-indigo-100"
+                            aria-label={isPlaying ? "Pause" : "Start"}
+                            className={`arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${isPlaying
+                                    ? 'bg-gradient-to-b from-amber-500 to-orange-600 shadow-[0_6px_0_#c2410c] border-amber-100'
+                                    : 'bg-gradient-to-b from-indigo-500 to-indigo-600 shadow-[0_6px_0_#3730a3] border-indigo-100'
+                                }`}
                         >
-                            <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">START</span>
-                            <Play size={28} />
+                            <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">
+                                {isPlaying ? 'PAUSE' : 'START'}
+                            </span>
+                            {isPlaying ? <Pause size={28} /> : <Play size={28} />}
                         </button>
 
                         <button
