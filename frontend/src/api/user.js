@@ -66,4 +66,52 @@ export const userApi = {
             achievements: response.data,
         }
     },
+
+    /**
+     * Get all users with pagination
+     * @param {number} page - Page number
+     * @param {number} limit - Items per page
+     * @param {string} search - Search query
+     * @param {string} role - Role filter
+     * @param {string} active - Active filter
+     * @returns {Promise<Object>} Users list with pagination
+     */
+    getAllUsers: async (page = 1, limit = 10, search = '', role = 'all', active = 'all') => {
+        const params = { page, limit };
+        if (search) params.search = search;
+        if (role && role !== 'all') params.role = role;
+        if (active && active !== 'all') params.active = active;
+
+        const response = await axiosInstance.get('/users', { params });
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
+    },
+
+    /**
+     * Update user
+     * @param {string} userId - User ID
+     * @param {Object} data - User data to update
+     * @returns {Promise<Object>} Updated user
+     */
+    updateUser: async (userId, data) => {
+        const response = await axiosInstance.put(`/users/${userId}`, data)
+        return {
+            success: response.success || true,
+            user: response.data,
+        }
+    },
+
+    /**
+     * Get user counts
+     * @returns {Promise<Object>} User counts statistics
+     */
+    getUserCounts: async () => {
+        const response = await axiosInstance.get('/users/counts')
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
+    },
 }
