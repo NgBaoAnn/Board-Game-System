@@ -4,6 +4,7 @@ import AdminLayout from '../components/layout/AdminLayout'
 import HomePage from '../pages/user/HomePage'
 import LoginPage from '../pages/common/LoginPage'
 import RegisterPage from '../pages/common/RegisterPage'
+import SettingPage from '../pages/common/SettingPage'
 import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
 import AdminPage from '../pages/admin/AdminPage'
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: '/boardgame',
         element: <BoardGamePage />,
+      },
+      {
+        path: '/settings',
+        element: <SettingPage />,
       }
     ],
     errorElement: <NotFoundPage />,

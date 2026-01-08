@@ -3,7 +3,6 @@ import { Button, Dropdown, Avatar, message, Input } from 'antd'
 import {
   Gamepad2,
   Home,
-  Compass,
   Users,
   Trophy,
   Settings,
@@ -20,7 +19,6 @@ import authApi from '@/api/api-auth'
 const menuItems = [
   { key: '/', icon: Home, label: 'Home' },
   { key: '/boardgame', icon: Gamepad2, label: 'Board Game' },
-  { key: '/browse', icon: Compass, label: 'Browse Games' },
   { key: '/community', icon: Users, label: 'Community' },
   { key: '/rankings', icon: Trophy, label: 'Rankings' },
   { key: '/settings', icon: Settings, label: 'Settings' },
