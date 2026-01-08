@@ -1151,6 +1151,152 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendErrorResponse"
 
+  # Ranking Module
+  /api/ranking/myself/{game_id}:
+    get:
+      tags:
+        - Ranking
+      summary: Get my ranking
+      description: Get current user's game sessions sorted by final_score (paginated)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: game_id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get my ranking successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/MySelfRankingItem"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/ranking/friend/{game_id}:
+    get:
+      tags:
+        - Ranking
+      summary: Get friend ranking
+      description: Get best scores of current user and friends sorted by best_score (paginated)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: game_id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get friend ranking successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/RankingItem"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/ranking/system/{game_id}:
+    get:
+      tags:
+        - Ranking
+      summary: Get system ranking
+      description: Get system-wide best scores sorted by best_score (paginated)
+      parameters:
+        - in: path
+          name: game_id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get system ranking successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/RankingItem"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+
   # Conversation Module
   /api/conversations:
     get:
@@ -1747,6 +1893,50 @@ components:
         saved_at:
           type: string
           format: date-time
+
+    RankingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: r1b2c3d4-e5f6-7890-abcd-ef1234567890
+        user_id:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        best_score:
+          type: integer
+          example: 2500
+        achieved_at:
+          type: string
+          format: date-time
+        username:
+          type: string
+          example: Bingsu
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
+
+    MySelfRankingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: s1b2c3d4-e5f6-7890-abcd-ef1234567890
+        final_score:
+          type: integer
+          example: 2500
+        ended_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        username:
+          type: string
+          example: Bingsu
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
 
     Pagination:
       type: object
