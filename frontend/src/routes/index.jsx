@@ -7,6 +7,7 @@ import RegisterPage from '../pages/common/RegisterPage'
 import SettingPage from '../pages/common/SettingPage'
 import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
+import CommunityPage from '../pages/user/CommunityPage'
 import AdminPage from '../pages/admin/AdminPage'
 import AdminUsersPage from '../pages/admin/AdminUsersPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: '/boardgame',
         element: <BoardGamePage />,
+      },
+      {
+        path: '/community',
+        element: <CommunityPage />,
       },
       {
         path: '/settings',
