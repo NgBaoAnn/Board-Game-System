@@ -2,9 +2,6 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class RankingRepo {
-  /**
-   * Get user's finished game sessions with pagination, sorted by final_score
-   */
   async getMySelfSessions(userId, gameId, { page = 1, limit = 10 }) {
     const offset = (page - 1) * limit;
 
@@ -46,9 +43,6 @@ class RankingRepo {
     };
   }
 
-  /**
-   * Get best scores for a list of friend user IDs with pagination
-   */
   async getFriendBestScores(friendIds, gameId, { page = 1, limit = 10 }) {
     if (!friendIds || friendIds.length === 0) {
       return {
@@ -93,9 +87,6 @@ class RankingRepo {
     };
   }
 
-  /**
-   * Get system-wide leaderboard with pagination
-   */
   async getSystemLeaderboard(gameId, { page = 1, limit = 10 }) {
     const offset = (page - 1) * limit;
 

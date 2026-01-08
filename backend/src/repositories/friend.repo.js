@@ -98,9 +98,6 @@ class FriendRepo {
       .first();
   }
 
-  /**
-   * Get all friend IDs for a user (no pagination)
-   */
   async getAllFriendIds(userId) {
     const friends = await db(MODULE.FRIEND)
       .where("status", "ACCEPTED")
