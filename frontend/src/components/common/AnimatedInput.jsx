@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion'
  * @param {React.ReactNode} props.prefix - Input prefix icon
  * @param {string} props.label - Label text
  * @param {string} props.errorMessage - Error message to display
- * @param {...any} props.rest - Other Input props
  */
 export default function AnimatedInput({
   hasError = false,

@@ -10,6 +10,7 @@ import NeonParticles from '@/components/common/NeonParticles'
  * @param {React.ReactNode} props.children - Form content
  * @param {React.ReactNode} props.rightContent - Right side content/image
  * @param {string} props.backTo - Optional path for back button (defaults to '/')
+ * @param {'default' | 'large'} props.size - Card size: 'default' for login, 'large' for register
  */
 export default function AuthLayout({ children, rightContent, backTo = '/' }) {
   const { isDarkMode, toggleTheme } = useTheme()
@@ -52,7 +53,7 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
         initial={{ opacity: 0, y: 30, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-5xl h-auto md:h-[650px] bg-white dark:bg-card-dark rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100 dark:border-gray-700"
+        className="relative z-10 w-full max-w-5xl h-auto md:min-h-[750px] bg-white dark:bg-card-dark rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100 dark:border-gray-700"
       >
         {/* Left Side - Form */}
         <motion.div
