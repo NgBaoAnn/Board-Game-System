@@ -53,4 +53,31 @@ export const gameApi = {
             result: response.data,
         }
     },
+
+    /**
+     * Update game
+     * @param {number} gameId - Game ID
+     * @param {Object} data - Game data to update
+     * @returns {Promise<Object>} Updated game
+     */
+    updateGame: async (gameId, data) => {
+        const response = await axiosInstance.put(`/games/${gameId}`, data)
+        return {
+            success: response.success || true,
+            game: response.data,
+        }
+    },
+
+    /**
+     * Delete game
+     * @param {number} gameId - Game ID
+     * @returns {Promise<Object>} Delete result
+     */
+    deleteGame: async (gameId) => {
+        const response = await axiosInstance.delete(`/games/${gameId}`)
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
+    },
 }
