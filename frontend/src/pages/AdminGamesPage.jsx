@@ -90,7 +90,7 @@ export default function AdminGamesPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Game Catalog</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-xl">Manage your game library, configure rulesets, and control game availability status for players.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-xl">Manage your game library, control game availability status for players.</p>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

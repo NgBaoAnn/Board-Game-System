@@ -47,9 +47,9 @@ class AuthController {
 
   async getAllUsers(req, res, next) {
     try {
-      const { page, limit } = req.query;
+      const { page, limit, search, role, active } = req.query;
 
-      const response = await userService.getAllUser({ page, limit });
+      const response = await userService.getAllUser({ page, limit, search, role, active });
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: `Get list users successfully!`,
@@ -67,6 +67,19 @@ class AuthController {
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
         message: "Delete user successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getUserCounts(req, res, next) {
+    try {
+      const response = await userService.getUserCounts();
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Get user counts successfully!",
         data: response,
       });
     } catch (err) {

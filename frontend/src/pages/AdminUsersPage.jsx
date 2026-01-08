@@ -1,15 +1,13 @@
 import { Users, Radio, Star, Ban, Search, LockKeyholeOpen, EllipsisVertical, LockKeyhole } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Select, Input, Pagination, Spin, message, ConfigProvider, theme } from "antd";
+import { Select, Input, Pagination, Spin, message, ConfigProvider, theme, Modal } from "antd";
 import { useTheme } from "@/context/ThemeContext";
-import { fetchUsers } from "@/services/userService";
+import { userApi } from "@/api/user";
 import "@/styles/index.css";
-
-
 
 export default function AdminUsersPage() {
     const [role, setRole] = useState("all");
-    const [status, setStatus] = useState("all");
+    const [active, setActive] = useState("all");
     const [page, setPage] = useState(1);
     const pageSize = 5;
 
@@ -18,8 +16,12 @@ export default function AdminUsersPage() {
 
     const [users, setUsers] = useState([]);
     const [total, setTotal] = useState(0);
-    const [counts, setCounts] = useState({ totalUsers: 0, activeNow: 0, premium: 0, banned: 0 });
+    const [counts, setCounts] = useState({ totalUsers: 0, totalPlayers: 0, totalUsersCreatedToday: 0, totalBanned: 0 });
     const [loading, setLoading] = useState(false);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedRole, setSelectedRole] = useState(null);
 
     const { isDarkMode } = useTheme();
 
@@ -30,26 +32,31 @@ export default function AdminUsersPage() {
         const loadUsers = async () => {
             setLoading(true);
             try {
-                const filters = {};
-                //if (role && role !== "all") filters.role = role;
-                //if (status && status !== "all") filters.status = status;
-                //if (search) filters.search = search;
+                const [usersRes, countsRes] = await Promise.all([userApi.getAllUsers(page, pageSize, search, role, active), userApi.getUserCounts()]);
 
-                const res = await fetchUsers(page, pageSize, filters);
-                if (!res || res.success === false) throw new Error(res.message || res.error || "Không thể tải danh sách người dùng");
+                if (!usersRes || usersRes.success === false) {
+                    throw new Error(usersRes.message || usersRes.error || "Cannot load users list");
+                }
 
-                const payload = res.data || {};
+                const payload = usersRes.data || {};
                 const items = payload.data || [];
                 const pagination = payload.pagination || {};
+
                 setUsers(items);
-                setTotal(pagination.total);
-                setCounts({totalUsers: pagination.total, activeNow: 3, premium: 0, banned: 0});  
+                setTotal(pagination.total || 0);
+
+                // Use counts from API
+                if (countsRes && countsRes.success !== false && countsRes.data) {
+                    setCounts(countsRes.data);
+                } else {
+                    setCounts({ totalUsers: 0, totalPlayers: 0, totalUsersCreatedToday: 0, totalBanned: 0 });
+                }
             } catch (err) {
                 console.error(err);
-                message.error(err.message || "Không thể tải dữ liệu người dùng. Hiển thị data mẫu.");
+                message.error(err.message || "Failed to load users data");
                 setUsers([]);
                 setTotal(0);
-                setCounts({totalUsers: 0, activeNow: 0, premium: 0, banned: 0});
+                setCounts({ totalUsers: 0, totalPlayers: 0, totalUsersCreatedToday: 0, totalBanned: 0 });
             } finally {
                 setLoading(false);
             }
@@ -57,7 +64,7 @@ export default function AdminUsersPage() {
 
         loadUsers();
         return () => controller.abort();
-    }, [page, role, status, search]);
+    }, [page, role, active, search]);
 
     // Debounce the search input so we don't ping backend on every keystroke
     useEffect(() => {
@@ -69,16 +76,14 @@ export default function AdminUsersPage() {
         return () => clearTimeout(searchDebounceRef.current);
     }, [searchInput]);
 
-    const statusBadgeClass = (s) => {
-        if (!s) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-        if (s === "active") return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300";
-        if (s === "banned") return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300";
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    const statusBadgeClass = (active) => {
+        if (active) return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300";
+        return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300";
     };
 
     const rowClassName = (user) => {
         const base = "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group";
-        if (user.status === "banned") return `${base} bg-red-50/50 dark:bg-red-900/5`;
+        if (!user.active) return `${base} bg-red-50/50 dark:bg-red-900/5`;
         return base;
     };
 
@@ -93,25 +98,65 @@ export default function AdminUsersPage() {
         return `${Math.floor(diff / 86400)} days ago`;
     };
 
+    const getInitials = (username) => {
+        if (!username) return "??";
+        return username.substring(0, 2).toUpperCase();
+    };
+
     const toggleLock = async (user) => {
-        // try {
-        //     const res = await fetch(`/api/admin/users/${user.id}/lock`, { method: "POST" });
-        //     if (!res.ok) throw new Error("Không thể thay đổi trạng thái tài khoản");
-        //     message.success("Đã cập nhật trạng thái tài khoản");
-        //     // refresh list
-        //     setPage(1);
-        //     setSearch((s) => s);
-        // } catch (err) {
-        //     console.error(err);
-        //     message.error(err.message || "Lỗi khi thay đổi trạng thái");
-        //     // If backend fails, apply the change locally to sample/mock data so UI remains interactive
-        //     setUsers((prev) => {
-        //         const next = prev.map((u) => (u.id === user.id ? { ...u, status: u.status === "banned" ? "active" : "banned" } : u));
-        //         setCounts(computeCountsFrom(next));
-        //         return next;
-        //     });
-        //     message.warn("Thay đổi được áp dụng cục bộ (mock) do lỗi kết nối");
-        // }
+        try {
+            const newActiveStatus = !user.active;
+            await userApi.updateUser(user.id, { active: newActiveStatus });
+            message.success(`User ${newActiveStatus ? "activated" : "banned"} successfully`);
+
+            // Update local state immediately for better UX
+            setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, active: newActiveStatus } : u)));
+
+            // Reload counts from API
+            const countsRes = await userApi.getUserCounts();
+            if (countsRes && countsRes.success !== false && countsRes.data) {
+                setCounts(countsRes.data);
+            }
+        } catch (err) {
+            console.error(err);
+            message.error(err.message || "Failed to update user status");
+        }
+    };
+
+    const handleOpenRoleModal = (user) => {
+        setSelectedUser(user);
+        setSelectedRole(user.role.id);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        setSelectedRole(null);
+    };
+
+    const handleUpdateRole = async () => {
+        if (!selectedUser || !selectedRole) return;
+
+        try {
+            await userApi.updateUser(selectedUser.id, { role_id: selectedRole });
+            message.success("User role updated successfully");
+
+            // Reload users list
+            const usersRes = await userApi.getAllUsers(page, pageSize, search, role, active);
+            if (usersRes && usersRes.success !== false && usersRes.data) {
+                const payload = usersRes.data || {};
+                const items = payload.data || [];
+                const pagination = payload.pagination || {};
+                setUsers(items);
+                setTotal(pagination.total || 0);
+            }
+
+            handleCloseModal();
+        } catch (err) {
+            console.error(err);
+            message.error(err.message || "Failed to update user role");
+        }
     };
 
     return (
@@ -136,8 +181,8 @@ export default function AdminUsersPage() {
 
                 <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Now</div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.activeNow ?? "—"}</div>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Player Active</div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.totalPlayers ?? "—"}</div>
                     </div>
                     <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-500 dark:text-green-400 group-hover:scale-110 transition-transform">
                         <Radio />
@@ -146,8 +191,8 @@ export default function AdminUsersPage() {
 
                 <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Premium</div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.premium ?? "—"}</div>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created Today</div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.totalUsersCreatedToday ?? "—"}</div>
                     </div>
                     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-500 dark:text-yellow-400 group-hover:scale-110 transition-transform">
                         <Star />
@@ -156,8 +201,8 @@ export default function AdminUsersPage() {
 
                 <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
-                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Banned</div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.banned ?? "—"}</div>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Banned</div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{counts.totalBanned ?? "—"}</div>
                     </div>
                     <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-500 dark:text-red-400 group-hover:scale-110 transition-transform">
                         <Ban />
@@ -190,22 +235,20 @@ export default function AdminUsersPage() {
                                 options={[
                                     { value: "all", label: "All Roles" },
                                     { value: "admin", label: "Admin" },
-                                    { value: "player", label: "Player" },
-                                    { value: "premium", label: "Premium" },
+                                    { value: "user", label: "Player" },
                                 ]}
                                 style={{ minWidth: "120px" }}
                             />
                             <Select
-                                value={status}
+                                value={active}
                                 onChange={(v) => {
-                                    setStatus(v);
+                                    setActive(v);
                                     setPage(1);
                                 }}
                                 options={[
                                     { value: "all", label: "All Status" },
-                                    { value: "active", label: "Active" },
-                                    { value: "inactive", label: "Offline" },
-                                    { value: "banned", label: "Banned" },
+                                    { value: "true", label: "Active" },
+                                    { value: "false", label: "Banned" },
                                 ]}
                                 style={{ minWidth: "120px" }}
                             />
@@ -220,7 +263,7 @@ export default function AdminUsersPage() {
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">User</th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Role</th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                                <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Last Active</th>
+                                <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Last Update</th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -244,12 +287,17 @@ export default function AdminUsersPage() {
                                         <td className="py-4 px-6">
                                             <div className="flex items-center space-x-3">
                                                 <div className="relative">
-                                                    <img
-                                                        alt={`${u.username} avatar`}
-                                                        className="h-10 w-10 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
-                                                        src={u.avatar_url}
-                                                    />
-                                                    {/* online indicator if active */}
+                                                    {u.avatar_url ? (
+                                                        <img
+                                                            alt={`${u.username} avatar`}
+                                                            className="h-10 w-10 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
+                                                            src={u.avatar_url}
+                                                        />
+                                                    ) : (
+                                                        <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary to-pink-700 border-2 border-white dark:border-gray-700 shadow-sm flex items-center justify-center text-white font-semibold text-sm">
+                                                            {getInitials(u.username)}
+                                                        </div>
+                                                    )}
                                                     {u.active && <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-800"></div>}
                                                 </div>
                                                 <div>
@@ -266,8 +314,8 @@ export default function AdminUsersPage() {
                                         </td>
 
                                         <td className="py-4 px-6">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(u.active ? "active" : u.status === "banned" ? "banned" : "inactive")}`}>
-                                                {u.active ? "Active" : u.active === "banned" ? "Banned" : "Offline"}
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(u.active)}`}>
+                                                {u.active ? "Active" : "Banned"}
                                             </span>
                                         </td>
 
@@ -279,7 +327,7 @@ export default function AdminUsersPage() {
                                             <div className="flex items-center justify-end gap-4">
                                                 <div
                                                     className={`text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors hover:scale-110 active:scale-95 duration-200 ${
-                                                        !u.active  ? "text-red-400" : ""
+                                                        !u.active ? "text-red-400" : ""
                                                     }`}
                                                     title="Lock Account"
                                                     onClick={() => toggleLock(u)}
@@ -287,7 +335,12 @@ export default function AdminUsersPage() {
                                                 >
                                                     {!u.active ? <LockKeyhole /> : <LockKeyholeOpen />}
                                                 </div>
-                                                <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="More">
+                                                <div
+                                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors hover:scale-110 active:scale-95 duration-200"
+                                                    title="More"
+                                                    onClick={() => handleOpenRoleModal(u)}
+                                                    style={{ cursor: "pointer" }}
+                                                >
                                                     <EllipsisVertical />
                                                 </div>
                                             </div>
@@ -301,9 +354,9 @@ export default function AdminUsersPage() {
 
                 <div className="px-6 py-4 border-t border-border-light dark:border-border-dark flex items-center justify-between">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Showing <span className="font-medium text-gray-900 dark:text-white">{(page - 1) * pageSize + 1}</span> to{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">{Math.min(page * pageSize, total)}</span> of
-                        <span className="font-medium text-gray-900 dark:text-white ml-1">{total.toLocaleString()}</span> results
+                        Showing {(page - 1) * pageSize + 1} to{" "}
+                        {Math.min(page * pageSize, total)} of{" "}
+                        {total.toLocaleString()} results
                     </p>
 
                     <ConfigProvider
@@ -320,6 +373,64 @@ export default function AdminUsersPage() {
                     </ConfigProvider>
                 </div>
             </div>
+
+            <ConfigProvider
+                theme={{
+                    token: {
+                        colorPrimary: "#ec4899",
+                        colorBgContainer: isDarkMode ? "#212f4d" : "#ffffff",
+                        colorText: isDarkMode ? "#fff" : "#000",
+                    },
+                    algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                }}
+            >
+                <Modal
+                    title="Update User Role"
+                    open={isModalOpen}
+                    onOk={handleUpdateRole}
+                    onCancel={handleCloseModal}
+                    okText="Update"
+                    cancelText="Cancel"
+                >
+                    {selectedUser && (
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">User:</p>
+                                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    {selectedUser.avatar_url ? (
+                                        <img
+                                            src={selectedUser.avatar_url}
+                                            alt={selectedUser.username}
+                                            className="h-10 w-10 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-pink-600 flex items-center justify-center text-white font-semibold text-sm">
+                                            {getInitials(selectedUser.username)}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.username}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedUser.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Select Role:</p>
+                                <Select
+                                    value={selectedRole}
+                                    onChange={setSelectedRole}
+                                    style={{ width: "100%" }}
+                                    options={[
+                                        { value: 1, label: "Admin" },
+                                        { value: 2, label: "User (Player)" },
+                                    ]}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </Modal>
+            </ConfigProvider>
         </div>
     );
 }

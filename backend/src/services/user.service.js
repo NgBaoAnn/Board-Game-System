@@ -1,6 +1,7 @@
 const userRepo = require("../repositories/user.repo");
 const sanitizeUser = require("../utils/sanitize-user");
 const NotFoundError = require("../errors/notfound.exception");
+const DuplicateError = require("../errors/duplicate.exception");
 const passwordService = require("./password.service");
 class UserService {
   async createUser({ email, password, username, role_id }) {
@@ -36,19 +37,19 @@ class UserService {
     return sanitizeUser(user);
   }
 
-  async getAllUser({ page = 1, limit = 10 } = {}) {
+  async getAllUser({ page = 1, limit = 10, search = '', role = '', active = null } = {}) {
     const offset = (page - 1) * limit;
 
     const [listUsers, total] = await Promise.all([
-      userRepo.findAll({ offset, limit }),
-      userRepo.countAll(),
+      userRepo.findAll({ offset, limit, search, role, active }),
+      userRepo.countAll({ search, role, active }),
     ]);
 
     return {
       data: listUsers.map(sanitizeUser),
       pagination: {
-        page,
-        limit,
+        page: Number(page),
+        limit: Number(limit),
         total: Number(total.total),
       },
     };
@@ -63,6 +64,10 @@ class UserService {
 
     await userRepo.remove(id);
     return true;
+  }
+
+  async getUserCounts() {
+    return await userRepo.getUserCounts();
   }
 }
 
