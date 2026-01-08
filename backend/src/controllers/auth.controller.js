@@ -80,6 +80,51 @@ class AuthController {
       next(err);
     }
   }
+
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.body;
+      const response = await authService.forgotPassword(email);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "OTP sent successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async verifyOtp(req, res, next) {
+    try {
+      const { email, otp } = req.body;
+      const response = await authService.verifyOtp(email, otp);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "OTP verified successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      const { reset_token, new_password } = req.body;
+      const response = await authService.resetPassword(
+        reset_token,
+        new_password
+      );
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Password reset successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

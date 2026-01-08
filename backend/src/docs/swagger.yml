@@ -1151,6 +1151,99 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendErrorResponse"
 
+  # Upload Module
+  /api/avatar:
+    post:
+      tags:
+        - Upload
+      summary: Upload avatar
+      description: Upload user avatar image to Supabase storage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file (jpg, png, gif, webp)
+      responses:
+        "200":
+          description: Upload avatar successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: No file uploaded or storage not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/game-image:
+    post:
+      tags:
+        - Upload
+      summary: Upload game image
+      description: Upload game image to Supabase storage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file (jpg, png, gif, webp)
+      responses:
+        "200":
+          description: Upload game image successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: No file uploaded or storage not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
   # Ranking Module
   /api/ranking/myself/{game_id}:
     get:
@@ -1937,6 +2030,13 @@ components:
         avatar_url:
           type: string
           example: https://example.com/avatar.png
+
+    UploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          example: https://supabase.storage/avatars/avatar_1704567890.png
 
     Pagination:
       type: object
