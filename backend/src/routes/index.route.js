@@ -15,6 +15,8 @@ const initRoute = (app) => {
   app.use("/api", gameRoute);
   app.use("/api/upload", uploadRoute);
 
+  //private route
+
   app.use(authMiddleware.authenticate);
 
   app.use("/api", userRoute);
