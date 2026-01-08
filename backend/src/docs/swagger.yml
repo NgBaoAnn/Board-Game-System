@@ -683,6 +683,262 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendResponse"
 
+  # Conversation Module
+  /api/conversations:
+    get:
+      tags:
+        - Conversation
+      summary: Get user conversations
+      description: Get paginated list of conversations for the current user
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Get conversations successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/ConversationPreview"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    post:
+      tags:
+        - Conversation
+      summary: Get or create conversation
+      description: Get existing conversation with target user or create new one
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetUserId
+              properties:
+                targetUserId:
+                  type: string
+                  example: 9758f5e4-3dab-4677-8049-3f08ea282144
+      responses:
+        "200":
+          description: Get or create conversation successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
+        "400":
+          description: Cannot create conversation with yourself
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/conversations/{id}:
+    get:
+      tags:
+        - Conversation
+      summary: Get conversation detail
+      description: Get detailed information of a specific conversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      responses:
+        "200":
+          description: Get conversation detail successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Not allowed to access this conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/conversations/{id}/messages:
+    get:
+      tags:
+        - Conversation
+      summary: Get messages
+      description: Get paginated list of messages in a conversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 50
+      responses:
+        "200":
+          description: Get messages successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Message"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Not allowed to access this conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    post:
+      tags:
+        - Conversation
+      summary: Send message
+      description: Send a new message in a conversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: "Hello! How are you?"
+      responses:
+        "201":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Message"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "403":
+          description: Not allowed to send message to this conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
 components:
   schemas:
     BackendResponse:
@@ -805,6 +1061,77 @@ components:
         message:
           type: string
           example: "Hey, let's be friends!"
+        created_at:
+          type: string
+          format: date-time
+
+    ConversationPreview:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        user_id:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        username:
+          type: string
+          example: Bingsu
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
+        updated_at:
+          type: string
+          format: date-time
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        user_a:
+          $ref: "#/components/schemas/ConversationUser"
+        user_b:
+          $ref: "#/components/schemas/ConversationUser"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ConversationUser:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        username:
+          type: string
+          example: Bingsu
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          example: m1b2c3d4-e5f6-7890-abcd-ef1234567890
+        content:
+          type: string
+          example: "Hello! How are you?"
+        sender_id:
+          type: string
+          example: 9758f5e4-3dab-4677-8049-3f08ea282144
+        sender_username:
+          type: string
+          example: Bingsu
+        sender_avatar:
+          type: string
+          example: https://example.com/avatar.png
         created_at:
           type: string
           format: date-time
