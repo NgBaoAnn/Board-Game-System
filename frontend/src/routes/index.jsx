@@ -12,6 +12,7 @@ import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
 import CommunityPage from '../pages/user/CommunityPage'
 import ProfilePage from '../pages/user/ProfilePage'
+import RankingPage from '../pages/user/RankingPage'
 import AdminPage from '../pages/admin/AdminPage'
 import AdminUsersPage from '../pages/admin/AdminUsersPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: '/profile',
         element: <ProfilePage />,
+      },
+      {
+        path: '/rankings',
+        element: <RankingPage />,
       },
       {
         path: '/settings',

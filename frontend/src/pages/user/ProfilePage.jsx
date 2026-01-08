@@ -2,17 +2,15 @@ import { useState } from 'react'
 import { Tabs, Select } from 'antd'
 import { Trophy, Brain, Users } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
-import {
-  ProfileCard,
-  AchievementItem,
-  WinRateChart,
-  ActivityCard,
-  FavoriteGameCard,
-  EditProfileTab,
-  AchievementsTab,
-  GameHistoryTab,
-  FriendsTab,
-} from '@/components/Profile'
+import { ProfileCard } from '@/components/Profile/ProfileCard'
+import { AchievementItem } from '@/components/Profile/AchievementItem'
+import { WinRateChart } from '@/components/Profile/WinRateChart'
+import { ActivityCard } from '@/components/Profile/ActivityCard'
+import { FavoriteGameCard } from '@/components/Profile/FavoriteGameCard'
+import { EditProfileTab } from '@/components/Profile/EditProfileTab'
+import { AchievementsTab } from '@/components/Profile/AchievementsTab'
+import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
+import { FriendsTab } from '@/components/Profile/FriendsTab'
 
 // Mock data for Overview tab
 const achievements = [
