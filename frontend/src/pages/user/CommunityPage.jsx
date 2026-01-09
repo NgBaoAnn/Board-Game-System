@@ -140,7 +140,7 @@ export default function CommunityPage() {
       label: (
         <span className="flex items-center gap-2">
           Friend List
-          <span className="bg-slate-700 text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
+          <span className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
             {friends.length}
           </span>
         </span>
@@ -152,7 +152,7 @@ export default function CommunityPage() {
         <span className="flex items-center gap-2">
           Friend Requests
           {requests.length > 0 && (
-            <span className="bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
+            <span className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
               {requests.length}
             </span>
           )}
@@ -170,14 +170,14 @@ export default function CommunityPage() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3">
-          <Users className="text-[#00f0ff]" size={28} />
-          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#a855f7]">
+          <Users className="text-[#1d7af2] dark:text-[#00f0ff]" size={28} />
+          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7]">
             Friends & Community
           </h1>
           {/* Online count badge */}
-          <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/30 px-3 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 px-3 py-1 rounded-full">
             <span className="w-2 h-2 bg-green-500 rounded-full online-status-pulse" />
-            <span className="text-xs font-bold text-green-400">{onlineCount} Online</span>
+            <span className="text-xs font-bold text-green-600 dark:text-green-400">{onlineCount} Online</span>
           </div>
         </div>
 
@@ -185,10 +185,10 @@ export default function CommunityPage() {
         <div className="flex-1 max-w-md">
           <Input
             placeholder="Search friends..."
-            prefix={<Search size={16} className="text-slate-400" />}
+            prefix={<Search size={16} className="text-gray-400 dark:text-slate-400" />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-slate-800/50 border-slate-700 rounded-xl"
+            className="bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
             size="large"
           />
         </div>
@@ -212,7 +212,7 @@ export default function CommunityPage() {
             exit={{ opacity: 0, x: 20 }}
             className="space-y-4"
           >
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Sparkles size={14} />
               Pending Requests ({requests.length})
             </h2>
@@ -244,18 +244,18 @@ export default function CommunityPage() {
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Gamepad2 size={14} />
                 All Friends ({filteredFriends.length})
               </h2>
-              <div className="flex items-center space-x-2 text-sm text-slate-400">
+              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-slate-400">
                 <span>Sort by:</span>
                 <Select
                   value={sortBy}
                   onChange={setSortBy}
                   variant="borderless"
                   className="font-medium"
-                  popupClassName="!bg-slate-800"
+                  popupClassName="dark:bg-slate-800"
                   options={[
                     { value: 'status', label: 'Online Status' },
                     { value: 'name', label: 'Name (A-Z)' },
