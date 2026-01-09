@@ -61,7 +61,7 @@ export default function GamingParticles({ isDarkMode = true }) {
         },
         links: {
           color: {
-            value: isDarkMode ? '#00f0ff' : '#4f46e5',
+            value: isDarkMode ? '#00f0ff' : '#0891b2', // Cyan for dark, Dark Cyan for light
           },
           distance: 180,
           enable: true,

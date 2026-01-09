@@ -81,7 +81,7 @@ export function ChatInput({ onSend, disabled }) {
   )
 
   return (
-    <div className="p-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-gray-700">
+    <div className="p-4 bg-white/80 dark:bg-slate-800/50 backdrop-blur-md border-t border-gray-200/50 dark:border-slate-700/30">
       <div className="flex items-center space-x-2">
         {/* Attachment Button */}
         <Popover
