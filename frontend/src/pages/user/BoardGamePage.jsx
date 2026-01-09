@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
     Grid3x3,
     Circle,
@@ -8,16 +8,24 @@ import {
     Target,
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
+    ChevronDown,
     Play,
     Pause,
     HelpCircle,
     Undo2,
     Loader2,
+    Save,
+    LogOut,
+    RotateCcw,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal } from '../../components/Game'
+import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame } from '../../components/Game'
 import gameApi from '../../api/api-game.js'
+import { message } from 'antd'
+import { useGameSession } from '../../context/GameSessionProvider'
+
 
 // Icon mapping for game codes from database
 const GAME_ICONS = {
@@ -30,11 +38,20 @@ const GAME_ICONS = {
 }
 
 export default function BoardGamePage() {
+    // Game session protection
+    const { startSession, endSession } = useGameSession()
+
     // Games loaded from API
     const [games, setGames] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [activeGame, setActiveGame] = useState(0)
+    const [previousGame, setPreviousGame] = useState(0) // Track previous game for BACK function
+
+    // Session state
+    const [sessionId, setSessionId] = useState(null)
+    const [hasSavedSession, setHasSavedSession] = useState(false)
+    const [checkingSession, setCheckingSession] = useState(false)
 
     // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
@@ -42,9 +59,45 @@ export default function BoardGamePage() {
     // Game state
     const [gameStarted, setGameStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
+    const [isPaused, setIsPaused] = useState(false) // Separate pause state for controls
     const [score, setScore] = useState(0)
     const [timeRemaining, setTimeRemaining] = useState(0)
     const [selectedTime, setSelectedTime] = useState(0)
+
+    // Game-specific state (for saving)
+    const [gameState, setGameState] = useState(null)
+    const [savedState, setSavedState] = useState(null)
+
+    // Ref to track current game state for saving
+    const gameStateRef = useRef(gameState)
+    useEffect(() => {
+        gameStateRef.current = gameState
+    }, [gameState])
+
+    // Refs for save/exit callbacks (to avoid stale closure)
+    const saveCallbackRef = useRef(null)
+    const exitCallbackRef = useRef(null)
+    const sessionIdRef = useRef(null)
+    const scoreRef = useRef(0)
+    const selectedTimeRef = useRef(0)
+    const timeRemainingRef = useRef(0)
+
+    // Keep refs in sync with state
+    useEffect(() => {
+        sessionIdRef.current = sessionId
+    }, [sessionId])
+
+    useEffect(() => {
+        scoreRef.current = score
+    }, [score])
+
+    useEffect(() => {
+        selectedTimeRef.current = selectedTime
+    }, [selectedTime])
+
+    useEffect(() => {
+        timeRemainingRef.current = timeRemaining
+    }, [timeRemaining])
 
     // Fetch games from API on mount
     useEffect(() => {
@@ -52,7 +105,6 @@ export default function BoardGamePage() {
             try {
                 setLoading(true)
                 const response = await gameApi.getAllGames()
-                // API returns { success, status, message, data: [...] }
                 const gamesData = response.data || []
                 setGames(gamesData)
                 setError(null)
@@ -69,55 +121,330 @@ export default function BoardGamePage() {
     // Get current game
     const currentGame = games[activeGame] || null
 
+    // Check for saved session when game is selected
+    useEffect(() => {
+        if (!currentGame || gameStarted) return
+
+        const checkSession = async () => {
+            try {
+                setCheckingSession(true)
+                const response = await gameApi.checkSessionExists(currentGame.id)
+                setHasSavedSession(response.data?.isSavedExists || false)
+            } catch (err) {
+                console.error('Failed to check session:', err)
+                setHasSavedSession(false)
+            } finally {
+                setCheckingSession(false)
+            }
+        }
+        checkSession()
+    }, [currentGame, gameStarted])
+
     const selectGame = (idx) => {
         if (gameStarted) return
         if (games.length === 0) return
         const newIdx = (idx + games.length) % games.length
+        setPreviousGame(activeGame) // Save previous game for BACK function
         setActiveGame(newIdx)
     }
 
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
 
-    const handleStartPauseClick = () => {
-        if (!gameStarted) {
-            setShowTimeModal(true)
-        } else if (isPlaying) {
-            setIsPlaying(false)
-        } else {
+    // Handle START button click
+    const handleStartClick = () => {
+        setShowTimeModal(true)
+    }
+
+    // Handle RESUME button click (for saved session)
+    const handleResumeClick = async () => {
+        if (!currentGame) return
+
+        try {
+            message.loading({ content: 'Đang tải game...', key: 'resume' })
+            const response = await gameApi.startSession('resume', currentGame.id)
+
+            setSessionId(response.data?.session?.id)
+
+            // Restore saved state
+            const restored = response.data?.save_state || {}
+            setSavedState(restored)
+            setScore(restored.score || 0)
+            setTimeRemaining(restored.time_remain || 0)
+            setSelectedTime(restored.time_limit || 0)
+
+            setGameStarted(true)
             setIsPlaying(true)
+            setIsPaused(false)
+
+            // Register session protection (for navigation blocking)
+            // Use callback that reads from refs to get latest values
+            startSession(
+                async () => {
+                    // Save callback using refs for latest values
+                    const currentSessionId = sessionIdRef.current
+                    if (!currentSessionId) return
+
+                    try {
+                        message.loading({ content: 'Đang lưu...', key: 'save' })
+                        const saveState = {
+                            score: scoreRef.current,
+                            time_limit: selectedTimeRef.current,
+                            time_remain: timeRemainingRef.current,
+                            ...gameStateRef.current,
+                        }
+                        await gameApi.saveSession(currentSessionId, saveState)
+                        message.success({ content: 'Đã lưu game!', key: 'save' })
+                    } catch (err) {
+                        console.error('Save failed:', err)
+                        message.error({ content: 'Không thể lưu game', key: 'save' })
+                    }
+                },
+                async () => {
+                    // Exit callback using refs for latest values
+                    const currentSessionId = sessionIdRef.current
+                    if (currentSessionId) {
+                        try {
+                            await gameApi.finishSession(currentSessionId, scoreRef.current)
+                            message.info('Game kết thúc! Điểm: ' + scoreRef.current)
+                        } catch (err) {
+                            console.error('Finish failed:', err)
+                        }
+                    }
+                }
+            )
+
+            message.success({ content: 'Đã khôi phục game!', key: 'resume' })
+        } catch (err) {
+            console.error('Resume failed:', err)
+            message.error({ content: 'Không thể khôi phục game', key: 'resume' })
         }
     }
 
-    const handleTimeConfirm = (timeInSeconds) => {
-        setSelectedTime(timeInSeconds)
-        setTimeRemaining(timeInSeconds)
-        setScore(0)
-        setGameStarted(true)
-        setIsPlaying(true)
+    // Handle time selection and start new game
+    const handleTimeConfirm = async (timeInSeconds) => {
+        if (!currentGame) return
+
+        try {
+            message.loading({ content: 'Đang bắt đầu...', key: 'start' })
+            const response = await gameApi.startSession('new', currentGame.id)
+
+            setSessionId(response.data?.session?.id)
+            setSelectedTime(timeInSeconds)
+            setTimeRemaining(timeInSeconds)
+            setScore(0)
+            setSavedState(null)
+            setGameState(null)
+
+            setGameStarted(true)
+            setIsPlaying(true)
+            setIsPaused(false)
+
+            // Register session protection (for navigation blocking)
+            // Use callback that reads from refs to get latest values
+            startSession(
+                async () => {
+                    // Save callback using refs for latest values
+                    const currentSessionId = sessionIdRef.current
+                    if (!currentSessionId) return
+
+                    try {
+                        message.loading({ content: 'Đang lưu...', key: 'save' })
+                        const saveState = {
+                            score: scoreRef.current,
+                            time_limit: selectedTimeRef.current,
+                            time_remain: timeRemainingRef.current,
+                            ...gameStateRef.current,
+                        }
+                        await gameApi.saveSession(currentSessionId, saveState)
+                        message.success({ content: 'Đã lưu game!', key: 'save' })
+                    } catch (err) {
+                        console.error('Save failed:', err)
+                        message.error({ content: 'Không thể lưu game', key: 'save' })
+                    }
+                },
+                async () => {
+                    // Exit callback using refs for latest values
+                    const currentSessionId = sessionIdRef.current
+                    if (currentSessionId) {
+                        try {
+                            await gameApi.finishSession(currentSessionId, scoreRef.current)
+                            message.info('Game kết thúc! Điểm: ' + scoreRef.current)
+                        } catch (err) {
+                            console.error('Finish failed:', err)
+                        }
+                    }
+                }
+            )
+
+            message.success({ content: 'Bắt Đầu chơi!', key: 'start' })
+        } catch (err) {
+            console.error('Start failed:', err)
+            message.error({ content: 'Không thể bắt đầu game', key: 'start' })
+        }
     }
 
+    // Handle PAUSE button click (when playing)
+    const handlePauseClick = () => {
+        setIsPlaying(false)
+        setIsPaused(true)
+    }
+
+    // Handle RESUME button click (when paused during game)
+    const handleResumeGameClick = () => {
+        setIsPlaying(true)
+        setIsPaused(false)
+    }
+
+    // Handle SAVE button click
+    const handleSave = async () => {
+        if (!sessionId) return
+
+        try {
+            message.loading({ content: 'Đang lưu...', key: 'save' })
+
+            const saveState = {
+                score,
+                time_limit: selectedTime,
+                time_remain: timeRemaining,
+                ...gameStateRef.current,
+            }
+
+            await gameApi.saveSession(sessionId, saveState)
+
+            message.success({ content: 'Đã lưu game!', key: 'save' })
+
+            // Reset to game selection
+            resetToSelection()
+        } catch (err) {
+            console.error('Save failed:', err)
+            message.error({ content: 'Không thể lưu game', key: 'save' })
+        }
+    }
+
+    // Handle EXIT button - finish game immediately
+    const handleExit = async () => {
+        if (sessionId) {
+            try {
+                await gameApi.finishSession(sessionId, score)
+                message.info('Game kết thúc! Điểm: ' + score)
+            } catch (err) {
+                console.error('Finish failed:', err)
+            }
+        }
+        resetToSelection()
+    }
+
+    // Handle BACK button - return to previous game selection (before game starts)
     const handleBack = () => {
+        if (!gameStarted) {
+            setActiveGame(previousGame)
+        }
+    }
+
+    // Reset to game selection state
+    const resetToSelection = useCallback(() => {
         setGameStarted(false)
         setIsPlaying(false)
+        setIsPaused(false)
         setScore(0)
         setTimeRemaining(0)
         setSelectedTime(0)
-    }
+        setSessionId(null)
+        setSavedState(null)
+        setGameState(null)
+        // End session protection
+        endSession()
+    }, [endSession])
 
-    const handleTimeUp = useCallback(() => {
+    // Handle time up
+    const handleTimeUp = useCallback(async () => {
         setIsPlaying(false)
-    }, [])
 
-    const handleTick = useCallback(() => {
-        setTimeRemaining(prev => Math.max(0, prev - 1))
-    }, [])
-
-    const handleCellClick = useCallback((row, col) => {
-        if (isPlaying) {
-            setScore(prev => prev + 10)
+        if (sessionId) {
+            try {
+                await gameApi.finishSession(sessionId, score)
+                message.info('Hết giờ! Điểm của bạn: ' + score)
+            } catch (err) {
+                console.error('Finish failed:', err)
+            }
         }
-    }, [isPlaying])
+
+        // Wait a bit then reset
+        setTimeout(() => {
+            resetToSelection()
+        }, 2000)
+    }, [sessionId, score])
+
+    // Handle timer tick
+    const handleTick = useCallback(() => {
+        setTimeRemaining(prev => {
+            if (prev <= 1) return 0
+            return prev - 1
+        })
+    }, [])
+
+    // Handle score change from game
+    const handleScoreChange = useCallback((newScore) => {
+        setScore(newScore)
+    }, [])
+
+    // Handle game end (lose)
+    const handleGameEnd = useCallback(async (result) => {
+        if (result === 'lose') {
+            setIsPlaying(false)
+
+            if (sessionId) {
+                try {
+                    await gameApi.finishSession(sessionId, score)
+                    message.error('Game Over! Điểm của bạn: ' + score)
+                } catch (err) {
+                    console.error('Finish failed:', err)
+                }
+            }
+
+            setTimeout(() => {
+                resetToSelection()
+            }, 2000)
+        }
+    }, [sessionId, score])
+
+    // Handle game state change (for saving)
+    const handleStateChange = useCallback((state) => {
+        setGameState(state)
+    }, [])
+
+    // Direction button handlers (for games that need them)
+    const handleUp = () => console.log('UP')
+    const handleDown = () => console.log('DOWN')
+
+    // Render game component based on current game
+    const renderGame = () => {
+        if (!currentGame || !gameStarted) return null
+
+        if (currentGame.code === 'tic_tac_toe') {
+            return (
+                <TicTacToeGame
+                    isPlaying={isPlaying}
+                    score={score}
+                    onScoreChange={handleScoreChange}
+                    onGameEnd={handleGameEnd}
+                    savedState={savedState}
+                    onStateChange={handleStateChange}
+                />
+            )
+        }
+
+        // Default: show BoardGrid for other games
+        return (
+            <BoardGrid
+                rows={currentGame.board_row}
+                cols={currentGame.board_col}
+                cellSize={Math.max(24, Math.min(48, 480 / Math.max(currentGame.board_row, currentGame.board_col)))}
+                onCellClick={(row, col) => console.log('Cell clicked:', row, col)}
+            />
+        )
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -229,101 +556,238 @@ export default function BoardGamePage() {
                     />
                 </div>
 
-                {/* Board container */}
-                <div className="relative z-10 bg-white p-2 sm:p-3 rounded-2xl shadow-lg border border-slate-100/60 ring-1 ring-slate-100 max-h-full flex items-center justify-center">
-                    <div className="bg-indigo-50/50 rounded-xl p-4 sm:p-6 border border-indigo-100/50 relative overflow-hidden">
-                        {/* Label */}
-                        <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-300 tracking-widest z-20">
-                            {currentGame ? `${currentGame.name.toUpperCase()} - ${currentGame.board_row}×${currentGame.board_col}` : 'LOADING...'}
-                        </div>
+                {/* Game container */}
+                <div className="relative z-10 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-100/60 ring-1 ring-slate-100">
+                    {/* Label */}
+                    <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-300 tracking-widest z-20">
+                        {currentGame ? currentGame.name.toUpperCase() : 'LOADING...'}
+                    </div>
 
-                        {/* Grid background */}
-                        <div className="absolute inset-0 grid-bg pointer-events-none"></div>
+                    {/* Game content */}
+                    <div className="relative z-10 mt-4">
+                        {gameStarted ? (
+                            renderGame()
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-8 px-12">
+                                <div className="text-6xl mb-4">
+                                    {currentGame && GAME_ICONS[currentGame.code] ? (
+                                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
+                                            {(() => {
+                                                const Icon = GAME_ICONS[currentGame.code]
+                                                return <Icon size={48} />
+                                            })()}
+                                        </div>
+                                    ) : (
+                                        '🎮'
+                                    )}
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                                    {currentGame?.name || 'Select a game'}
+                                </h3>
+                                <p className="text-slate-500 text-sm mb-6 text-center max-w-xs">
+                                    {currentGame?.description || 'Choose a game from the menu above to start playing'}
+                                </p>
 
-                        {/* Board Grid */}
-                        <div className="relative z-10 mt-4">
-                            {currentGame && (
-                                <BoardGrid
-                                    rows={currentGame.board_row}
-                                    cols={currentGame.board_col}
-                                    cellSize={Math.max(24, Math.min(48, 480 / Math.max(currentGame.board_row, currentGame.board_col)))}
-                                    onCellClick={handleCellClick}
-                                />
-                            )}
-                        </div>
+                                {/* Start/Resume buttons */}
+                                {currentGame && (
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={handleStartClick}
+                                            disabled={checkingSession}
+                                            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                        >
+                                            <Play size={20} />
+                                            START
+                                        </button>
+
+                                        {hasSavedSession && (
+                                            <button
+                                                onClick={handleResumeClick}
+                                                disabled={checkingSession}
+                                                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                            >
+                                                <RotateCcw size={20} />
+                                                RESUME
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {checkingSession && (
+                                    <div className="mt-4 text-slate-400 text-sm flex items-center gap-2">
+                                        <Loader2 className="animate-spin" size={16} />
+                                        Checking saved game...
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
 
-            {/* Controls Section */}
+            {/* Controls Section - Changes based on game state */}
             <section className="shrink-0 bg-white border-t border-slate-100 p-4 mt-4 rounded-xl shadow-sm">
                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-                    {/* Help button */}
-                    <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
-                        <button
-                            aria-label="Help"
-                            className="arcade-btn px-4 py-3 rounded-xl bg-slate-100 text-slate-500 shadow-[0_3px_0_#cbd5e1] hover:bg-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-                        >
-                            <HelpCircle size={16} /> HELP
-                        </button>
-                    </div>
 
-                    {/* Navigation controls */}
-                    <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
-                        <button
-                            onClick={handleLeft}
-                            disabled={gameStarted || loading || games.length === 0}
-                            aria-label="Left"
-                            className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${gameStarted || loading || games.length === 0
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-slate-50 hover:text-indigo-500'
-                                }`}
-                        >
-                            <ChevronLeft size={28} />
-                        </button>
+                    {/* Before game starts: HELP + BACK */}
+                    {!gameStarted && (
+                        <>
+                            {/* Help button */}
+                            <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
+                                <button
+                                    aria-label="Help"
+                                    className="arcade-btn px-4 py-3 rounded-xl bg-slate-100 text-slate-500 shadow-[0_3px_0_#cbd5e1] hover:bg-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
+                                >
+                                    <HelpCircle size={16} /> HELP
+                                </button>
+                            </div>
 
-                        <button
-                            onClick={handleStartPauseClick}
-                            disabled={loading || games.length === 0}
-                            aria-label={isPlaying ? "Pause" : "Start"}
-                            className={`arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${loading || games.length === 0
-                                ? 'bg-slate-400 shadow-[0_6px_0_#94a3b8] border-slate-200 cursor-not-allowed'
-                                : isPlaying
-                                    ? 'bg-gradient-to-b from-amber-500 to-orange-600 shadow-[0_6px_0_#c2410c] border-amber-100'
-                                    : gameStarted
-                                        ? 'bg-gradient-to-b from-emerald-500 to-green-600 shadow-[0_6px_0_#15803d] border-emerald-100'
+                            {/* Navigation controls */}
+                            <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
+                                <button
+                                    onClick={handleLeft}
+                                    disabled={loading || games.length === 0}
+                                    aria-label="Left"
+                                    className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${loading || games.length === 0
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : 'hover:bg-slate-50 hover:text-indigo-500'
+                                        }`}
+                                >
+                                    <ChevronLeft size={28} />
+                                </button>
+
+                                <button
+                                    onClick={handleStartClick}
+                                    disabled={loading || games.length === 0 || !currentGame}
+                                    aria-label="Start"
+                                    className={`arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${loading || games.length === 0 || !currentGame
+                                        ? 'bg-slate-400 shadow-[0_6px_0_#94a3b8] border-slate-200 cursor-not-allowed'
                                         : 'bg-gradient-to-b from-indigo-500 to-indigo-600 shadow-[0_6px_0_#3730a3] border-indigo-100'
-                                }`}
-                        >
-                            <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">
-                                {isPlaying ? 'PAUSE' : gameStarted ? 'RESUME' : 'START'}
-                            </span>
-                            {isPlaying ? <Pause size={28} /> : <Play size={28} />}
-                        </button>
+                                        }`}
+                                >
+                                    <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">START</span>
+                                    <Play size={28} />
+                                </button>
 
-                        <button
-                            onClick={handleRight}
-                            disabled={gameStarted || loading || games.length === 0}
-                            aria-label="Right"
-                            className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${gameStarted || loading || games.length === 0
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-slate-50 hover:text-indigo-500'
-                                }`}
-                        >
-                            <ChevronRight size={28} />
-                        </button>
-                    </div>
+                                <button
+                                    onClick={handleRight}
+                                    disabled={loading || games.length === 0}
+                                    aria-label="Right"
+                                    className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${loading || games.length === 0
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : 'hover:bg-slate-50 hover:text-indigo-500'
+                                        }`}
+                                >
+                                    <ChevronRight size={28} />
+                                </button>
+                            </div>
 
-                    {/* Back button */}
-                    <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
-                        <button
-                            onClick={handleBack}
-                            aria-label="Back"
-                            className="arcade-btn px-4 py-3 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors tracking-wide"
-                        >
-                            BACK <Undo2 size={16} />
-                        </button>
-                    </div>
+                            {/* Back button - returns to previous game */}
+                            <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
+                                <button
+                                    onClick={handleBack}
+                                    aria-label="Back"
+                                    className="arcade-btn px-4 py-3 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors tracking-wide"
+                                >
+                                    BACK <Undo2 size={16} />
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Game started and PLAYING: Direction buttons + PAUSE */}
+                    {gameStarted && isPlaying && !isPaused && (
+                        <>
+                            {/* Left side: UP button */}
+                            <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
+                                <button
+                                    onClick={handleUp}
+                                    aria-label="Up"
+                                    className="arcade-btn w-14 h-14 rounded-xl bg-slate-100 text-slate-600 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                >
+                                    <ChevronUp size={28} />
+                                </button>
+                            </div>
+
+                            {/* Center: LEFT + PAUSE + RIGHT */}
+                            <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
+                                <button
+                                    onClick={handleLeft}
+                                    aria-label="Left"
+                                    className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                                >
+                                    <ChevronLeft size={28} />
+                                </button>
+
+                                <button
+                                    onClick={handlePauseClick}
+                                    aria-label="Pause"
+                                    className="arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 bg-gradient-to-b from-amber-500 to-orange-600 shadow-[0_6px_0_#c2410c] border-amber-100"
+                                >
+                                    <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">PAUSE</span>
+                                    <Pause size={28} />
+                                </button>
+
+                                <button
+                                    onClick={handleRight}
+                                    aria-label="Right"
+                                    className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                                >
+                                    <ChevronRight size={28} />
+                                </button>
+                            </div>
+
+                            {/* Right side: DOWN button */}
+                            <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
+                                <button
+                                    onClick={handleDown}
+                                    aria-label="Down"
+                                    className="arcade-btn w-14 h-14 rounded-xl bg-slate-100 text-slate-600 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                >
+                                    <ChevronDown size={28} />
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Game started and PAUSED: SAVE + RESUME + EXIT */}
+                    {gameStarted && isPaused && (
+                        <>
+                            {/* Left side: SAVE button */}
+                            <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
+                                <button
+                                    onClick={handleSave}
+                                    aria-label="Save"
+                                    className="arcade-btn px-5 py-3 rounded-xl bg-emerald-500 text-white shadow-[0_3px_0_#059669] hover:bg-emerald-600 text-xs font-bold flex items-center gap-2 transition-colors"
+                                >
+                                    <Save size={16} /> SAVE
+                                </button>
+                            </div>
+
+                            {/* Center: RESUME button */}
+                            <div className="order-1 md:order-2 flex items-center justify-center">
+                                <button
+                                    onClick={handleResumeGameClick}
+                                    aria-label="Resume"
+                                    className="arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 bg-gradient-to-b from-emerald-500 to-green-600 shadow-[0_6px_0_#15803d] border-emerald-100"
+                                >
+                                    <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">RESUME</span>
+                                    <Play size={28} />
+                                </button>
+                            </div>
+
+                            {/* Right side: EXIT button */}
+                            <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
+                                <button
+                                    onClick={handleExit}
+                                    aria-label="Exit"
+                                    className="arcade-btn px-5 py-3 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors"
+                                >
+                                    EXIT <LogOut size={16} />
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
 

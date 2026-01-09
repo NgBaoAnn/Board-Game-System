@@ -28,9 +28,7 @@ export const router = createBrowserRouter([
         // BoardGame requires authentication
         path: '/boardgame',
         element: (
-          <RequireAuth>
-            <BoardGamePage />
-          </RequireAuth>
+          <BoardGamePage />
         ),
       },
       {

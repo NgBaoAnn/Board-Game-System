@@ -57,6 +57,16 @@ const gameApi = {
         const response = await axiosInstance.put(`/games/sessions/${sessionId}/finish`, { score });
         return response;
     },
+
+    /**
+     * Check if user has a saved/paused session for a game
+     * @param {number} gameId - Game ID
+     * @returns {Promise<{isSavedExists: boolean, message: string}>}
+     */
+    checkSessionExists: async (gameId) => {
+        const response = await axiosInstance.get(`/games/sessions/exists/${gameId}`);
+        return response;
+    },
 };
 
 export default gameApi;

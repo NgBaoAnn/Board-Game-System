@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
 import authApi from '@/api/api-auth'
+import { GameSessionProvider, useGameSession } from '@/context/GameSessionProvider'
+
 const menuItems = [
   { key: '/', icon: Home, label: 'Home' },
   { key: '/boardgame', icon: Gamepad2, label: 'Board Game' },
@@ -24,11 +26,32 @@ const menuItems = [
   { key: '/settings', icon: Settings, label: 'Settings' },
 ]
 
-export default function ClientLayout() {
+// Protected Link component that checks game session before navigating
+function ProtectedNavLink({ to, children, className }) {
+  const { requestNavigation } = useGameSession()
+  const navigate = useNavigate()
+
+  const handleClick = (e) => {
+    e.preventDefault()
+    const allowed = requestNavigation(to, () => navigate(to))
+    if (allowed) {
+      navigate(to)
+    }
+  }
+
+  return (
+    <a href={to} onClick={handleClick} className={className}>
+      {children}
+    </a>
+  )
+}
+
+function ClientLayoutContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, authenticated,setUser, setAuthenticated } = useAuth();
- 
+  const { user, authenticated, setUser, setAuthenticated } = useAuth();
+  const { requestNavigation } = useGameSession();
+
 
   const handleLogout = async () => {
     try {
@@ -43,25 +66,33 @@ export default function ClientLayout() {
     }
   }
 
+  // Protected navigation handler
+  const handleProtectedNavigate = (path) => {
+    const allowed = requestNavigation(path, () => navigate(path))
+    if (allowed) {
+      navigate(path)
+    }
+  }
+
   const userMenuItems = [
     {
       key: 'profile',
       label: 'Profile',
       icon: <User size={16} />,
-      onClick: () => navigate('/profile'),
+      onClick: () => handleProtectedNavigate('/profile'),
     },
     {
       key: 'settings',
       label: 'Settings',
       icon: <Settings size={16} />,
-      onClick: () => navigate('/settings'),
+      onClick: () => handleProtectedNavigate('/settings'),
     },
     { type: 'divider' },
     {
       key: 'logout',
       label: 'Logout',
       icon: <LogOut size={16} />,
-      danger: true, 
+      danger: true,
       onClick: handleLogout,
     },
   ]
@@ -83,24 +114,23 @@ export default function ClientLayout() {
               </div>
             </Link>
 
-            {/* Navigation */}
+            {/* Navigation - Using ProtectedNavLink */}
             <nav className="flex flex-col gap-2 mt-4">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.key
                 const IconComponent = item.icon
                 return (
-                  <Link
+                  <ProtectedNavLink
                     key={item.key}
                     to={item.key}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-[#eff6ff] text-[#0d7ff2]'
-                        : 'text-[#60758a] hover:bg-gray-100 hover:text-[#111418]'
-                    }`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
+                      ? 'bg-[#eff6ff] text-[#0d7ff2]'
+                      : 'text-[#60758a] hover:bg-gray-100 hover:text-[#111418]'
+                      }`}
                   >
                     <IconComponent size={24} />
                     <span className={isActive ? 'font-bold' : 'font-medium'}>{item.label}</span>
-                  </Link>
+                  </ProtectedNavLink>
                 )
               })}
             </nav>
@@ -200,5 +230,14 @@ export default function ClientLayout() {
         </div>
       </main>
     </div>
+  )
+}
+
+// Wrap with GameSessionProvider
+export default function ClientLayout() {
+  return (
+    <GameSessionProvider>
+      <ClientLayoutContent />
+    </GameSessionProvider>
   )
 }
