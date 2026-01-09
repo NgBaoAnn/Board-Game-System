@@ -5,14 +5,20 @@ import HomePage from '../pages/user/HomePage'
 import LoginPage from '../pages/common/LoginPage'
 import RegisterPage from '../pages/common/RegisterPage'
 import SettingPage from '../pages/common/SettingPage'
+import ForgotPasswordPage from '../pages/common/ForgotPasswordPage'
+import VerifyOTPPage from '../pages/common/VerifyOTPPage'
+import ResetPasswordPage from '../pages/common/ResetPasswordPage'
 import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
+import CommunityPage from '../pages/user/CommunityPage'
+import ProfilePage from '../pages/user/ProfilePage'
+import RankingPage from '../pages/user/RankingPage'
+import MessagePage from '../pages/user/MessagePage'
 import AdminPage from '../pages/admin/AdminPage'
 import AdminUsersPage from '../pages/admin/AdminUsersPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
-import RequireAuth from '@/components/common/RequireAuth'
 
 export const router = createBrowserRouter([
   // Routes with shared ClientLayout (sidebar + header)
@@ -20,25 +26,32 @@ export const router = createBrowserRouter([
     element: <ClientLayout />,
     children: [
       {
-        // Home is public - no auth required
         path: '/',
         element: <HomePage />,
       },
       {
-        // BoardGame requires authentication
         path: '/boardgame',
-        element: (
-          <BoardGamePage />
-        ),
+        element: <BoardGamePage />,
       },
       {
-        // Settings requires authentication
+        path: '/community',
+        element: <CommunityPage />,
+      },
+      {
+        path: '/profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: '/rankings',
+        element: <RankingPage />,
+      },
+      {
+        path: '/messages',
+        element: <MessagePage />,
+      },
+      {
         path: '/settings',
-        element: (
-          <RequireAuth>
-            <SettingPage />
-          </RequireAuth>
-        ),
+        element: <SettingPage />,
       }
     ],
     errorElement: <NotFoundPage />,
@@ -51,6 +64,18 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: '/verify-otp',
+    element: <VerifyOTPPage />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
   },
   // Admin routes
   {

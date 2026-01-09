@@ -52,16 +52,17 @@ export default function NeonParticles({ isDarkMode = false }) {
       },
       particles: {
         color: {
+          // Cosmic Arcade neon colors
           value: isDarkMode
-            ? ['#00f5ff', '#ff00ff', '#00ff88', '#ffff00']
-            : ['#1d7af2', '#8b5cf6', '#06b6d4', '#10b981'],
+            ? ['#00f0ff', '#a855f7', '#ec4899', '#22c55e']
+            : ['#4f46e5', '#7c3aed', '#db2777', '#0891b2'], // Brighter saturated colors for light mode
         },
         links: {
-          color: isDarkMode ? '#00f5ff' : '#1d7af2',
+          color: isDarkMode ? '#00f0ff' : '#4f46e5',
           distance: 150,
           enable: true,
-          opacity: isDarkMode ? 0.4 : 0.2,
-          width: 1,
+          opacity: isDarkMode ? 0.4 : 0.5, // Higher opacity for light mode
+          width: isDarkMode ? 1 : 1.5, // Thicker lines
         },
         move: {
           direction: 'none',
@@ -82,7 +83,7 @@ export default function NeonParticles({ isDarkMode = false }) {
           value: 80,
         },
         opacity: {
-          value: { min: 0.3, max: 0.8 },
+          value: isDarkMode ? { min: 0.3, max: 0.8 } : { min: 0.6, max: 1 }, // Higher opacity for light mode
           animation: {
             enable: true,
             speed: 1,
@@ -93,7 +94,7 @@ export default function NeonParticles({ isDarkMode = false }) {
           type: 'circle',
         },
         size: {
-          value: { min: 1, max: 4 },
+          value: isDarkMode ? { min: 1, max: 4 } : { min: 2, max: 5 }, // Larger particles for light mode
           animation: {
             enable: true,
             speed: 2,
