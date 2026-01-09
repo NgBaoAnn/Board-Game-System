@@ -39,7 +39,9 @@ export const sampleAdminDashboardData = {
 };
 
 export default function AdminDashboardPage({ data } = {}) {
-    const { isDarkTheme } = useTheme();
+    const { isDarkMode } = useTheme();
+
+    console.log("AdminDashboardPage render with isDarkMode =", isDarkMode);
 
     const dashboard = data ?? sampleAdminDashboardData;
     const [range, setRange] = useState("7");
@@ -61,7 +63,7 @@ export default function AdminDashboardPage({ data } = {}) {
     const chartData = dashboard.chartData ?? computedChartData;
 
     const columnConfig = {
-        theme: isDarkTheme() ? { type: "dark" } : { type: "light" },
+        theme: isDarkMode ? { type: "dark" } : { type: "light" },
         data: chartData,
         xField: "month",
         yField: "value",
@@ -97,7 +99,7 @@ export default function AdminDashboardPage({ data } = {}) {
         }, []);
 
     const pieConfig = {
-        theme: isDarkTheme() ? { type: "dark" } : { type: "light" },
+        theme: isDarkMode ? { type: "dark" } : { type: "light" },
         appendPadding: 8,
         data: pieData,
         angleField: "value",
@@ -129,10 +131,10 @@ export default function AdminDashboardPage({ data } = {}) {
                             theme={{
                                 token: {
                                     colorPrimary: "#ec4899",
-                                    colorBgContainer: isDarkTheme() ? "#212f4d" : "#fbfbfb",
-                                    colorText: isDarkTheme() ? "#fff" : "#000",
+                                    colorBgContainer: isDarkMode ? "#212f4d" : "#fbfbfb",
+                                    colorText: isDarkMode ? "#fff" : "#000",
                                 },
-                                algorithm: isDarkTheme() ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                                algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
                             }}
                         >
                             <Select

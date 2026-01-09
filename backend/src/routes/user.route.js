@@ -12,6 +12,12 @@ router.post(
   userController.createUser
 );
 
+router.get(
+  "/users/counts",
+  authMiddleware.authorize([ROLE.ADMIN]),
+  userController.getUserCounts
+);
+
 router.get("/users/:id", userValidator.getById(), userController.getUser);
 
 router.put(
