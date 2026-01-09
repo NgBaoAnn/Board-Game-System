@@ -62,5 +62,14 @@ exports.seed = async function (knex) {
       board_row: 4,
       board_col: 4,
     },
+    {
+      code: GAME_TYPES.FREE_DRAW,
+      name: "Free Draw",
+      description:
+        "Create pixel art on a white canvas. Express your creativity!",
+      is_active: true,
+      board_row: 20,
+      board_col: 20,
+    },
   ]);
 };

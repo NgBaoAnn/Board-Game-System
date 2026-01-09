@@ -19,10 +19,11 @@ import {
     LogOut,
     RotateCcw,
     CornerDownLeft,
+    Pencil,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame } from '../../components/Game'
+import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
 import gameApi from '../../api/api-game.js'
 import { message } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
@@ -36,6 +37,7 @@ const GAME_ICONS = {
     'snake': Joystick,
     'match_3': Puzzle,
     'memory': Brain,
+    'free_draw': Pencil,
 }
 
 export default function BoardGamePage() {
@@ -162,6 +164,11 @@ export default function BoardGamePage() {
 
     // Handle START button click
     const handleStartClick = () => {
+        // Free Draw: start directly with unlimited time (no time selection)
+        if (currentGame?.code === 'free_draw') {
+            handleTimeConfirm(0) // 0 = unlimited
+            return
+        }
         setShowTimeModal(true)
     }
 
@@ -649,6 +656,24 @@ export default function BoardGamePage() {
             )
         }
 
+        if (currentGame.code === 'free_draw') {
+            return (
+                <FreeDrawGame
+                    isPlaying={isPlaying}
+                    score={score}
+                    onScoreChange={handleScoreChange}
+                    onGameEnd={handleGameEnd}
+                    savedState={savedState}
+                    onStateChange={handleStateChange}
+                    boardRows={currentGame.board_row || 20}
+                    boardCols={currentGame.board_col || 20}
+                    cursorRow={cursorRow}
+                    cursorCol={cursorCol}
+                    cellClickRef={cellClickRef}
+                />
+            )
+        }
+
         // Default: show BoardGrid for other games
         return (
             <BoardGrid
@@ -740,23 +765,35 @@ export default function BoardGamePage() {
 
             {/* RIGHT SIDE - Game Selector & Controls */}
             <aside className="w-full lg:w-80 xl:w-96 flex flex-col gap-3">
-                {/* Timer & Score - Compact in sidebar */}
-                <section className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                        <GameTimer
-                            timeRemaining={timeRemaining}
-                            isPlaying={isPlaying}
-                            onTimeUp={handleTimeUp}
-                            onTick={handleTick}
-                            compact={true}
-                        />
-                        <GameScore
-                            score={score}
-                            label="Score"
-                            compact={true}
-                        />
-                    </div>
-                </section>
+                {/* Timer & Score - Compact in sidebar (hidden for Free Draw) */}
+                {currentGame?.code !== 'free_draw' && (
+                    <section className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                            <GameTimer
+                                timeRemaining={timeRemaining}
+                                isPlaying={isPlaying}
+                                onTimeUp={handleTimeUp}
+                                onTick={handleTick}
+                                compact={true}
+                            />
+                            <GameScore
+                                score={score}
+                                label="Score"
+                                compact={true}
+                            />
+                        </div>
+                    </section>
+                )}
+
+                {/* Free Draw mode indicator */}
+                {currentGame?.code === 'free_draw' && gameStarted && (
+                    <section className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-3 rounded-xl shadow-sm">
+                        <div className="flex items-center justify-center gap-2">
+                            <Pencil size={18} />
+                            <span className="font-bold">Chế độ vẽ tự do - Không giới hạn thời gian</span>
+                        </div>
+                    </section>
+                )}
 
                 {/* Game Selector */}
                 <section className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex-1">
@@ -1114,6 +1151,19 @@ export default function BoardGamePage() {
                                 <p className="text-sm text-slate-600">
                                     Lật 2 thẻ để tìm cặp giống nhau. Ghi nhớ vị trí các thẻ đã lật!
                                     Đầu game sẽ hiện tất cả thẻ trong 2 giây. Tìm hết các cặp để hoàn thành.
+                                </p>
+                            </div>
+
+                            {/* Free Draw */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Pencil size={18} className="text-cyan-500" /> Free Draw
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Vẽ pixel art trên canvas trắng. Chọn màu từ bảng màu, click hoặc nhấn Enter để vẽ.
+                                    Phím <span className="font-mono bg-slate-200 px-1 rounded">E</span>: Bật/tắt tẩy • 
+                                    <span className="font-mono bg-slate-200 px-1 rounded">C</span>: Xóa canvas • 
+                                    <span className="font-mono bg-slate-200 px-1 rounded">P</span> hoặc click phải: Lấy màu từ ô.
                                 </p>
                             </div>
 
