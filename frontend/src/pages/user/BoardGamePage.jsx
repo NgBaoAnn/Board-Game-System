@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game } from '../../components/Game'
+import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame } from '../../components/Game'
 import gameApi from '../../api/api-game.js'
 import { message } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
@@ -56,6 +56,7 @@ export default function BoardGamePage() {
 
     // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
+    const [showHelpModal, setShowHelpModal] = useState(false)
 
     // Game state
     const [gameStarted, setGameStarted] = useState(false)
@@ -453,7 +454,41 @@ export default function BoardGamePage() {
 
     // Keyboard event listener
     useEffect(() => {
-        if (!gameStarted || !isPlaying || isPaused) return
+        // Game selection screen keyboard controls
+        if (!gameStarted) {
+            const handleSelectionKeyDown = (e) => {
+                switch (e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        e.preventDefault()
+                        handleLeft()
+                        break
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        e.preventDefault()
+                        handleRight()
+                        break
+                    case 'Enter':
+                    case ' ':
+                        e.preventDefault()
+                        if (currentGame) handleStartClick()
+                        break
+                    case 'Escape':
+                        e.preventDefault()
+                        handleBack()
+                        break
+                    default:
+                        break
+                }
+            }
+            window.addEventListener('keydown', handleSelectionKeyDown)
+            return () => window.removeEventListener('keydown', handleSelectionKeyDown)
+        }
+
+        // In-game keyboard controls
+        if (!isPlaying || isPaused) return
 
         const handleKeyDown = (e) => {
             switch (e.key) {
@@ -499,7 +534,7 @@ export default function BoardGamePage() {
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [gameStarted, isPlaying, isPaused, handleUp, handleDown, handleLeftNav, handleRightNav, handleEnter, handlePauseClick])
+    }, [gameStarted, isPlaying, isPaused, handleUp, handleDown, handleLeftNav, handleRightNav, handleEnter, handlePauseClick, handleLeft, handleRight, handleStartClick, handleBack, currentGame])
 
     // Reset cursor when game changes or starts
     useEffect(() => {
@@ -589,6 +624,24 @@ export default function BoardGamePage() {
                     onStateChange={handleStateChange}
                     boardRows={currentGame.board_row || 8}
                     boardCols={currentGame.board_col || 8}
+                    cursorRow={cursorRow}
+                    cursorCol={cursorCol}
+                    cellClickRef={cellClickRef}
+                />
+            )
+        }
+
+        if (currentGame.code === 'memory') {
+            return (
+                <MemoryGame
+                    isPlaying={isPlaying}
+                    score={score}
+                    onScoreChange={handleScoreChange}
+                    onGameEnd={handleGameEnd}
+                    savedState={savedState}
+                    onStateChange={handleStateChange}
+                    boardRows={currentGame.board_row || 4}
+                    boardCols={currentGame.board_col || 4}
                     cursorRow={cursorRow}
                     cursorCol={cursorCol}
                     cellClickRef={cellClickRef}
@@ -798,6 +851,7 @@ export default function BoardGamePage() {
                                 {/* Help & Back buttons */}
                                 <div className="flex items-center justify-between w-full">
                                     <button
+                                        onClick={() => setShowHelpModal(true)}
                                         aria-label="Help"
                                         className="arcade-btn px-4 py-2 rounded-xl bg-slate-100 text-slate-500 shadow-[0_3px_0_#cbd5e1] hover:bg-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
                                     >
@@ -963,6 +1017,129 @@ export default function BoardGamePage() {
                 onConfirm={handleTimeConfirm}
                 gameName={currentGame?.name || 'Game'}
             />
+
+            {/* Help Modal - Game Instructions */}
+            {showHelpModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 flex items-center justify-between">
+                            <h2 className="text-white font-bold text-lg flex items-center gap-2">
+                                <HelpCircle size={20} />
+                                Hướng Dẫn Chơi Game
+                            </h2>
+                            <button
+                                onClick={() => setShowHelpModal(false)}
+                                className="text-white/80 hover:text-white transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto max-h-[60vh] space-y-6">
+                            {/* Controls */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    🎮 Điều Khiển Chung
+                                </h3>
+                                <div className="bg-slate-50 rounded-lg p-3 text-sm space-y-1">
+                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">↑↓←→</span> hoặc <span className="font-mono bg-slate-200 px-1.5 rounded">WASD</span>: Di chuyển</p>
+                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">Enter</span> hoặc <span className="font-mono bg-slate-200 px-1.5 rounded">Space</span>: Chọn/Xác nhận</p>
+                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">ESC</span>: Tạm dừng / Quay lại</p>
+                                </div>
+                            </div>
+
+                            {/* Tic Tac Toe */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Grid3x3 size={18} className="text-indigo-500" /> Tic Tac Toe
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Đánh 3 quân liên tiếp theo hàng, cột hoặc đường chéo để thắng.
+                                    Bạn là X, máy là O. Di chuyển con trỏ và nhấn Enter để đặt quân.
+                                </p>
+                            </div>
+
+                            {/* Caro 4 */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Target size={18} className="text-emerald-500" /> Caro 4
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Tương tự Tic Tac Toe nhưng cần 4 quân liên tiếp trên bàn 10x10.
+                                    Chiến thuật quan trọng hơn!
+                                </p>
+                            </div>
+
+                            {/* Caro 5 */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Circle size={18} className="text-blue-500" /> Caro 5 (Gomoku)
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Cần 5 quân liên tiếp để thắng trên bàn 15x15.
+                                    Game cờ caro cổ điển, đòi hỏi tư duy chiến thuật cao.
+                                </p>
+                            </div>
+
+                            {/* Snake */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Joystick size={18} className="text-amber-500" /> Snake
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Điều khiển rắn ăn mồi để dài ra. Tránh đâm vào tường và thân mình.
+                                    Dùng phím mũi tên hoặc WASD để điều khiển hướng đi.
+                                </p>
+                            </div>
+
+                            {/* Match 3 */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Puzzle size={18} className="text-pink-500" /> Match 3
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Ghép 3+ icon giống nhau theo hàng/cột để ghi điểm.
+                                    Nhấn Enter để chọn ô, di chuyển đến ô kề bên và nhấn Enter để đổi chỗ.
+                                    Nhấn Enter lần nữa vào ô đã chọn để bỏ chọn. Combo sẽ được cộng thêm điểm!
+                                </p>
+                            </div>
+
+                            {/* Memory */}
+                            <div>
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <Brain size={18} className="text-purple-500" /> Memory
+                                </h3>
+                                <p className="text-sm text-slate-600">
+                                    Lật 2 thẻ để tìm cặp giống nhau. Ghi nhớ vị trí các thẻ đã lật!
+                                    Đầu game sẽ hiện tất cả thẻ trong 2 giây. Tìm hết các cặp để hoàn thành.
+                                </p>
+                            </div>
+
+                            {/* Tips */}
+                            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                <h3 className="font-bold text-amber-800 mb-2">💡 Mẹo</h3>
+                                <ul className="text-sm text-amber-700 space-y-1 list-disc list-inside">
+                                    <li>Bạn có thể lưu game và tiếp tục sau</li>
+                                    <li>Điểm cao sẽ được lưu vào bảng xếp hạng</li>
+                                    <li>Chọn thời gian chơi phù hợp với bạn</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-4 bg-slate-50 border-t">
+                            <button
+                                onClick={() => setShowHelpModal(false)}
+                                className="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:brightness-110 transition-all"
+                            >
+                                Đã hiểu, bắt đầu chơi!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
