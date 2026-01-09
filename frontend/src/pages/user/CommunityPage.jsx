@@ -1,123 +1,97 @@
-import { useState } from 'react'
-import { Tabs, Select, Avatar, Badge, message, Modal } from 'antd'
-import { MoreVertical, UserCheck, UserX } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Tabs, Select, Input, message, Modal } from 'antd'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Users, Search, Gamepad2, Sparkles } from 'lucide-react'
+import { FriendCard } from '@/components/Community/FriendCard'
+import { FriendRequestCard } from '@/components/Community/FriendRequestCard'
+import { EmptyState } from '@/components/Community/EmptyState'
 
-// Mock data
+// Mock data with enhanced fields
 const mockRequests = [
-  { id: 1, name: 'Sarah Jenkins', avatar: 'https://i.pravatar.cc/150?img=1', note: 'Wants to be friends' },
-  { id: 2, name: 'David Miller', avatar: 'https://i.pravatar.cc/150?img=2', note: 'Found via Catan Group' },
-  { id: 3, name: 'Elena Rodriguez', avatar: 'https://i.pravatar.cc/150?img=3', note: '4 Mutual Friends' },
+  {
+    id: 1,
+    name: 'Sarah Jenkins',
+    avatar: 'https://i.pravatar.cc/150?img=1',
+    note: 'Wants to be friends',
+    mutualFriends: 4,
+    gamesInCommon: ['Chess', 'Catan'],
+    tier: 'diamond',
+    isNew: true,
+  },
+  {
+    id: 2,
+    name: 'David Miller',
+    avatar: 'https://i.pravatar.cc/150?img=2',
+    note: 'Found via Catan Group',
+    mutualFriends: 2,
+    gamesInCommon: ['Catan'],
+    tier: 'gold',
+    isNew: false,
+  },
+  {
+    id: 3,
+    name: 'Elena Rodriguez',
+    avatar: 'https://i.pravatar.cc/150?img=3',
+    note: '4 Mutual Friends',
+    mutualFriends: 4,
+    gamesInCommon: ['Chess', 'Monopoly', 'Catan'],
+    tier: 'platinum',
+    isNew: true,
+  },
 ]
 
 const mockFriends = [
-  { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=4', status: 'online', activity: 'Playing Chess', lastSeen: 'Online now' },
-  { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', lastSeen: 'Online 5m ago' },
-  { id: 3, name: 'Tom Hiddleston', avatar: 'https://i.pravatar.cc/150?img=6', status: 'offline', activity: null, lastSeen: 'Last seen 2h ago' },
-  { id: 4, name: 'Anna Bell', avatar: 'https://i.pravatar.cc/150?img=7', status: 'offline', activity: null, lastSeen: 'Last seen 1d ago' },
-  { id: 5, name: 'Game Master X', avatar: 'https://i.pravatar.cc/150?img=8', status: 'online', activity: 'Playing Monopoly', lastSeen: 'Online now' },
-  { id: 6, name: 'StrategyQueen', avatar: 'https://i.pravatar.cc/150?img=9', status: 'online', activity: null, lastSeen: 'Online 15m ago' },
+  { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=4', status: 'online', activity: 'Playing Chess', playingFor: '15m', lastSeen: 'Online now', tier: 'grandmaster' },
+  { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', playingFor: null, lastSeen: 'Online 5m ago', tier: 'diamond' },
+  { id: 3, name: 'Tom Hiddleston', avatar: 'https://i.pravatar.cc/150?img=6', status: 'offline', activity: null, playingFor: null, lastSeen: 'Last seen 2h ago', tier: 'platinum' },
+  { id: 4, name: 'Anna Bell', avatar: 'https://i.pravatar.cc/150?img=7', status: 'offline', activity: null, playingFor: null, lastSeen: 'Last seen 1d ago', tier: 'gold' },
+  { id: 5, name: 'Game Master X', avatar: 'https://i.pravatar.cc/150?img=8', status: 'online', activity: 'Playing Monopoly', playingFor: '32m', lastSeen: 'Online now', tier: 'grandmaster' },
+  { id: 6, name: 'StrategyQueen', avatar: 'https://i.pravatar.cc/150?img=9', status: 'online', activity: null, playingFor: null, lastSeen: 'Online 15m ago', tier: 'diamond' },
 ]
-
-// Friend Request Card Component
-function FriendRequestCard({ friend, onAccept, onDecline }) {
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex flex-col items-center text-center transition-all hover:shadow-md">
-      <div className="relative mb-3">
-        <Avatar src={friend.avatar} size={80} className="border-4 border-white dark:border-gray-700 shadow-sm" />
-      </div>
-      <h3 className="font-bold text-gray-900 dark:text-white text-lg">{friend.name}</h3>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{friend.note}</p>
-      <div className="flex space-x-2 w-full mt-auto">
-        <button
-          onClick={() => onAccept(friend.id)}
-          className="flex-1 bg-[#1d7af2] hover:bg-blue-600 text-white text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1"
-        >
-          <UserCheck size={16} />
-          Accept
-        </button>
-        <button
-          onClick={() => onDecline(friend.id)}
-          className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1"
-        >
-          <UserX size={16} />
-          Decline
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Friend Card Component
-function FriendCard({ friend, onViewProfile, onRemove }) {
-  const isOnline = friend.status === 'online'
-
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex flex-col items-center relative group">
-      <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity p-1">
-        <MoreVertical size={18} />
-      </button>
-      <div className="relative mb-3">
-        <Avatar
-          src={friend.avatar}
-          size={80}
-          className={`border-4 border-white dark:border-gray-700 shadow-sm ${!isOnline ? 'grayscale opacity-90' : ''}`}
-        />
-        <Badge
-          status={isOnline ? 'success' : 'default'}
-          className="absolute bottom-1 right-1"
-          dot
-          style={{
-            width: 14,
-            height: 14,
-            borderRadius: '50%',
-            border: '2px solid white',
-          }}
-        />
-        <span
-          className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
-            isOnline ? 'bg-green-500' : 'bg-gray-400'
-          }`}
-        />
-      </div>
-      <h3 className="font-bold text-gray-900 dark:text-white text-lg truncate w-full text-center">
-        {friend.name}
-      </h3>
-      {friend.activity ? (
-        <p className="text-xs text-[#1d7af2] font-medium mb-1">{friend.activity}</p>
-      ) : (
-        <p className="text-xs text-gray-500 font-medium mb-1">{isOnline ? 'Online' : friend.lastSeen}</p>
-      )}
-      <p className="text-[11px] text-gray-400 mb-4">{friend.activity ? friend.lastSeen : '\u00A0'}</p>
-      <div className="grid grid-cols-2 gap-2 w-full mt-auto">
-        <button
-          onClick={() => onViewProfile(friend)}
-          className="flex items-center justify-center px-4 py-2 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-xs font-semibold rounded-lg transition-colors"
-        >
-          View Profile
-        </button>
-        <button
-          onClick={() => onRemove(friend.id)}
-          className="flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-500 dark:text-gray-400 text-xs font-semibold rounded-lg transition-colors"
-        >
-          Remove
-        </button>
-      </div>
-    </div>
-  )
-}
 
 export default function CommunityPage() {
   const [requests, setRequests] = useState(mockRequests)
   const [friends, setFriends] = useState(mockFriends)
   const [sortBy, setSortBy] = useState('status')
   const [activeTab, setActiveTab] = useState('friends')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Count online friends
+  const onlineCount = useMemo(() => friends.filter((f) => f.status === 'online').length, [friends])
+
+  // Filter and sort friends
+  const filteredFriends = useMemo(() => {
+    let result = [...friends]
+
+    // Apply search filter
+    if (searchQuery) {
+      result = result.filter((f) =>
+        f.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Apply sort
+    result.sort((a, b) => {
+      if (sortBy === 'status') {
+        if (a.status === 'online' && b.status !== 'online') return -1
+        if (a.status !== 'online' && b.status === 'online') return 1
+        return 0
+      }
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name)
+      }
+      return 0
+    })
+
+    return result
+  }, [friends, searchQuery, sortBy])
 
   const handleAcceptRequest = (id) => {
     const accepted = requests.find((r) => r.id === id)
     if (accepted) {
       setFriends((prev) => [
         ...prev,
-        { ...accepted, status: 'online', activity: null, lastSeen: 'Just added' },
+        { ...accepted, status: 'online', activity: null, lastSeen: 'Just added', tier: accepted.tier },
       ])
       setRequests((prev) => prev.filter((r) => r.id !== id))
       message.success(`${accepted.name} is now your friend!`)
@@ -134,6 +108,14 @@ export default function CommunityPage() {
     message.info(`Viewing ${friend.name}'s profile`)
   }
 
+  const handleInvite = (friend, type) => {
+    if (type === 'spectate') {
+      message.info(`Spectating ${friend.name}'s game...`)
+    } else {
+      message.success(`Game invite sent to ${friend.name}!`)
+    }
+  }
+
   const handleRemoveFriend = (id) => {
     const friend = friends.find((f) => f.id === id)
     Modal.confirm({
@@ -148,17 +130,9 @@ export default function CommunityPage() {
     })
   }
 
-  const sortedFriends = [...friends].sort((a, b) => {
-    if (sortBy === 'status') {
-      if (a.status === 'online' && b.status !== 'online') return -1
-      if (a.status !== 'online' && b.status === 'online') return 1
-      return 0
-    }
-    if (sortBy === 'name') {
-      return a.name.localeCompare(b.name)
-    }
-    return 0
-  })
+  const handleFindPlayers = () => {
+    message.info('Opening player finder...')
+  }
 
   const tabItems = [
     {
@@ -166,7 +140,7 @@ export default function CommunityPage() {
       label: (
         <span className="flex items-center gap-2">
           Friend List
-          <span className="bg-blue-100 dark:bg-blue-900/30 text-[#1d7af2] py-0.5 px-2.5 rounded-full text-xs font-semibold">
+          <span className="bg-slate-700 text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
             {friends.length}
           </span>
         </span>
@@ -178,7 +152,7 @@ export default function CommunityPage() {
         <span className="flex items-center gap-2">
           Friend Requests
           {requests.length > 0 && (
-            <span className="bg-red-100 dark:bg-red-900/30 text-red-600 py-0.5 px-2.5 rounded-full text-xs font-semibold">
+            <span className="bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
               {requests.length}
             </span>
           )}
@@ -188,76 +162,126 @@ export default function CommunityPage() {
   ]
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Friends</h1>
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabItems}
-          className="community-tabs"
-        />
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-3">
+          <Users className="text-[#00f0ff]" size={28} />
+          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#a855f7]">
+            Friends & Community
+          </h1>
+          {/* Online count badge */}
+          <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/30 px-3 py-1 rounded-full">
+            <span className="w-2 h-2 bg-green-500 rounded-full online-status-pulse" />
+            <span className="text-xs font-bold text-green-400">{onlineCount} Online</span>
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="flex-1 max-w-md">
+          <Input
+            placeholder="Search friends..."
+            prefix={<Search size={16} className="text-slate-400" />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-slate-800/50 border-slate-700 rounded-xl"
+            size="large"
+          />
+        </div>
+      </motion.div>
+
+      {/* Tabs */}
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={tabItems}
+        className="community-tabs"
+      />
 
       {/* Friend Requests Section */}
-      {activeTab === 'requests' && (
-        <div className="space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Pending Requests ({requests.length})
-          </h2>
-          {requests.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {requests.map((request) => (
-                <FriendRequestCard
-                  key={request.id}
-                  friend={request}
-                  onAccept={handleAcceptRequest}
-                  onDecline={handleDeclineRequest}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-              No pending friend requests
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* All Friends Section */}
-      {activeTab === 'friends' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              All Friends
+      <AnimatePresence mode="wait">
+        {activeTab === 'requests' && (
+          <motion.div
+            key="requests"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-4"
+          >
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <Sparkles size={14} />
+              Pending Requests ({requests.length})
             </h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>Sort by:</span>
-              <Select
-                value={sortBy}
-                onChange={setSortBy}
-                variant="borderless"
-                className="font-medium"
-                options={[
-                  { value: 'status', label: 'Online Status' },
-                  { value: 'name', label: 'Name (A-Z)' },
-                ]}
-              />
+            {requests.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {requests.map((request, index) => (
+                  <FriendRequestCard
+                    key={request.id}
+                    friend={request}
+                    index={index}
+                    onAccept={handleAcceptRequest}
+                    onDecline={handleDeclineRequest}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState type="requests" onAction={handleFindPlayers} />
+            )}
+          </motion.div>
+        )}
+
+        {/* All Friends Section */}
+        {activeTab === 'friends' && (
+          <motion.div
+            key="friends"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Gamepad2 size={14} />
+                All Friends ({filteredFriends.length})
+              </h2>
+              <div className="flex items-center space-x-2 text-sm text-slate-400">
+                <span>Sort by:</span>
+                <Select
+                  value={sortBy}
+                  onChange={setSortBy}
+                  variant="borderless"
+                  className="font-medium"
+                  popupClassName="!bg-slate-800"
+                  options={[
+                    { value: 'status', label: 'Online Status' },
+                    { value: 'name', label: 'Name (A-Z)' },
+                  ]}
+                />
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedFriends.map((friend) => (
-              <FriendCard
-                key={friend.id}
-                friend={friend}
-                onViewProfile={handleViewProfile}
-                onRemove={handleRemoveFriend}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+            {filteredFriends.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {filteredFriends.map((friend, index) => (
+                  <FriendCard
+                    key={friend.id}
+                    friend={friend}
+                    index={index}
+                    onViewProfile={handleViewProfile}
+                    onRemove={handleRemoveFriend}
+                    onInvite={handleInvite}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState type="friends" onAction={handleFindPlayers} />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
