@@ -25,6 +25,7 @@ import { useTheme } from '@/context/ThemeContext'
 import authApi from '@/api/api-auth'
 import GamingParticles from '@/components/common/GamingParticles'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
+import CustomCursor from '@/components/common/CustomCursor'
 
 
 const menuItems = [
@@ -90,6 +91,8 @@ export default function ClientLayout() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-slate-900 flex">
+      {/* Custom Gaming Cursor */}
+      <CustomCursor />
       {/* Sidebar - Adaptive Theme */}
       <aside
         className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${
