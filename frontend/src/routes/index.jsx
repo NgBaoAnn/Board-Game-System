@@ -20,7 +20,7 @@ import AdminUsersPage from '../pages/admin/AdminUsersPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
-import AdminAchievementsPage from '@/pages/AdminAchievementsPage'
+import AdminAchievementsPage from '@/pages/admin/AdminAchievementsPage'
 
 export const router = createBrowserRouter([
   {

@@ -61,12 +61,16 @@ body {
   --color-card-light: #ffffff;
   --color-text-light: #1f2937;
   --color-muted-light: #6b7280;
+  --color-surface-light: #ffffff;
+  --color-border-light: #e5e7eb;
 
   /* ===== Dark Mode ===== */
   --color-background-dark: #0f172a;
   --color-card-dark: #1e293b;
   --color-text-dark: #f3f4f6;
   --color-muted-dark: #9ca3af;
+  --color-surface-dark: #1f2937;
+  --color-border-dark: #374151;
 
   /* ===== Cosmic Arcade - Gaming Theme ===== */
   --color-deep-purple: #1a0a2e;
