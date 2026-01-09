@@ -15,11 +15,9 @@ export function GameSessionProvider({ children }) {
     const [showExitModal, setShowExitModal] = useState(false)
     const [pendingNavigation, setPendingNavigation] = useState(null) // { path, navigateFn }
 
-    // Refs for callbacks to avoid stale closure issues
     const saveCallbackRef = useRef(null)
     const exitCallbackRef = useRef(null)
 
-    // Block browser close/refresh when game is active
     useEffect(() => {
         const handleBeforeUnload = (e) => {
             if (isGameActive) {
@@ -33,14 +31,12 @@ export function GameSessionProvider({ children }) {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [isGameActive])
 
-    // Start game session protection
     const startSession = useCallback((saveCallback, exitCallback) => {
         setIsGameActive(true)
         saveCallbackRef.current = saveCallback
         exitCallbackRef.current = exitCallback
     }, [])
 
-    // End game session protection
     const endSession = useCallback(() => {
         setIsGameActive(false)
         saveCallbackRef.current = null
@@ -48,20 +44,15 @@ export function GameSessionProvider({ children }) {
         setPendingNavigation(null)
     }, [])
 
-    // Request navigation - shows modal if game is active
-    // Returns true if navigation allowed, false if blocked
-    // navigateFn is called after user chooses save/exit
     const requestNavigation = useCallback((targetPath, navigateFn) => {
         if (!isGameActive) {
             return true // allowed
         }
-        // Block and show modal
         setPendingNavigation({ path: targetPath, navigateFn })
         setShowExitModal(true)
         return false // blocked
     }, [isGameActive])
 
-    // Handle save from modal
     const handleSave = async () => {
         try {
             if (saveCallbackRef.current) {
@@ -70,7 +61,6 @@ export function GameSessionProvider({ children }) {
             setShowExitModal(false)
             setIsGameActive(false)
 
-            // Navigate to pending path if any
             if (pendingNavigation?.navigateFn) {
                 pendingNavigation.navigateFn()
             }
@@ -80,7 +70,6 @@ export function GameSessionProvider({ children }) {
         }
     }
 
-    // Handle exit from modal (không lưu)
     const handleExit = async () => {
         try {
             if (exitCallbackRef.current) {
@@ -89,7 +78,6 @@ export function GameSessionProvider({ children }) {
             setShowExitModal(false)
             setIsGameActive(false)
 
-            // Navigate to pending path if any
             if (pendingNavigation?.navigateFn) {
                 pendingNavigation.navigateFn()
             }
@@ -99,7 +87,6 @@ export function GameSessionProvider({ children }) {
         }
     }
 
-    // Handle cancel - continue playing
     const handleCancel = () => {
         setShowExitModal(false)
         setPendingNavigation(null)
@@ -116,7 +103,7 @@ export function GameSessionProvider({ children }) {
         <GameSessionContext.Provider value={value}>
             {children}
 
-            {/* Exit Confirmation Modal */}
+            
             <Modal
                 open={showExitModal}
                 onCancel={handleCancel}
@@ -133,7 +120,7 @@ export function GameSessionProvider({ children }) {
                     },
                 }}
             >
-                {/* Header */}
+                
                 <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-6 text-center">
                     <div className="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                         <AlertTriangle size={32} />
@@ -144,9 +131,9 @@ export function GameSessionProvider({ children }) {
                     </p>
                 </div>
 
-                {/* Actions */}
+                
                 <div className="p-6 space-y-3 bg-slate-50">
-                    {/* Save button */}
+                    
                     <button
                         onClick={handleSave}
                         className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
@@ -158,7 +145,7 @@ export function GameSessionProvider({ children }) {
                         </div>
                     </button>
 
-                    {/* Exit button */}
+                    
                     <button
                         onClick={handleExit}
                         className="w-full py-4 px-6 bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
@@ -170,7 +157,7 @@ export function GameSessionProvider({ children }) {
                         </div>
                     </button>
 
-                    {/* Cancel button */}
+                    
                     <button
                         onClick={handleCancel}
                         className="w-full py-3 px-6 bg-white text-slate-600 font-semibold rounded-xl border border-slate-200 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
@@ -190,7 +177,6 @@ export function GameSessionProvider({ children }) {
 export function useGameSession() {
     const context = useContext(GameSessionContext)
     if (!context) {
-        // Return dummy functions if not in provider (e.g., on other pages)
         return {
             isGameActive: false,
             startSession: () => { },

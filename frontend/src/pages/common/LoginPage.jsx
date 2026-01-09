@@ -6,17 +6,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
 import AuthLayout from '@/components/layout/AuthLayout'
 import SocialLoginButtons from '@/components/common/SocialLoginButtons'
+import FloatingGamePieces from '@/components/common/FloatingGamePieces'
+import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
+import TypewriterText from '@/components/common/TypewriterText'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 import authApi from '@/api/api-auth'
 import { useAuth } from '@/store/useAuth'
 
-// Validation schema
 const loginSchema = Joi.object({
   email: commonSchemas.email,
   password: commonSchemas.password,
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -25,9 +26,17 @@ const formVariants = {
 }
 
 const buttonVariants = {
-  idle: { scale: 1 },
-  hover: { scale: 1.03, boxShadow: '0 10px 40px -10px rgba(29, 122, 242, 0.5)' },
-  tap: { scale: 0.97 },
+  idle: { scale: 1, y: 0 },
+  hover: { 
+    scale: 1.02, 
+    y: -2,
+    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)' 
+  },
+  tap: { 
+    scale: 0.98, 
+    y: 2,
+    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)' 
+  },
 }
 
 export default function LoginPage() {
@@ -63,68 +72,73 @@ export default function LoginPage() {
   }
 
   const rightContent = (
-    <>
-      <img
-        alt="Catan board game close up with depth of field"
-        className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0rYUZTmwMe11ZhJQSf5l8BZPDiLW22TF5V0RoiJKOPguv2CPq2CZuiFd5FkZIbJABPMNg_3zT6q0FBIWmd62l_IveebetIvauJc1NpZP0NPFPJLSVHOQDBtrvbPLullL4pkM-rv1EyEG2IUD4lCxbST_a9gmJTWvx7g_6YX1ZnJ1YgY2Xw85cseQTHAycvAkumrzXL85T_h9Mfg14HVoo-3JUxcqJXstXiu3XWg8joz9UVRyzw0EVp17rNS5_Uwli3n4RDew5jVE"
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-purple-900/90 mix-blend-multiply" />
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
+    <AnimatedHeroBackground>
+      
+      <FloatingGamePieces count={20} />
+
+      
       <div className="relative h-full flex flex-col justify-between p-12 text-white z-10">
+        
         <div className="flex justify-end">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 text-xs font-medium border border-white/20"
+            className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 text-xs font-medium border border-[#00f0ff]/30 shadow-lg shadow-[#00f0ff]/10"
           >
-            <span className="text-yellow-300 mr-1">★</span> Top Rated Strategy Platform
+            <span className="text-[#00f0ff] mr-1">⚡</span> Top Rated Strategy Platform
           </motion.div>
         </div>
+
+        
         <div className="space-y-6">
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl"
+            className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl"
           >
             <div className="flex items-center space-x-3 mb-4">
-              <img
-                alt="User Avatar"
-                className="w-10 h-10 rounded-full border-2 border-blue-500"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuADRY_n1xchUMFKp_tm-tC82w-0cRvV-mSE_Hmi62A4x38PwBnfr6AaRaqfdNyGvRpDFOPnTm4Qxj2XZePwBEXhcXdzCAikpEe8nwvQwlu9tMjx6qRPC1YwLRm3HrfJqdESMRarUWVsD9SYPUrPcqHNGSQRfn2N_lTIPX0jMX40MdTHtuFB7TayIRC0BKcascq0gdyEoLvbHsmCdQsvA4aGgQ4GS3bBv1HlkQL7tPvSDHN162njVDZUgV1H83HdGwHrw1znwd60np4"
-              />
+              <div className="relative">
+                <img
+                  alt="User Avatar"
+                  className="w-12 h-12 rounded-full border-2 border-[#00f0ff]"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuADRY_n1xchUMFKp_tm-tC82w-0cRvV-mSE_Hmi62A4x38PwBnfr6AaRaqfdNyGvRpDFOPnTm4Qxj2XZePwBEXhcXdzCAikpEe8nwvQwlu9tMjx6qRPC1YwLRm3HrfJqdESMRarUWVsD9SYPUrPcqHNGSQRfn2N_lTIPX0jMX40MdTHtuFB7TayIRC0BKcascq0gdyEoLvbHsmCdQsvA4aGgQ4GS3bBv1HlkQL7tPvSDHN162njVDZUgV1H83HdGwHrw1znwd60np4"
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#1a0a2e]" />
+              </div>
               <div>
-                <h3 className="font-bold text-sm">Marcus Chen</h3>
-                <p className="text-xs text-blue-200">Chess Grandmaster</p>
+                <h3 className="font-bold text-sm text-white">Marcus Chen</h3>
+                <p className="text-xs text-[#00f0ff]">Chess Grandmaster</p>
               </div>
             </div>
-            <p className="text-blue-100 text-sm italic leading-relaxed">
-              &quot;BoardGameHub has completely transformed how I practice. The matchmaking is instant
-              and the community is incredibly welcoming.&quot;
+            <p className="text-gray-300 text-sm italic leading-relaxed">
+              &quot;<TypewriterText 
+                text="BoardGameHub has completely transformed how I practice. The matchmaking is instant and the community is incredibly welcoming."
+                delay={1}
+                speed={40}
+              />&quot;
             </p>
           </motion.div>
+
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <h2 className="text-3xl font-bold mb-2">Join the Community</h2>
-            <p className="text-blue-200 text-sm max-w-sm">
-              Connect with over 10,000 players worldwide. Challenge friends, join tournaments, and
-              master your favorite games.
+            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-[#00f0ff] to-[#a855f7] bg-clip-text text-transparent">
+              Join the Community
+            </h2>
+            <p className="text-gray-400 text-sm max-w-sm">
+              Connect with over <span className="text-[#00f0ff] font-semibold">10,000+</span> players worldwide. 
+              Challenge friends, join tournaments, and master your favorite games.
             </p>
           </motion.div>
         </div>
       </div>
-    </>
+    </AnimatedHeroBackground>
   )
 
   return (
@@ -134,30 +148,30 @@ export default function LoginPage() {
         animate={formState}
         className="space-y-0"
       >
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center space-x-3 mb-10"
+          className="flex items-center space-x-4 mb-10"
         >
           <motion.div
-            whileHover={{ rotate: 10 }}
-            className="bg-[#1d7af2] w-10 h-10 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30 text-white"
+            whileHover={{ rotate: 10, scale: 1.05 }}
+            className="bg-gradient-to-br from-[#00f0ff] to-[#a855f7] w-14 h-14 rounded-xl flex items-center justify-center text-white animate-neon-glow"
           >
-            <Gamepad2 size={24} />
+            <Gamepad2 size={28} />
           </motion.div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
               BoardGameHub
             </h1>
-            <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-wide">
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-widest">
               Strategy Awaits
             </p>
           </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,7 +186,7 @@ export default function LoginPage() {
           </p>
         </motion.div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -218,12 +232,12 @@ export default function LoginPage() {
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox className="text-slate-500 dark:text-gray-400">Remember me</Checkbox>
             </Form.Item>
-            <a
-              href="#"
+            <Link
+              to="/forgot-password"
               className="font-medium text-[#1d7af2] hover:text-blue-700 transition-colors"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <Form.Item>
@@ -234,7 +248,7 @@ export default function LoginPage() {
               whileHover="hover"
               whileTap="tap"
               disabled={loading}
-              className="w-full h-12 rounded-xl text-base font-bold bg-[#1d7af2] text-white shadow-lg shadow-blue-500/30 border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl text-base font-bold bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
             >
               <AnimatePresence mode="wait">
                 {loading ? (
@@ -261,7 +275,7 @@ export default function LoginPage() {
           </Form.Item>
         </Form>
 
-        {/* Divider */}
+        
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
@@ -273,13 +287,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Social Buttons */}
+        
         <SocialLoginButtons
           onGoogleClick={() => message.info('Google login clicked')}
           onFacebookClick={() => message.info('Facebook login clicked')}
         />
 
-        {/* Register Link */}
+        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

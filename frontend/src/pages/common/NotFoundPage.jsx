@@ -5,7 +5,7 @@ import robotAnimation from '@/assets/animations/404-robot.json'
 export default function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Robot Animation */}
+      
       <div className="w-64 h-64 md:w-80 md:h-80 mb-4">
         <Lottie
           animationData={robotAnimation}
@@ -14,7 +14,7 @@ export default function NotFoundPage() {
         />
       </div>
 
-      {/* Error Message */}
+      
       <div className="text-center px-4">
         <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
           404
@@ -26,7 +26,7 @@ export default function NotFoundPage() {
           Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên hoặc tạm thời không khả dụng.
         </p>
 
-        {/* Back to Home Button */}
+        
         <Link
           to="/"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

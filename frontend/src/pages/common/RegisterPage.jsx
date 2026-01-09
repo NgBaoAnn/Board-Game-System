@@ -7,10 +7,12 @@ import Joi from 'joi'
 import AuthLayout from '@/components/layout/AuthLayout'
 import SocialLoginButtons from '@/components/common/SocialLoginButtons'
 import PasswordStrength from '@/components/common/PasswordStrength'
+import FloatingGamePieces from '@/components/common/FloatingGamePieces'
+import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
+import TypewriterText from '@/components/common/TypewriterText'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 import authApi from '@/api/api-auth'
 
-// Validation schema
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).required().messages({
     'string.min': 'Username must be at least 3 characters',
@@ -31,7 +33,6 @@ const registerSchema = Joi.object({
   }),
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -40,9 +41,17 @@ const formVariants = {
 }
 
 const buttonVariants = {
-  idle: { scale: 1 },
-  hover: { scale: 1.03, boxShadow: '0 10px 40px -10px rgba(29, 122, 242, 0.5)' },
-  tap: { scale: 0.97 },
+  idle: { scale: 1, y: 0 },
+  hover: { 
+    scale: 1.02, 
+    y: -2,
+    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)' 
+  },
+  tap: { 
+    scale: 0.98, 
+    y: 2,
+    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)' 
+  },
 }
 
 export default function RegisterPage() {
@@ -70,13 +79,8 @@ export default function RegisterPage() {
   }
 
   const rightContent = (
-    <>
-      <img
-        alt="Board game pieces"
-        className="absolute inset-0 w-full h-full object-cover opacity-60"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHqOVuVYlEVvxqIDVfnl5eCvP5HXQ7u_vhXhXk8AQ0GisbKjyCEHk1KD4rWcZYGWHxhVFCC-QbFmyoYpHQgS3RSyboVb64jMedM8rCJ26JAm86COyUgQU6yzXcp7zRqfFhJ6lrm91sPoKiGLjeCH4UAOeyd_hTsQjkCx7jTeQ1GB478Vzp_rtUN1zd7HJC5wy29ahZXkCW_dV5Vu1ekjfGLKIZSMA3xy8XlK-sM9Sdj4SlulfUMU134_tCETxrA7ecxyYEkQ5HyGs"
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-transparent to-black/60" />
+    <AnimatedHeroBackground>
+      <FloatingGamePieces count={20} />
       <div className="absolute inset-0 flex flex-col justify-between p-12 lg:p-16 text-white z-10">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -84,7 +88,7 @@ export default function RegisterPage() {
           transition={{ delay: 0.5 }}
           className="flex justify-end"
         >
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 flex items-center gap-2">
+          <div className="bg-white/10 backdrop-blur-md border border-[#00f0ff]/30 rounded-full px-4 py-1.5 flex items-center gap-2 shadow-lg shadow-[#00f0ff]/10">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span className="text-white text-xs font-medium tracking-wide">12,403 Players Online</span>
           </div>
@@ -95,54 +99,61 @@ export default function RegisterPage() {
           transition={{ delay: 0.6 }}
           className="max-w-lg"
         >
-          <span className="inline-block py-1 px-3 rounded-full bg-orange-100 text-orange-700 text-xs font-bold mb-4 uppercase tracking-wider">
-            Featured Game
+          <span className="inline-block py-1 px-3 rounded-full bg-[#00f0ff]/20 text-[#00f0ff] text-xs font-bold mb-4 uppercase tracking-wider border border-[#00f0ff]/30">
+            🎮 Featured Game
           </span>
-          <h2 className="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-4">
-            Strategy Awaits: <br />
-            Master Catan Today
+          <h2 className="text-4xl xl:text-5xl font-extrabold leading-tight mb-4 bg-gradient-to-r from-white via-[#00f0ff] to-[#a855f7] bg-clip-text text-transparent">
+            Strategy Awaits
           </h2>
-          <p className="text-lg text-gray-200 mb-8 leading-relaxed">
-            Build settlements, trade resources, and pave your way to victory. Join the ultimate
-            community for board game enthusiasts.
+          <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+            <TypewriterText 
+              text="Build settlements, trade resources, and pave your way to victory. Join the ultimate community for board game enthusiasts."
+              delay={0.8}
+              speed={50}
+            />
           </p>
           <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
+            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-[#00f0ff]/30 rounded-lg px-4 py-2">
               <Star size={16} className="text-yellow-400" />
               <span className="text-white text-sm font-medium">4.9 Rating</span>
             </div>
-            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
-              <Trophy size={16} className="text-blue-400" />
+            <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-[#a855f7]/30 rounded-lg px-4 py-2">
+              <Trophy size={16} className="text-[#a855f7]" />
               <span className="text-white text-sm font-medium">Daily Tournaments</span>
             </div>
           </div>
         </motion.div>
       </div>
-    </>
+    </AnimatedHeroBackground>
   )
 
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center gap-3 mb-8"
+          className="flex items-center gap-4 mb-8"
         >
           <motion.div
-            whileHover={{ rotate: 10 }}
-            className="bg-[#1d7af2] w-10 h-10 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30 text-white"
+            whileHover={{ rotate: 10, scale: 1.05 }}
+            className="bg-gradient-to-br from-[#00f0ff] to-[#a855f7] w-14 h-14 rounded-xl flex items-center justify-center text-white animate-neon-glow"
           >
-            <Gamepad2 size={24} />
+            <Gamepad2 size={28} />
           </motion.div>
-          <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            BoardGameHub
-          </span>
+          <div>
+            <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+              BoardGameHub
+            </span>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-widest">
+              Join the Game
+            </p>
+          </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,7 +165,7 @@ export default function RegisterPage() {
           </h1>
         </motion.div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -270,7 +281,7 @@ export default function RegisterPage() {
               whileHover="hover"
               whileTap="tap"
               disabled={loading}
-              className="w-full h-12 rounded-xl text-base font-bold bg-[#1d7af2] text-white shadow-lg shadow-blue-500/30 border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl text-base font-bold bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
             >
               <AnimatePresence mode="wait">
                 {loading ? (
@@ -297,7 +308,7 @@ export default function RegisterPage() {
           </Form.Item>
         </Form>
 
-        {/* Divider */}
+        
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
@@ -309,13 +320,13 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Social Buttons */}
+        
         <SocialLoginButtons
           onGoogleClick={() => message.info('Google signup clicked')}
           onFacebookClick={() => message.info('Facebook signup clicked')}
         />
 
-        {/* Login Link */}
+        
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

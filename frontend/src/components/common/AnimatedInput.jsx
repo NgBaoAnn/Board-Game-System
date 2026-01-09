@@ -35,7 +35,7 @@ export default function AnimatedInput({
       animate={hasError ? { x: [0, -6, 6, -4, 4, 0] } : {}}
       transition={{ duration: 0.4 }}
     >
-      {/* Floating Label */}
+      
       {label && (
         <motion.label
           className={`block text-sm font-semibold mb-2 transition-colors ${
@@ -49,7 +49,7 @@ export default function AnimatedInput({
         </motion.label>
       )}
 
-      {/* Input with focus glow */}
+      
       <motion.div
         className={`rounded-lg transition-shadow ${
           isFocused ? 'input-focus-glow' : ''
@@ -85,7 +85,7 @@ export default function AnimatedInput({
         />
       </motion.div>
 
-      {/* Error Message */}
+      
       <AnimatePresence>
         {hasError && errorMessage && (
           <motion.p

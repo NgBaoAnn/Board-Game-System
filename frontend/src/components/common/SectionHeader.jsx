@@ -19,7 +19,7 @@ export default function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <h3 className="text-xl font-bold tracking-tight text-slate-800">{title}</h3>
+      <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">{title}</h3>
       
       {viewAllLink && (
         <Link to={viewAllLink} className="text-sm font-bold text-blue-500 hover:underline">

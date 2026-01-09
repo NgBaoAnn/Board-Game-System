@@ -18,6 +18,12 @@ router.get(
   userController.getUserCounts
 );
 
+router.get(
+  "/users/stats/registrations",
+  authMiddleware.authorize([ROLE.ADMIN]),
+  userController.getUserRegistrations
+);
+
 router.get("/users/:id", userValidator.getById(), userController.getUser);
 
 router.put(

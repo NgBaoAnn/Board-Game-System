@@ -124,6 +124,130 @@ class GameRepo {
 
     return Number(result[0].total);
   }
+
+  async getGamePlayStats(filter) {
+    const now = new Date();
+    let startDate;
+    let stats = {};
+
+    if (filter === "7d" || !filter) {
+      // Last 7 days - group by day of month
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize all 7 days with 0
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.GAME_SESSION)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "30d") {
+      // Last 30 days - group by day of month
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize all 30 days with 0
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.GAME_SESSION)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "12m") {
+      // Last 12 months - group by month
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 11);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize all 12 months with 0
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(startDate);
+        date.setMonth(startDate.getMonth() + i);
+        const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+        stats[month.toString()] = 0;
+      }
+
+      const results = await db(MODULE.GAME_SESSION)
+        .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(MONTH FROM created_at)")
+        .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    }
+
+    return stats;
+  }
+
+  async getGameActivity(filter) {
+    let startDate;
+    const now = new Date();
+
+    if (filter === "7d") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (filter === "30d") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (filter === "12m") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 11);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      // Default to all time
+      startDate = new Date(0);
+    }
+
+    const results = await db(MODULE.GAME)
+      .select("games.name")
+      .count("game_sessions.id as total_sessions")
+      .leftJoin(MODULE.GAME_SESSION, function () {
+        this.on("games.id", "=", "game_sessions.game_id").andOn(
+          "game_sessions.created_at",
+          ">=",
+          db.raw("?", [startDate])
+        );
+      })
+      .groupBy("games.id", "games.name")
+      .orderBy("total_sessions", "desc");
+
+    return results.map((row) => ({
+      name: row.name,
+      total_sessions: parseInt(row.total_sessions) || 0,
+    }));
+  }
 }
 
 module.exports = new GameRepo();

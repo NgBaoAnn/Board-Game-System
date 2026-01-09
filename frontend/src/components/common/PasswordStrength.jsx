@@ -11,17 +11,14 @@ export default function PasswordStrength({ password = '' }) {
 
     let score = 0
 
-    // Length check
     if (password.length >= 6) score += 1
     if (password.length >= 10) score += 1
 
-    // Character diversity
     if (/[a-z]/.test(password)) score += 1
     if (/[A-Z]/.test(password)) score += 1
     if (/[0-9]/.test(password)) score += 1
     if (/[^a-zA-Z0-9]/.test(password)) score += 1
 
-    // Normalize to 0-4 scale
     const normalizedScore = Math.min(Math.floor(score / 1.5), 4)
 
     const labels = ['', 'Weak', 'Fair', 'Good', 'Strong']

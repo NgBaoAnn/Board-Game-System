@@ -40,7 +40,7 @@ export default function TimeSelectionModal({ open, onClose, onConfirm, gameName 
                 },
             }}
         >
-            {/* Header */}
+            
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-2xl flex items-center justify-center">
                     <Clock size={32} />
@@ -49,7 +49,7 @@ export default function TimeSelectionModal({ open, onClose, onConfirm, gameName 
                 <p className="text-white/80 text-sm">{gameName}</p>
             </div>
 
-            {/* Time Options */}
+            
             <div className="p-6">
                 <Radio.Group
                     value={selectedTime}
@@ -88,7 +88,7 @@ export default function TimeSelectionModal({ open, onClose, onConfirm, gameName 
                     </div>
                 </Radio.Group>
 
-                {/* Action Buttons */}
+                
                 <div className="flex gap-3 mt-6">
                     <Button
                         onClick={onClose}
