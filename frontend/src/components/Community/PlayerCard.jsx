@@ -1,6 +1,7 @@
 import { Avatar, Tooltip } from 'antd'
 import { UserPlus, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
 const tierConfig = {
   grandmaster: { border: 'from-purple-500 to-violet-600', glow: 'avatar-glow-grandmaster', label: 'Grandmaster' },
