@@ -1,20 +1,28 @@
 import { createBrowserRouter } from 'react-router-dom'
 import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
-import HomePage from '../pages/HomePage'
-import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
-import NotFoundPage from '../pages/NotFoundPage'
-import BoardGamePage from '../pages/BoardGamePage'
-import AdminPage from '../pages/AdminPage'
-import AdminUsersPage from '../pages/AdminUsersPage'
-import AdminDashboardPage from '@/pages/AdminDashboardPage'
-import AdminGamesPage from '@/pages/AdminGamesPage'
+import HomePage from '../pages/user/HomePage'
+import LoginPage from '../pages/common/LoginPage'
+import RegisterPage from '../pages/common/RegisterPage'
+import SettingPage from '../pages/common/SettingPage'
+import ForgotPasswordPage from '../pages/common/ForgotPasswordPage'
+import VerifyOTPPage from '../pages/common/VerifyOTPPage'
+import ResetPasswordPage from '../pages/common/ResetPasswordPage'
+import NotFoundPage from '../pages/common/NotFoundPage'
+import BoardGamePage from '../pages/user/BoardGamePage'
+import CommunityPage from '../pages/user/CommunityPage'
+import ProfilePage from '../pages/user/ProfilePage'
+import FriendProfilePage from '../pages/user/FriendProfilePage'
+import RankingPage from '../pages/user/RankingPage'
+import MessagePage from '../pages/user/MessagePage'
+import AdminPage from '../pages/admin/AdminPage'
+import AdminUsersPage from '../pages/admin/AdminUsersPage'
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
+import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
 import AdminAchievementsPage from '@/pages/AdminAchievementsPage'
 
 export const router = createBrowserRouter([
-  // Routes with shared ClientLayout (sidebar + header)
   {
     element: <ClientLayout />,
     children: [
@@ -25,11 +33,34 @@ export const router = createBrowserRouter([
       {
         path: '/boardgame',
         element: <BoardGamePage />,
+      },
+      {
+        path: '/community',
+        element: <CommunityPage />,
+      },
+      {
+        path: '/profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: '/player/:id',
+        element: <FriendProfilePage />,
+      },
+      {
+        path: '/rankings',
+        element: <RankingPage />,
+      },
+      {
+        path: '/messages',
+        element: <MessagePage />,
+      },
+      {
+        path: '/settings',
+        element: <SettingPage />,
       }
     ],
     errorElement: <NotFoundPage />,
   },
-  // Auth routes without shared layout
   {
     path: '/login',
     element: <LoginPage />,
@@ -38,7 +69,18 @@ export const router = createBrowserRouter([
     path: '/register',
     element: <RegisterPage />,
   },
-  // Admin routes
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: '/verify-otp',
+    element: <VerifyOTPPage />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
+  },
   {
     path: '/admin',
     element: (

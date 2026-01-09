@@ -9,6 +9,7 @@ yarn-error.log*
 .env.production
 !.env.example
 
+.DS_Store
 
 
 logs/

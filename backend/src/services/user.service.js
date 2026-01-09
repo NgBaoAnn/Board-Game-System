@@ -37,7 +37,7 @@ class UserService {
     return sanitizeUser(user);
   }
 
-  async getAllUser({ page = 1, limit = 10, search = '', role = '', active = null } = {}) {
+  async getAllUser({ page = 1, limit = 10, search, role, active } = {}) {
     const offset = (page - 1) * limit;
 
     const [listUsers, total] = await Promise.all([
@@ -68,6 +68,10 @@ class UserService {
 
   async getUserCounts() {
     return await userRepo.getUserCounts();
+  }
+
+  async getUserRegistrations() {
+    return await userRepo.getUserRegistrations();
   }
 }
 

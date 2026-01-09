@@ -2,8 +2,8 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class UserRepo {
-  findAll({ offset = 0, limit = 10, search = '', role = '', active = null } = {}) {
-    const query = db({ u: MODULE.USER })
+  findAll({ offset = 0, limit = 10, search, role, active } = {}) {
+    let query = db({ u: MODULE.USER })
       .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
       .select(
         "u.id",
@@ -21,52 +21,55 @@ class UserRepo {
       `)
       );
 
-    // Apply search filter
+    // Apply filters
     if (search) {
-      query.where(function () {
-        this.where('u.username', 'ilike', `%${search}%`)
-          .orWhere('u.email', 'ilike', `%${search}%`)
-          .orWhereRaw("CAST(u.id AS TEXT) ILIKE ?", [`%${search}%`]);
+      query = query.where(function () {
+        this.where("u.username", "ilike", `%${search}%`).orWhere(
+          "u.email",
+          "ilike",
+          `%${search}%`
+        );
       });
     }
 
-    // Apply role filter
-    if (role && role !== 'all') {
-      query.where('r.name', role);
+    if (role) {
+      query = query.where("r.name", role);
     }
 
-    // Apply active filter
-    if (active !== null && active !== 'all') {
-      query.where('u.active', active === 'true' || active === true);
+    if (active !== undefined && active !== "") {
+      query = query.where("u.active", active === "true");
     }
 
-    return query.limit(limit).offset(offset);
+    return query.limit(limit).offset(offset).orderBy("u.created_at", "desc");
   }
-  countAll({ search = '', role = '', active = null } = {}) {
-    const query = db({ u: MODULE.USER })
-      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
-      .count("* as total");
 
-    // Apply search filter
+  countAll({ search, role, active } = {}) {
+    let query = db({ u: MODULE.USER }).leftJoin(
+      { r: MODULE.ROLE },
+      "u.role_id",
+      "r.id"
+    );
+
+    // Apply same filters
     if (search) {
-      query.where(function () {
-        this.where('u.username', 'ilike', `%${search}%`)
-          .orWhere('u.email', 'ilike', `%${search}%`)
-          .orWhereRaw("CAST(u.id AS TEXT) ILIKE ?", [`%${search}%`]);
+      query = query.where(function () {
+        this.where("u.username", "ilike", `%${search}%`).orWhere(
+          "u.email",
+          "ilike",
+          `%${search}%`
+        );
       });
     }
 
-    // Apply role filter
-    if (role && role !== 'all') {
-      query.where('r.name', role);
+    if (role) {
+      query = query.where("r.name", role);
     }
 
-    // Apply active filter
-    if (active !== null && active !== 'all') {
-      query.where('u.active', active === 'true' || active === true);
+    if (active !== undefined && active !== "") {
+      query = query.where("u.active", active === "true");
     }
 
-    return query.first();
+    return query.count("* as total").first();
   }
 
   findById(id) {
@@ -132,13 +135,67 @@ class UserRepo {
     return db(MODULE.USER).where({ id }).del();
   }
 
+  saveResetOtp(id, otp, minutesValid = 5) {
+    return db(MODULE.USER)
+      .where({ id })
+      .update({
+        reset_otp: otp,
+        reset_otp_expires_at: db.raw(
+          `NOW() + INTERVAL '${minutesValid} minutes'`
+        ),
+      });
+  }
+
+  findByResetOtp(email, otp) {
+    return db(MODULE.USER)
+      .where({ email, reset_otp: otp })
+      .where("reset_otp_expires_at", ">", db.fn.now())
+      .first();
+  }
+
+  clearResetOtp(id) {
+    return db(MODULE.USER).where({ id }).update({
+      reset_otp: null,
+      reset_otp_expires_at: null,
+    });
+  }
+
+  saveResetToken(id, token, minutesValid = 15) {
+    return db(MODULE.USER)
+      .where({ id })
+      .update({
+        reset_token: token,
+        reset_token_expires_at: db.raw(
+          `NOW() + INTERVAL '${minutesValid} minutes'`
+        ),
+        reset_otp: null,
+        reset_otp_expires_at: null,
+      });
+  }
+
+  findByResetToken(token) {
+    return db(MODULE.USER)
+      .where({ reset_token: token })
+      .where("reset_token_expires_at", ">", db.fn.now())
+      .first();
+  }
+
+  updatePassword(id, hashedPassword) {
+    return db(MODULE.USER).where({ id }).update({
+      password: hashedPassword,
+      reset_token: null,
+      reset_token_expires_at: null,
+    });
+  }
   async getUserCounts() {
     const result = await db({ u: MODULE.USER })
       .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
       .select(
         db.raw("COUNT(*) as total_users"),
         db.raw("COUNT(CASE WHEN r.name = 'user' THEN 1 END) as total_players"),
-        db.raw("COUNT(CASE WHEN DATE(u.created_at) = CURRENT_DATE THEN 1 END) as total_users_created_today"),
+        db.raw(
+          "COUNT(CASE WHEN DATE(u.created_at) = CURRENT_DATE THEN 1 END) as total_users_created_today"
+        ),
         db.raw("COUNT(CASE WHEN u.active = false THEN 1 END) as total_banned")
       )
       .first();
@@ -149,6 +206,30 @@ class UserRepo {
       totalUsersCreatedToday: parseInt(result.total_users_created_today) || 0,
       totalBanned: parseInt(result.total_banned) || 0,
     };
+  }
+
+  async getUserRegistrations() {
+    // Get user registrations for the last 6 months
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setMonth(startDate.getMonth() - 5);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const results = await db(MODULE.USER)
+      .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as month"))
+      .count("id as count")
+      .where("created_at", ">=", startDate)
+      .groupByRaw("EXTRACT(MONTH FROM created_at)")
+      .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+    // Convert to the expected format { "month": count }
+    const stats = {};
+    results.forEach((row) => {
+      stats[row.month.toString()] = parseInt(row.count);
+    });
+
+    return stats;
   }
 }
 

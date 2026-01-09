@@ -11,14 +11,21 @@
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",
+    "@lottiefiles/dotlottie-react": "^0.17.12",
     "@tailwindcss/vite": "^4.1.18",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.9.1",
     "antd": "^6.1.2",
     "axios": "^1.13.2",
+    "framer-motion": "^12.24.11",
+    "joi": "^18.0.2",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

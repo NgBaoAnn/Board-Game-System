@@ -73,7 +73,6 @@ class GameService {
       user_id: userId,
       game_id: gameId,
       status: GAME_SESSION_STATUS.PLAYING,
-      time_remaining_seconds: null,
       final_score: null,
       ended_at: null,
     });
@@ -139,7 +138,6 @@ class GameService {
 
     const updatedSession = await gameRepo.updateSession(sessionId, {
       status: GAME_SESSION_STATUS.PAUSED,
-      time_remaining_seconds: saveState.time_remaining_seconds || null,
     });
 
     const save = await gameRepo.createSave({
@@ -212,10 +210,12 @@ class GameService {
     };
   }
 
-  async countGameSession(gameId) {
-    return {
-      turn_count: await gameRepo.countGameSession(gameId),
-    };
+  async getGamePlayStats(filter) {
+    return await gameRepo.getGamePlayStats(filter);
+  }
+
+  async getGameActivity(filter) {
+    return await gameRepo.getGameActivity(filter);
   }
 }
 

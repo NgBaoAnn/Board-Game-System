@@ -132,6 +132,13 @@ class ConversationRepo {
       .count("* as total")
       .first();
   }
+
+  async delete(conversationId) {
+    // Delete all messages first (due to foreign key constraint)
+    await db(MODULE.MESSAGE).where("conversation_id", conversationId).del();
+    // Delete the conversation
+    return db(MODULE.CONVERSATION).where("id", conversationId).del();
+  }
 }
 
 module.exports = new ConversationRepo();

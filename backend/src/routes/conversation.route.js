@@ -12,4 +12,6 @@ router.get("/conversations/:id/messages", conversationController.getMessages);
 
 router.post("/conversations/:id/messages", conversationController.sendMessage);
 
+// router.delete("/conversations/:id", conversationController.deleteConversation);
+
 module.exports = router;

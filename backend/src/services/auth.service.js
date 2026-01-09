@@ -1,5 +1,6 @@
 const passwordService = require("./password.service");
 const jwtService = require("./jwt.service");
+const emailService = require("./email.service");
 const userRepo = require("../repositories/user.repo");
 const sanitizeUser = require("../utils/sanitize-user");
 const NotFoundError = require("../errors/notfound.exception");
@@ -90,6 +91,68 @@ class AuthService {
 
     return {
       access_token: newAccessToken,
+    };
+  }
+
+  generateOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  generateResetToken() {
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
+  }
+
+  async forgotPassword(email) {
+    const user = await userRepo.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError("Email not found");
+    }
+
+    const otp = this.generateOtp();
+
+    await userRepo.saveResetOtp(user.id, otp); // uses PostgreSQL NOW() + 5 minutes
+
+    await emailService.sendResetPasswordOtp(email, otp);
+
+    return {
+      message: "OTP sent to your email",
+    };
+  }
+
+  async verifyOtp(email, otp) {
+    const db = require("../databases/knex");
+    const dbUser = await db("users")
+      .where({ email })
+      .select("email", "reset_otp", "reset_otp_expires_at")
+      .first();
+
+    const user = await userRepo.findByResetOtp(email, otp);
+    if (!user) {
+      throw new UnauthorizedError("Invalid or expired OTP");
+    }
+
+    const resetToken = this.generateResetToken();
+
+    await userRepo.saveResetToken(user.id, resetToken); // uses PostgreSQL NOW() + 15 minutes
+
+    return {
+      message: "OTP verified successfully",
+      reset_token: resetToken,
+    };
+  }
+
+  async resetPassword(resetToken, newPassword) {
+    const user = await userRepo.findByResetToken(resetToken);
+    if (!user) {
+      throw new UnauthorizedError("Invalid or expired reset token");
+    }
+
+    const hashedPassword = await passwordService.hash(newPassword);
+    await userRepo.updatePassword(user.id, hashedPassword);
+
+    return {
+      message: "Password reset successfully",
     };
   }
 }

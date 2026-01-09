@@ -113,6 +113,25 @@ class ConversationService {
       },
     };
   }
+
+  async deleteConversation({ userId, conversationId }) {
+    const conversation = await conversationRepo.findById(conversationId);
+    if (!conversation) {
+      throw new NotFoundError("Conversation not found!");
+    }
+
+    if (
+      conversation.user_a.id !== userId &&
+      conversation.user_b.id !== userId
+    ) {
+      throw new ForbiddenError(
+        "You are not allowed to delete this conversation!"
+      );
+    }
+
+    await conversationRepo.delete(conversationId);
+    return true;
+  }
 }
 
 module.exports = new ConversationService();

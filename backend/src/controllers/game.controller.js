@@ -154,15 +154,31 @@ class GameController {
     }
   }
 
-  async countGameSession(req, res, next) {
+  async getGamePlayStats(req, res, next) {
     try {
-      const { id } = req.params;
+      const { filter } = req.query;
 
-      const result = await gameService.countGameSession(id);
+      const result = await gameService.getGamePlayStats(filter || "7d");
 
       return ResponseHandler.success(res, {
         status: HTTP_STATUS.OK,
-        message: "Game session count successfully",
+        message: "Game play stats retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getGameActivity(req, res, next) {
+    try {
+      const { filter } = req.query;
+
+      const result = await gameService.getGameActivity(filter);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Game activity retrieved successfully",
         data: result,
       });
     } catch (err) {
