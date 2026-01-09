@@ -11,7 +11,6 @@ export default function Caro4Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 7,

@@ -11,7 +11,6 @@ export default function Caro5Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 10,

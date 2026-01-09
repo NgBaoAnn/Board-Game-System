@@ -46,9 +46,6 @@ const PALETTE_ROWS = Math.ceil(COLOR_PALETTE.length / PALETTE_COLS)
 
 export default function FreeDrawGame({
     isPlaying = false,
-    score = 0,
-    onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 20,

@@ -10,7 +10,6 @@ export default function TicTacToeGame({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     cursorRow = 0,

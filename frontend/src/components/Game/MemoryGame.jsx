@@ -29,7 +29,6 @@ export default function MemoryGame({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 4,
