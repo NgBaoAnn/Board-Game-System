@@ -52,15 +52,16 @@ export default function NeonParticles({ isDarkMode = false }) {
       },
       particles: {
         color: {
+          // Cosmic Arcade neon colors
           value: isDarkMode
-            ? ['#00f5ff', '#ff00ff', '#00ff88', '#ffff00']
-            : ['#1d7af2', '#8b5cf6', '#06b6d4', '#10b981'],
+            ? ['#00f0ff', '#a855f7', '#ec4899', '#22c55e']
+            : ['#00f0ff', '#a855f7', '#ec4899', '#06b6d4'],
         },
         links: {
-          color: isDarkMode ? '#00f5ff' : '#1d7af2',
+          color: isDarkMode ? '#00f0ff' : '#a855f7',
           distance: 150,
           enable: true,
-          opacity: isDarkMode ? 0.4 : 0.2,
+          opacity: isDarkMode ? 0.4 : 0.25,
           width: 1,
         },
         move: {

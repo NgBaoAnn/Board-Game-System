@@ -5,6 +5,8 @@ import { Gamepad2, Mail, ArrowLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
 import AuthLayout from '@/components/layout/AuthLayout'
+import FloatingGamePieces from '@/components/common/FloatingGamePieces'
+import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 
 // Validation schema
@@ -21,9 +23,17 @@ const formVariants = {
 }
 
 const buttonVariants = {
-  idle: { scale: 1 },
-  hover: { scale: 1.03, boxShadow: '0 10px 40px -10px rgba(29, 122, 242, 0.5)' },
-  tap: { scale: 0.97 },
+  idle: { scale: 1, y: 0 },
+  hover: { 
+    scale: 1.02, 
+    y: -2,
+    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)' 
+  },
+  tap: { 
+    scale: 0.98, 
+    y: 2,
+    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)' 
+  },
 }
 
 export default function ForgotPasswordPage() {
@@ -57,20 +67,8 @@ export default function ForgotPasswordPage() {
   }
 
   const rightContent = (
-    <>
-      <img
-        alt="Board game pieces"
-        className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0rYUZTmwMe11ZhJQSf5l8BZPDiLW22TF5V0RoiJKOPguv2CPq2CZuiFd5FkZIbJABPMNg_3zT6q0FBIWmd62l_IveebetIvauJc1NpZP0NPFPJLSVHOQDBtrvbPLullL4pkM-rv1EyEG2IUD4lCxbST_a9gmJTWvx7g_6YX1ZnJ1YgY2Xw85cseQTHAycvAkumrzXL85T_h9Mfg14HVoo-3JUxcqJXstXiu3XWg8joz9UVRyzw0EVp17rNS5_Uwli3n4RDew5jVE"
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-purple-900/90 mix-blend-multiply" />
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
+    <AnimatedHeroBackground>
+      <FloatingGamePieces count={20} />
       <div className="relative h-full flex flex-col justify-center items-center p-12 text-white z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -78,16 +76,16 @@ export default function ForgotPasswordPage() {
           transition={{ delay: 0.5 }}
           className="text-center max-w-md"
         >
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail size={40} className="text-white" />
+          <div className="w-20 h-20 bg-gradient-to-br from-[#00f0ff]/20 to-[#a855f7]/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-6 border border-[#00f0ff]/30 animate-neon-glow">
+            <Mail size={40} className="text-[#00f0ff]" />
           </div>
-          <h2 className="text-3xl font-bold mb-4">Password Recovery</h2>
-          <p className="text-blue-100 text-lg">
+          <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-[#00f0ff] bg-clip-text text-transparent">Password Recovery</h2>
+          <p className="text-gray-300 text-lg">
             Enter your email and we'll send you a 6-digit verification code.
           </p>
         </motion.div>
       </div>
-    </>
+    </AnimatedHeroBackground>
   )
 
   return (
@@ -100,7 +98,7 @@ export default function ForgotPasswordPage() {
           transition={{ delay: 0.1 }}
           className="flex justify-center mb-6"
         >
-          <div className="bg-[#1d7af2] w-14 h-14 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+          <div className="bg-gradient-to-br from-[#00f0ff] to-[#a855f7] w-14 h-14 rounded-xl flex items-center justify-center animate-neon-glow">
             <Gamepad2 className="text-white" size={28} />
           </div>
         </motion.div>
@@ -153,7 +151,7 @@ export default function ForgotPasswordPage() {
               whileHover="hover"
               whileTap="tap"
               disabled={loading}
-              className="w-full h-12 rounded-xl text-base font-bold bg-[#1d7af2] text-white shadow-lg shadow-blue-500/30 border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl text-base font-bold bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] border-none cursor-pointer disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
             >
               <AnimatePresence mode="wait">
                 {loading ? (

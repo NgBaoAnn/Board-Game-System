@@ -67,6 +67,14 @@ body {
   --color-card-dark: #1e293b;
   --color-text-dark: #f3f4f6;
   --color-muted-dark: #9ca3af;
+
+  /* Cosmic Arcade - Gaming Theme */
+  --color-deep-purple: #1a0a2e;
+  --color-midnight-blue: #0d1b3e;
+  --color-neon-cyan: #00f0ff;
+  --color-electric-purple: #a855f7;
+  --color-neon-pink: #ec4899;
+  --color-gaming-dark: #0a0a12;
 }
 
 /* ===== Animation Keyframes ===== */
@@ -99,6 +107,51 @@ body {
   50% { box-shadow: 0 0 0 8px rgba(29, 122, 242, 0); }
 }
 
+/* Neon glow pulse - Cosmic Arcade theme */
+@keyframes neon-glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 
+                0 0 20px rgba(0, 240, 255, 0.3), 
+                0 0 40px rgba(168, 85, 247, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.8), 
+                0 0 40px rgba(0, 240, 255, 0.5), 
+                0 0 60px rgba(168, 85, 247, 0.4);
+  }
+}
+
+/* Floating game piece animation */
+@keyframes float-piece {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-20px) rotate(10deg); 
+    opacity: 1;
+  }
+}
+
+/* Typewriter cursor blink */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Shimmer gradient for buttons and accents */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Ambient gradient flow for backgrounds */
+@keyframes ambient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Utility Classes */
 .animate-shake {
   animation: shake 0.4s ease-in-out;
@@ -117,10 +170,39 @@ body {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Cosmic Arcade Animation Utilities */
+.animate-neon-glow {
+  animation: neon-glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-float-piece {
+  animation: float-piece 4s ease-in-out infinite;
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-ambient {
+  background-size: 400% 400%;
+  animation: ambient-flow 15s ease infinite;
+}
+
 /* Input focus glow effect */
 .input-focus-glow:focus-within {
   box-shadow: 0 0 0 3px rgba(29, 122, 242, 0.15);
   border-color: #1d7af2 !important;
+}
+
+/* Neon input focus - Cosmic Arcade theme */
+.input-neon-focus:focus-within {
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.2), 0 0 15px rgba(0, 240, 255, 0.1);
+  border-color: #00f0ff !important;
 }
 
 /* Button hover effects */
@@ -133,3 +215,24 @@ body {
 .btn-animated:active {
   transform: scale(0.97);
 }
+
+/* Neon button with 3D press effect */
+.btn-neon {
+  background: linear-gradient(135deg, #00f0ff, #a855f7);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 240, 255, 0.3);
+  transition: all 0.15s ease;
+}
+.btn-neon:hover {
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3);
+  transform: translateY(-2px);
+}
+.btn-neon:active {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 240, 255, 0.2);
+  transform: translateY(2px);
+}
+
+/* Cosmic Arcade background gradient */
+.bg-cosmic-arcade {
+  background: linear-gradient(135deg, #1a0a2e 0%, #0d1b3e 50%, #1a0a2e 100%);
+}
+
