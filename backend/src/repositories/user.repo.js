@@ -207,6 +207,30 @@ class UserRepo {
       totalBanned: parseInt(result.total_banned) || 0,
     };
   }
+
+  async getUserRegistrations() {
+    // Get user registrations for the last 6 months
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setMonth(startDate.getMonth() - 5);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const results = await db(MODULE.USER)
+      .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as month"))
+      .count("id as count")
+      .where("created_at", ">=", startDate)
+      .groupByRaw("EXTRACT(MONTH FROM created_at)")
+      .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+    // Convert to the expected format { "month": count }
+    const stats = {};
+    results.forEach((row) => {
+      stats[row.month.toString()] = parseInt(row.count);
+    });
+
+    return stats;
+  }
 }
 
 module.exports = new UserRepo();

@@ -210,10 +210,12 @@ class GameService {
     };
   }
 
-  async countGameSession(gameId) {
-    return {
-      turn_count: await gameRepo.countGameSession(gameId),
-    };
+  async getGamePlayStats(filter) {
+    return await gameRepo.getGamePlayStats(filter);
+  }
+
+  async getGameActivity(filter) {
+    return await gameRepo.getGameActivity(filter);
   }
 }
 

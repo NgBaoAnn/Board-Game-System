@@ -56,9 +56,17 @@ router.get(
 );
 
 router.get(
-  "/games/sessions/count/:id",
+  "/games/stats/play",
   authMiddleware.authenticate,
-  gameController.countGameSession
+  authMiddleware.authorize([ROLE.ADMIN]),
+  gameController.getGamePlayStats
+);
+
+router.get(
+  "/games/stats/activity",
+  authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
+  gameController.getGameActivity
 );
 
 module.exports = router;
