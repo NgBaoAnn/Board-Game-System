@@ -324,9 +324,9 @@ export default function ClientLayout() {
         </div>
 
         {/* Top Header */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 px-4 sm:px-6 backdrop-blur-md">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-end border-b border-gray-200/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-[3px] px-4 sm:px-6">
           {/* Mobile menu button */}
-          <div className="flex items-center gap-4 lg:hidden">
+          <div className="flex items-center gap-4 lg:hidden mr-auto">
             <button onClick={() => setMobileMenuOpen(true)} className="text-slate-700 dark:text-white">
               <Menu size={24} />
             </button>
@@ -335,39 +335,10 @@ export default function ClientLayout() {
             </span>
           </div>
 
-          {/* Search Bar (Desktop) */}
-          <div className="hidden flex-1 max-w-md lg:block">
-            <Input
-              prefix={<Search size={18} className="text-gray-400" />}
-              placeholder="Search games, players..."
-              className="h-10 rounded-lg border-gray-200 dark:border-slate-600 dark:bg-slate-700 text-sm"
-            />
-          </div>
-
           {/* Right Actions */}
           <div className="flex items-center gap-3">
             {authenticated ? (
               <>
-                {/* Global Online Count */}
-                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-xs font-semibold text-green-600 dark:text-green-400">
-                    {globalOnline.toLocaleString()} online
-                  </span>
-                </div>
-
-                {/* Quick Match Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="hidden sm:flex items-center gap-2 h-9 px-4 rounded-lg font-bold text-white bg-gradient-to-r from-[#00f0ff] to-[#a855f7] shadow-lg shadow-[#00f0ff]/20 hover:shadow-[#00f0ff]/40 transition-shadow"
-                >
-                  <Zap size={16} className="fill-current" />
-                  Quick Match
-                </motion.button>
 
                 {/* Notification icons with badges */}
                 <div className="flex items-center gap-1">

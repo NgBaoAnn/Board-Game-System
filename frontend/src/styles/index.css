@@ -52,29 +52,58 @@ body {
 
 
 @theme {
-  /* primary */
+  /* ===== Primary Colors ===== */
   --color-primary: #1d7af2;
   --color-primary-hover: #1664c9;
 
-  /* light mode */
+  /* ===== Light Mode ===== */
   --color-background-light: #f4f6f8;
   --color-card-light: #ffffff;
   --color-text-light: #1f2937;
   --color-muted-light: #6b7280;
 
-  /* dark mode */
+  /* ===== Dark Mode ===== */
   --color-background-dark: #0f172a;
   --color-card-dark: #1e293b;
   --color-text-dark: #f3f4f6;
   --color-muted-dark: #9ca3af;
 
-  /* Cosmic Arcade - Gaming Theme */
+  /* ===== Cosmic Arcade - Gaming Theme ===== */
   --color-deep-purple: #1a0a2e;
   --color-midnight-blue: #0d1b3e;
   --color-neon-cyan: #00f0ff;
   --color-electric-purple: #a855f7;
   --color-neon-pink: #ec4899;
   --color-gaming-dark: #0a0a12;
+
+  /* ===== Background Gradients ===== */
+  --bg-primary: #0a0a12;
+  --bg-secondary: #12121f;
+  --bg-card: #1a1a2e;
+  --bg-hover: #252540;
+
+  /* ===== Neon Accents ===== */
+  --accent-cyan: #00f0ff;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-green: #22c55e;
+  --accent-orange: #f97316;
+
+  /* ===== Game Status Colors ===== */
+  --status-online: #22c55e;
+  --status-in-game: #f59e0b;
+  --status-offline: #6b7280;
+
+  /* ===== Motion Timing ===== */
+  --motion-fast: 0.15s;
+  --motion-normal: 0.3s;
+  --motion-slow: 0.5s;
+  --motion-ambient: 3s;
+
+  /* ===== Typography ===== */
+  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
+  --font-body: 'Space Grotesk', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
 /* ===== Animation Keyframes ===== */
@@ -533,4 +562,192 @@ body {
   border-color: rgba(245, 158, 11, 0.6);
   box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
   animation: legendary-glow 2s ease-in-out infinite;
+}
+
+/* ===== Button System ===== */
+
+/* Primary CTA Button */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan, #00f0ff), var(--accent-purple, #a855f7));
+  border: none;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: white;
+  box-shadow: 
+    0 4px 0 rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 240, 255, 0.4);
+  transition: all var(--motion-fast, 0.15s) ease;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(0, 240, 255, 0.6);
+}
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+/* Secondary/Ghost Button */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: #f3f4f6;
+  font-weight: 600;
+  transition: all var(--motion-normal, 0.3s) ease;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-cyan, #00f0ff);
+  color: var(--accent-cyan, #00f0ff);
+}
+
+/* Danger Button */
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(239, 68, 68, 0.3);
+  transition: all var(--motion-fast, 0.15s) ease;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3), 0 0 25px rgba(239, 68, 68, 0.5);
+}
+
+/* ===== Glass Morphism Card ===== */
+.glass-card {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Game Card Variants ===== */
+.game-card--epic {
+  border-color: var(--accent-purple, #a855f7) !important;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+.game-card--legendary {
+  border-color: var(--accent-orange, #f97316) !important;
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+  animation: legendary-pulse 2s infinite;
+}
+
+@keyframes legendary-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(249, 115, 22, 0.7), 0 0 60px rgba(249, 115, 22, 0.4);
+  }
+}
+
+/* ===== Particle Rise Animation ===== */
+@keyframes particle-rise {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.5; }
+  50% { opacity: 1; }
+  90% { opacity: 0.5; }
+  100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+}
+
+.animate-particle-rise {
+  animation: particle-rise 8s linear infinite;
+}
+
+/* ===== Typography Utilities ===== */
+.font-display {
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+}
+.font-body {
+  font-family: var(--font-body, 'Space Grotesk', sans-serif);
+}
+.font-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+/* ===== Tab Navigation Animation ===== */
+.community-tabs .ant-tabs-tab-active .ant-tabs-tab-btn,
+.profile-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--accent-cyan, #00f0ff) !important;
+  font-weight: 700;
+}
+.community-tabs .ant-tabs-ink-bar,
+.profile-tabs .ant-tabs-ink-bar {
+  background: linear-gradient(90deg, var(--accent-cyan, #00f0ff), var(--accent-purple, #a855f7)) !important;
+  height: 3px !important;
+}
+
+/* ===== Glassmorphism Input ===== */
+.input-glass {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  color: white !important;
+  transition: all var(--motion-normal, 0.3s) ease;
+}
+.input-glass:focus,
+.input-glass:focus-within {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--accent-cyan, #00f0ff) !important;
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15), 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+/* ===== Responsive Utilities ===== */
+@media (max-width: 768px) {
+  /* Simplify animations on mobile for performance */
+  .animate-ambient {
+    animation: none !important;
+  }
+  .animate-float-piece {
+    animation-duration: 6s;
+  }
+  
+  /* Touch-friendly hit areas */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Reduce glow effects */
+  .podium-gold,
+  .podium-silver,
+  .podium-bronze {
+    animation: none;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

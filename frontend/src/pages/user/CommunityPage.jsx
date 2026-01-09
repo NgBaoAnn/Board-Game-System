@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react'
 import { Tabs, Select, Input, message, Modal } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Search, Gamepad2, Sparkles } from 'lucide-react'
+import { Users, Search, Gamepad2, Sparkles, Globe } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { FriendCard } from '@/components/Community/FriendCard'
 import { FriendRequestCard } from '@/components/Community/FriendRequestCard'
+import { PlayerCard } from '@/components/Community/PlayerCard'
 import { EmptyState } from '@/components/Community/EmptyState'
 
-// Mock data with enhanced fields
+// Mock data for friend requests
 const mockRequests = [
   {
     id: 1,
@@ -40,6 +42,7 @@ const mockRequests = [
   },
 ]
 
+// Mock data for friends
 const mockFriends = [
   { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=4', status: 'online', activity: 'Playing Chess', playingFor: '15m', lastSeen: 'Online now', tier: 'grandmaster' },
   { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', playingFor: null, lastSeen: 'Online 5m ago', tier: 'diamond' },
@@ -49,9 +52,27 @@ const mockFriends = [
   { id: 6, name: 'StrategyQueen', avatar: 'https://i.pravatar.cc/150?img=9', status: 'online', activity: null, playingFor: null, lastSeen: 'Online 15m ago', tier: 'diamond' },
 ]
 
+// Mock data for all players (non-friends)
+const mockAllPlayers = [
+  { id: 101, name: 'ChessMaster99', avatar: 'https://i.pravatar.cc/150?img=10', status: 'online', tier: 'grandmaster', lastSeen: 'Online now' },
+  { id: 102, name: 'CatanKing', avatar: 'https://i.pravatar.cc/150?img=11', status: 'online', tier: 'diamond', lastSeen: 'Online now' },
+  { id: 103, name: 'BoardGameNoob', avatar: 'https://i.pravatar.cc/150?img=12', status: 'offline', tier: 'bronze', lastSeen: 'Last seen 3h ago' },
+  { id: 104, name: 'MonopolyMogul', avatar: 'https://i.pravatar.cc/150?img=13', status: 'online', tier: 'platinum', lastSeen: 'Online now' },
+  { id: 105, name: 'StrategyGuru', avatar: 'https://i.pravatar.cc/150?img=14', status: 'offline', tier: 'gold', lastSeen: 'Last seen 1d ago' },
+  { id: 106, name: 'DiceMaster', avatar: 'https://i.pravatar.cc/150?img=15', status: 'online', tier: 'silver', lastSeen: 'Online now' },
+  { id: 107, name: 'CardShark', avatar: 'https://i.pravatar.cc/150?img=16', status: 'offline', tier: 'gold', lastSeen: 'Last seen 5h ago' },
+  { id: 108, name: 'TacticalTom', avatar: 'https://i.pravatar.cc/150?img=17', status: 'online', tier: 'diamond', lastSeen: 'Online now' },
+  { id: 109, name: 'PuzzlePro', avatar: 'https://i.pravatar.cc/150?img=18', status: 'offline', tier: 'platinum', lastSeen: 'Last seen 2d ago' },
+  { id: 110, name: 'GameWizard', avatar: 'https://i.pravatar.cc/150?img=19', status: 'online', tier: 'grandmaster', lastSeen: 'Online now' },
+  { id: 111, name: 'RookieRider', avatar: 'https://i.pravatar.cc/150?img=20', status: 'offline', tier: 'bronze', lastSeen: 'Last seen 1w ago' },
+  { id: 112, name: 'VictoryViper', avatar: 'https://i.pravatar.cc/150?img=21', status: 'online', tier: 'gold', lastSeen: 'Online now' },
+]
+
 export default function CommunityPage() {
+  const navigate = useNavigate()
   const [requests, setRequests] = useState(mockRequests)
   const [friends, setFriends] = useState(mockFriends)
+  const [allPlayers] = useState(mockAllPlayers)
   const [sortBy, setSortBy] = useState('status')
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
@@ -86,6 +107,26 @@ export default function CommunityPage() {
     return result
   }, [friends, searchQuery, sortBy])
 
+  // Filter all players by search
+  const filteredPlayers = useMemo(() => {
+    let result = [...allPlayers]
+
+    if (searchQuery) {
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Sort by online status first
+    result.sort((a, b) => {
+      if (a.status === 'online' && b.status !== 'online') return -1
+      if (a.status !== 'online' && b.status === 'online') return 1
+      return 0
+    })
+
+    return result
+  }, [allPlayers, searchQuery])
+
   const handleAcceptRequest = (id) => {
     const accepted = requests.find((r) => r.id === id)
     if (accepted) {
@@ -105,7 +146,7 @@ export default function CommunityPage() {
   }
 
   const handleViewProfile = (friend) => {
-    message.info(`Viewing ${friend.name}'s profile`)
+    navigate(`/player/${friend.id}`)
   }
 
   const handleInvite = (friend, type) => {
@@ -130,15 +171,19 @@ export default function CommunityPage() {
     })
   }
 
+  const handleAddFriend = (player) => {
+    message.success(`Friend request sent to ${player.name}!`)
+  }
+
   const handleFindPlayers = () => {
-    message.info('Opening player finder...')
+    setActiveTab('players')
   }
 
   const tabItems = [
     {
       key: 'friends',
       label: (
-        <span className="flex items-center gap-2">
+        <span className={`flex items-center gap-2 ${activeTab === 'friends' ? '' : 'text-white'}`}>
           Friend List
           <span className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
             {friends.length}
@@ -149,13 +194,22 @@ export default function CommunityPage() {
     {
       key: 'requests',
       label: (
-        <span className="flex items-center gap-2">
+        <span className={`flex items-center gap-2 ${activeTab === 'requests' ? '' : 'text-white'}`}>
           Friend Requests
           {requests.length > 0 && (
             <span className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
               {requests.length}
             </span>
           )}
+        </span>
+      ),
+    },
+    {
+      key: 'players',
+      label: (
+        <span className={`flex items-center gap-2 ${activeTab === 'players' ? '' : 'text-white'}`}>
+          <Globe size={14} />
+          All Players
         </span>
       ),
     },
@@ -184,7 +238,7 @@ export default function CommunityPage() {
         {/* Search bar */}
         <div className="flex-1 max-w-md">
           <Input
-            placeholder="Search friends..."
+            placeholder={activeTab === 'players' ? 'Search all players...' : 'Search friends...'}
             prefix={<Search size={16} className="text-gray-400 dark:text-slate-400" />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -202,8 +256,9 @@ export default function CommunityPage() {
         className="community-tabs"
       />
 
-      {/* Friend Requests Section */}
+      {/* Tab Content */}
       <AnimatePresence mode="wait">
+        {/* Friend Requests Tab */}
         {activeTab === 'requests' && (
           <motion.div
             key="requests"
@@ -234,7 +289,7 @@ export default function CommunityPage() {
           </motion.div>
         )}
 
-        {/* All Friends Section */}
+        {/* Friends Tab */}
         {activeTab === 'friends' && (
           <motion.div
             key="friends"
@@ -278,6 +333,36 @@ export default function CommunityPage() {
               </div>
             ) : (
               <EmptyState type="friends" onAction={handleFindPlayers} />
+            )}
+          </motion.div>
+        )}
+
+        {/* All Players Tab */}
+        {activeTab === 'players' && (
+          <motion.div
+            key="players"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <Globe size={14} />
+              All Players ({filteredPlayers.length})
+            </h2>
+            {filteredPlayers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {filteredPlayers.map((player, index) => (
+                  <PlayerCard
+                    key={player.id}
+                    player={player}
+                    index={index}
+                    onAddFriend={handleAddFriend}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState type="players" onAction={() => setSearchQuery('')} />
             )}
           </motion.div>
         )}

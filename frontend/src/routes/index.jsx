@@ -12,6 +12,7 @@ import NotFoundPage from '../pages/common/NotFoundPage'
 import BoardGamePage from '../pages/user/BoardGamePage'
 import CommunityPage from '../pages/user/CommunityPage'
 import ProfilePage from '../pages/user/ProfilePage'
+import FriendProfilePage from '../pages/user/FriendProfilePage'
 import RankingPage from '../pages/user/RankingPage'
 import MessagePage from '../pages/user/MessagePage'
 import AdminPage from '../pages/admin/AdminPage'
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: '/profile',
         element: <ProfilePage />,
+      },
+      {
+        path: '/player/:id',
+        element: <FriendProfilePage />,
       },
       {
         path: '/rankings',
