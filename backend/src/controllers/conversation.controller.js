@@ -108,6 +108,26 @@ class ConversationController {
       next(err);
     }
   }
+
+  async deleteConversation(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const conversationId = req.params.id;
+
+      await conversationService.deleteConversation({
+        userId,
+        conversationId,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Delete conversation successfully!",
+        data: null,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ConversationController();
