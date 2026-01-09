@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame } from '../../components/Game'
+import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game } from '../../components/Game'
 import gameApi from '../../api/api-game.js'
 import { message } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
@@ -574,6 +574,24 @@ export default function BoardGamePage() {
                     onStateChange={handleStateChange}
                     boardRows={currentGame.board_row || 20}
                     boardCols={currentGame.board_col || 20}
+                />
+            )
+        }
+
+        if (currentGame.code === 'match_3') {
+            return (
+                <Match3Game
+                    isPlaying={isPlaying}
+                    score={score}
+                    onScoreChange={handleScoreChange}
+                    onGameEnd={handleGameEnd}
+                    savedState={savedState}
+                    onStateChange={handleStateChange}
+                    boardRows={currentGame.board_row || 8}
+                    boardCols={currentGame.board_col || 8}
+                    cursorRow={cursorRow}
+                    cursorCol={cursorCol}
+                    cellClickRef={cellClickRef}
                 />
             )
         }
