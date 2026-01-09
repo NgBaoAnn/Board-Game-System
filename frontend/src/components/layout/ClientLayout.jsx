@@ -23,7 +23,7 @@ import {
 import { useAuth } from '@/store/useAuth'
 import { useTheme } from '@/context/ThemeContext'
 import authApi from '@/api/api-auth'
-import NeonParticles from '@/components/common/NeonParticles'
+import GamingParticles from '@/components/common/GamingParticles'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 
 
@@ -100,7 +100,7 @@ export default function ClientLayout() {
       >
         {/* Floating Game Pieces Background */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-          <FloatingGamePieces count={10} isDarkMode={isDarkMode} />
+          <FloatingGamePieces count={20} isDarkMode={isDarkMode} />
         </div>
 
         <div className="flex h-full flex-col justify-between p-4 relative z-10">
@@ -317,11 +317,12 @@ export default function ClientLayout() {
       </AnimatePresence>
 
       {/* Main Content Wrapper */}
-      <main className="relative flex flex-1 flex-col min-w-0 lg:ml-64 bg-[#f5f7f8] dark:bg-slate-900 transition-colors overflow-hidden">
+      <main className="relative flex flex-1 flex-col min-w-0 lg:ml-64 transition-colors overflow-hidden">
+        {/* Gaming particles background */}
         <div className="absolute inset-0 z-0">
-          <NeonParticles isDarkMode={isDarkMode} />
+          <GamingParticles isDarkMode={isDarkMode} />
         </div>
-        
+
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 px-4 sm:px-6 backdrop-blur-md">
           {/* Mobile menu button */}

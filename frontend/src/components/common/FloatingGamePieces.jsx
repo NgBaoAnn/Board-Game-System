@@ -50,9 +50,10 @@ const generatePieceConfig = (index, total) => {
  * FloatingGamePieces - Animated floating game elements for hero backgrounds
  * @param {Object} props
  * @param {number} props.count - Number of pieces to show (default: 5)
+ * @param {boolean} props.isDarkMode - Theme mode for shadow colors
  * @param {string} props.className - Additional CSS classes
  */
-export default function FloatingGamePieces({ count = 5, className = '' }) {
+export default function FloatingGamePieces({ count = 5, isDarkMode = true, className = '' }) {
   const pieces = useMemo(() => {
     return Array.from({ length: count }, (_, index) => {
       const piece = gamePieces[index % gamePieces.length]
@@ -78,7 +79,7 @@ export default function FloatingGamePieces({ count = 5, className = '' }) {
             rotate: -piece.rotation 
           }}
           animate={{
-            opacity: [0.4, 0.8, 0.4],
+            opacity: isDarkMode ? [0.4, 0.8, 0.4] : [0.7, 1, 0.7], // Higher opacity for light mode
             scale: [piece.scale * 0.9, piece.scale, piece.scale * 0.9],
             rotate: [-piece.rotation, piece.rotation, -piece.rotation],
             y: ['0%', '-15%', '0%'],
@@ -93,7 +94,10 @@ export default function FloatingGamePieces({ count = 5, className = '' }) {
           <span 
             className="drop-shadow-lg filter"
             style={{
-              textShadow: '0 0 20px rgba(0, 240, 255, 0.5), 0 0 40px rgba(168, 85, 247, 0.3)',
+              textShadow: isDarkMode 
+                ? '0 0 20px rgba(0, 240, 255, 0.5), 0 0 40px rgba(168, 85, 247, 0.3)'
+                : '0 2px 8px rgba(79, 70, 229, 0.6), 0 0 20px rgba(124, 58, 237, 0.4)', // Stronger shadows for light mode
+              filter: isDarkMode ? 'none' : 'saturate(1.3) contrast(1.1)', // More vibrant in light mode
             }}
           >
             {piece.emoji}
