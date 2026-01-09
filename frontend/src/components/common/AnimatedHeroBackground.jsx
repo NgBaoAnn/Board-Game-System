@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 export default function AnimatedHeroBackground({ children, className = '' }) {
   return (
     <div className={`relative w-full h-full overflow-hidden ${className}`}>
-      {/* Base gradient - deep purple to midnight blue */}
+      
       <div 
         className="absolute inset-0 animate-ambient"
         style={{
@@ -25,7 +25,7 @@ export default function AnimatedHeroBackground({ children, className = '' }) {
         }}
       />
 
-      {/* Animated glow orbs */}
+      
       <motion.div
         className="absolute w-96 h-96 rounded-full opacity-30 blur-3xl"
         style={{
@@ -85,7 +85,7 @@ export default function AnimatedHeroBackground({ children, className = '' }) {
         }}
       />
 
-      {/* Mesh grid overlay */}
+      
       <div
         className="absolute inset-0 opacity-10"
         style={{
@@ -97,7 +97,7 @@ export default function AnimatedHeroBackground({ children, className = '' }) {
         }}
       />
 
-      {/* Radial vignette */}
+      
       <div
         className="absolute inset-0"
         style={{
@@ -105,7 +105,7 @@ export default function AnimatedHeroBackground({ children, className = '' }) {
         }}
       />
 
-      {/* Content container */}
+      
       <div className="relative z-10 h-full">
         {children}
       </div>

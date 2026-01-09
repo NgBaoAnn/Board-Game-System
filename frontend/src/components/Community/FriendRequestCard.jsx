@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { Avatar } from 'antd'
 import { UserCheck, UserX } from 'lucide-react'
 
-// Game icons mapping
 const gameIcons = {
   Chess: '♟️',
   Catan: '🏝️',
@@ -10,7 +9,6 @@ const gameIcons = {
   default: '🎮',
 }
 
-// Tier config for avatar glows
 const tierConfig = {
   grandmaster: { border: 'from-purple-500 to-violet-600', glow: 'avatar-glow-grandmaster' },
   diamond: { border: 'from-cyan-400 to-teal-500', glow: 'avatar-glow-diamond' },
@@ -33,7 +31,7 @@ export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       className="relative bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 flex flex-col items-center text-center overflow-hidden"
     >
-      {/* New badge */}
+      
       {friend.isNew && (
         <motion.span
           initial={{ scale: 0 }}
@@ -44,7 +42,7 @@ export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
         </motion.span>
       )}
 
-      {/* Avatar with tier border */}
+      
       <div className="relative mb-3">
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${tier.glow}`}>
           <Avatar src={friend.avatar} size={70} className="border-2 border-white dark:border-slate-900" />
@@ -53,12 +51,12 @@ export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
 
       <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">{friend.name}</h3>
 
-      {/* Mutual friends */}
+      
       <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">
         {friend.mutualFriends} mutual friends
       </p>
 
-      {/* Games in common */}
+      
       <div className="flex gap-1 mb-4">
         {friend.gamesInCommon?.slice(0, 3).map((game) => (
           <span
@@ -71,7 +69,7 @@ export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
         ))}
       </div>
 
-      {/* Action buttons */}
+      
       <div className="flex gap-2 w-full mt-auto">
         <motion.button
           whileHover={{ scale: 1.02 }}

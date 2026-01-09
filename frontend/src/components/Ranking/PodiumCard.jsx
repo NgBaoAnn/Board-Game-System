@@ -56,10 +56,10 @@ export function PodiumCard({ player, position }) {
       <div
         className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl border-t-4 ${config.borderColor} ${config.glowClass} p-6 flex flex-col items-center relative h-full shadow-lg dark:shadow-none`}
       >
-        {/* Background gradient */}
+        
         <div className={`absolute inset-0 ${config.bgGradient} rounded-2xl opacity-50`} />
 
-        {/* Rank Badge */}
+        
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -74,9 +74,9 @@ export function PodiumCard({ player, position }) {
           )}
         </motion.div>
 
-        {/* Content wrapper */}
+        
         <div className="relative z-10 flex flex-col items-center mt-4 flex-1">
-          {/* Avatar */}
+          
           <div className="relative mb-4">
             {player.avatar ? (
               <Avatar
@@ -93,7 +93,7 @@ export function PodiumCard({ player, position }) {
               </div>
             )}
 
-            {/* Champion badge for #1 */}
+            
             {position === 1 && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -106,7 +106,7 @@ export function PodiumCard({ player, position }) {
               </motion.div>
             )}
 
-            {/* Award icon for #2 and #3 */}
+            
             {position !== 1 && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -119,7 +119,7 @@ export function PodiumCard({ player, position }) {
             )}
           </div>
 
-          {/* Player Info */}
+          
           <h3
             className={`font-bold ${position === 1 ? 'text-xl' : 'text-lg'} text-gray-900 dark:text-white text-center mb-1`}
           >
@@ -127,7 +127,7 @@ export function PodiumCard({ player, position }) {
           </h3>
           <p className="text-[#1d7af2] dark:text-[#00f0ff] text-sm font-medium mb-4">{player.title}</p>
 
-          {/* Stats */}
+          
           <div
             className={`flex items-center ${position === 1 ? 'gap-6' : 'gap-4'} w-full justify-center bg-gray-50/80 dark:bg-slate-900/50 backdrop-blur-sm ${position === 1 ? 'p-4' : 'p-3'} rounded-xl border border-gray-100 dark:border-slate-700/50 mt-auto`}
           >

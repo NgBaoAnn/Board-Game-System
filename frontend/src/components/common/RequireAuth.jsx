@@ -10,7 +10,6 @@ export default function RequireAuth({ children }) {
     const location = useLocation();
     const { authenticated, isAppLoading } = useAuth();
 
-    // Show loading spinner while checking auth status
     if (isAppLoading) {
         return (
             <div className="flex items-center justify-center h-screen bg-slate-50">
@@ -19,7 +18,6 @@ export default function RequireAuth({ children }) {
         );
     }
 
-    // Not authenticated — redirect to login and preserve attempted path
     if (!authenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }

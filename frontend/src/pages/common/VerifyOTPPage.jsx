@@ -7,7 +7,6 @@ import AuthLayout from '@/components/layout/AuthLayout'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -39,7 +38,6 @@ export default function VerifyOTPPage() {
   const email = sessionStorage.getItem('reset_email') || ''
   const loading = formState === 'loading'
 
-  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
@@ -49,7 +47,6 @@ export default function VerifyOTPPage() {
     }
   }, [countdown])
 
-  // Redirect if no email
   useEffect(() => {
     if (!email) {
       navigate('/forgot-password')
@@ -57,21 +54,18 @@ export default function VerifyOTPPage() {
   }, [email, navigate])
 
   const handleChange = (index, value) => {
-    // Only allow digits
     if (!/^\d*$/.test(value)) return
 
     const newOtp = [...otp]
     newOtp[index] = value.slice(-1)
     setOtp(newOtp)
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
   }
 
   const handleKeyDown = (index, e) => {
-    // Handle backspace
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus()
     }
@@ -96,19 +90,14 @@ export default function VerifyOTPPage() {
 
     setFormState('loading')
     try {
-      // TODO: Implement verify OTP API
-      // await authApi.verifyOTP(email, otpCode)
       
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500))
       
-      // Store verified token for reset password page
       sessionStorage.setItem('reset_token', otpCode)
       
       setFormState('success')
       message.success('OTP verified successfully!')
       
-      // Navigate to reset password page
       setTimeout(() => navigate('/reset-password'), 500)
     } catch (error) {
       setFormState('error')
@@ -121,8 +110,6 @@ export default function VerifyOTPPage() {
     if (!canResend) return
 
     try {
-      // TODO: Implement resend OTP API
-      // await authApi.sendOTP(email)
       
       await new Promise((resolve) => setTimeout(resolve, 1000))
       
@@ -160,7 +147,7 @@ export default function VerifyOTPPage() {
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -172,7 +159,7 @@ export default function VerifyOTPPage() {
           </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -187,7 +174,7 @@ export default function VerifyOTPPage() {
           </p>
         </motion.div>
 
-        {/* OTP Inputs */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -210,7 +197,7 @@ export default function VerifyOTPPage() {
           ))}
         </motion.div>
 
-        {/* Verify Button */}
+        
         <motion.button
           onClick={handleSubmit}
           variants={buttonVariants}
@@ -245,7 +232,7 @@ export default function VerifyOTPPage() {
           </AnimatePresence>
         </motion.button>
 
-        {/* Resend OTP */}
+        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -270,7 +257,7 @@ export default function VerifyOTPPage() {
           )}
         </motion.div>
 
-        {/* Back to Login */}
+        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

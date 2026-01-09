@@ -14,7 +14,6 @@ export default function TicTacToeGame({
     savedState = null,
     onStateChange,
 }) {
-    // Board state: 3x3 array, null = empty, 'X' = player, 'O' = AI
     const [board, setBoard] = useState(
         savedState?.board || [
             [null, null, null],
@@ -31,18 +30,14 @@ export default function TicTacToeGame({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
 
-    // Check for winner
     const checkWinner = useCallback((boardState) => {
         const lines = [
-            // Rows
             [[0, 0], [0, 1], [0, 2]],
             [[1, 0], [1, 1], [1, 2]],
             [[2, 0], [2, 1], [2, 2]],
-            // Columns
             [[0, 0], [1, 0], [2, 0]],
             [[0, 1], [1, 1], [2, 1]],
             [[0, 2], [1, 2], [2, 2]],
-            // Diagonals
             [[0, 0], [1, 1], [2, 2]],
             [[0, 2], [1, 1], [2, 0]],
         ]
@@ -58,7 +53,6 @@ export default function TicTacToeGame({
             }
         }
 
-        // Check for draw
         const isDraw = boardState.every(row => row.every(cell => cell !== null))
         if (isDraw) {
             return { winner: 'draw', line: null }
@@ -67,7 +61,6 @@ export default function TicTacToeGame({
         return null
     }, [])
 
-    // Reset board for new round
     const resetBoard = useCallback(() => {
         setBoard([
             [null, null, null],
@@ -81,13 +74,11 @@ export default function TicTacToeGame({
         setShowResultMessage(null)
     }, [])
 
-    // AI makes a random move
     const makeAiMove = useCallback((currentBoard) => {
         if (!isPlaying) return
 
         setIsAiThinking(true)
 
-        // Find all empty cells
         const emptyCells = []
         for (let row = 0; row < 3; row++) {
             for (let col = 0; col < 3; col++) {
@@ -102,7 +93,6 @@ export default function TicTacToeGame({
             return
         }
 
-        // Random delay 1-2 seconds
         const delay = 1000 + Math.random() * 1000
 
         setTimeout(() => {
@@ -111,7 +101,6 @@ export default function TicTacToeGame({
                 return
             }
 
-            // Pick random empty cell
             const randomIndex = Math.floor(Math.random() * emptyCells.length)
             const { row, col } = emptyCells[randomIndex]
 
@@ -119,7 +108,6 @@ export default function TicTacToeGame({
                 const newBoard = prev.map(r => [...r])
                 newBoard[row][col] = 'O'
 
-                // Check if AI wins
                 const result = checkWinner(newBoard)
                 if (result) {
                     setWinner(result.winner)
@@ -127,14 +115,12 @@ export default function TicTacToeGame({
                     setGamesPlayed(p => p + 1)
 
                     if (result.winner === 'O') {
-                        // AI wins - show message and auto restart (continue playing)
                         setGamesLost(l => l + 1)
                         setShowResultMessage('lose')
                         setTimeout(() => {
                             resetBoard()
                         }, 2000)
                     } else if (result.winner === 'draw') {
-                        // Draw - auto restart after delay
                         setShowResultMessage('draw')
                         setTimeout(() => {
                             resetBoard()
@@ -151,7 +137,6 @@ export default function TicTacToeGame({
         }, delay)
     }, [isPlaying, checkWinner, resetBoard])
 
-    // Player makes a move
     const handleCellClick = useCallback((row, col) => {
         if (!isPlaying || winner || isAiThinking || currentPlayer !== 'X') return
         if (board[row][col] !== null) return
@@ -160,7 +145,6 @@ export default function TicTacToeGame({
         newBoard[row][col] = 'X'
         setBoard(newBoard)
 
-        // Check if player wins
         const result = checkWinner(newBoard)
         if (result) {
             setWinner(result.winner)
@@ -168,36 +152,30 @@ export default function TicTacToeGame({
             setGamesPlayed(p => p + 1)
 
             if (result.winner === 'X') {
-                // Player wins! +40 points
                 setGamesWon(w => w + 1)
                 onScoreChange?.(score + 40)
                 setShowResultMessage('win')
 
-                // Auto reset board after showing win message
                 setTimeout(() => {
                     resetBoard()
                 }, 2000)
             } else if (result.winner === 'draw') {
-                // Draw - auto reset after delay
                 setShowResultMessage('draw')
                 setTimeout(() => {
                     resetBoard()
                 }, 1500)
             }
         } else {
-            // Switch to AI
             setCurrentPlayer('O')
         }
     }, [isPlaying, winner, isAiThinking, currentPlayer, board, checkWinner, resetBoard, onScoreChange, score])
 
-    // AI move after player
     useEffect(() => {
         if (currentPlayer === 'O' && isPlaying && !winner && !isAiThinking) {
             makeAiMove(board)
         }
     }, [currentPlayer, isPlaying, winner, isAiThinking, board, makeAiMove])
 
-    // Notify parent of state changes for saving
     useEffect(() => {
         onStateChange?.({
             board,
@@ -208,7 +186,6 @@ export default function TicTacToeGame({
         })
     }, [board, currentPlayer, gamesWon, gamesLost, gamesPlayed, onStateChange])
 
-    // Restore saved state
     useEffect(() => {
         if (savedState) {
             setBoard(savedState.board || [[null, null, null], [null, null, null], [null, null, null]])
@@ -219,13 +196,11 @@ export default function TicTacToeGame({
         }
     }, [savedState])
 
-    // Check if cell is part of winning line
     const isWinningCell = (row, col) => {
         if (!winningLine) return false
         return winningLine.some(([r, c]) => r === row && c === col)
     }
 
-    // Render cell content for BoardGrid
     const renderCellContent = (row, col) => {
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
@@ -251,7 +226,7 @@ export default function TicTacToeGame({
 
     return (
         <div className="flex flex-col items-center gap-4">
-            {/* Game info */}
+            
             <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
                     <X size={16} className="text-indigo-600" />
@@ -264,7 +239,7 @@ export default function TicTacToeGame({
                 </div>
             </div>
 
-            {/* Status message */}
+            
             <div className="h-8 flex items-center justify-center">
                 {showResultMessage === 'win' && (
                     <div className="text-emerald-600 font-bold animate-bounce text-lg">
@@ -294,7 +269,7 @@ export default function TicTacToeGame({
                 )}
             </div>
 
-            {/* Board using BoardGrid */}
+            
             <BoardGrid
                 rows={3}
                 cols={3}
@@ -303,7 +278,7 @@ export default function TicTacToeGame({
                 renderContent={renderCellContent}
             />
 
-            {/* Stats */}
+            
             <div className="flex gap-6 text-xs text-slate-500">
                 <div>
                     Thắng: <span className="font-bold text-emerald-600">{gamesWon}</span>

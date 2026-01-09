@@ -1,4 +1,3 @@
-// Activity Card Component
 export function ActivityCard({ activity }) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 transition-transform hover:-translate-y-1 duration-200">

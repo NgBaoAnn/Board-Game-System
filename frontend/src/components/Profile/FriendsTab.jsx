@@ -4,7 +4,6 @@ import { Search, UserX, Eye, MoreVertical } from 'lucide-react'
 
 const { Option } = Select
 
-// Mock friends data
 const friendsData = [
   { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=11', status: 'online', activity: 'Playing Chess', mutualGames: 15 },
   { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', mutualGames: 23 },
@@ -25,7 +24,7 @@ function FriendCard({ friend, onViewProfile, onRemove }) {
         <MoreVertical size={18} />
       </button>
 
-      {/* Avatar */}
+      
       <div className="relative mb-3">
         <Avatar
           src={friend.avatar}
@@ -39,7 +38,7 @@ function FriendCard({ friend, onViewProfile, onRemove }) {
         />
       </div>
 
-      {/* Info */}
+      
       <h4 className="font-bold text-gray-900 dark:text-white text-lg truncate w-full text-center">
         {friend.name}
       </h4>
@@ -54,7 +53,7 @@ function FriendCard({ friend, onViewProfile, onRemove }) {
 
       <p className="text-[11px] text-gray-400 mt-2">{friend.mutualGames} games played together</p>
 
-      {/* Actions */}
+      
       <div className="grid grid-cols-2 gap-2 w-full mt-4">
         <button
           onClick={() => onViewProfile?.(friend)}
@@ -90,7 +89,7 @@ export function FriendsTab() {
 
   return (
     <div>
-      {/* Stats */}
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 text-center">
           <span className="block text-2xl font-bold text-gray-900 dark:text-white">{friendsData.length}</span>
@@ -106,7 +105,7 @@ export function FriendsTab() {
         </div>
       </div>
 
-      {/* Filters */}
+      
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <Input
           placeholder="Search friends..."
@@ -128,7 +127,7 @@ export function FriendsTab() {
         </Select>
       </div>
 
-      {/* Grid */}
+      
       {filteredFriends.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredFriends.map((friend) => (

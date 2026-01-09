@@ -1,4 +1,3 @@
-// Stat Card Component
 export function StatCard({ value, label }) {
   return (
     <div className="text-center px-6 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">

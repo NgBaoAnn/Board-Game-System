@@ -137,7 +137,6 @@ export default function GamingParticles({ isDarkMode = true }) {
   )
 
   if (!init) {
-    // Show gradient background while particles load
     return (
       <div
         className="absolute inset-0"

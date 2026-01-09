@@ -7,7 +7,6 @@ import { joiValidator } from '@/utils/validation'
 
 const { TextArea } = Input
 
-// Validation schema
 const profileSchema = Joi.object({
   username: Joi.string().min(3).max(30).required().messages({
     'string.min': 'Username must be at least 3 characters',
@@ -34,7 +33,6 @@ export function EditProfileTab({ profile, onSave }) {
   const handleSubmit = async (values) => {
     setLoading(true)
     try {
-      // TODO: Implement save profile API
       await new Promise((resolve) => setTimeout(resolve, 1000))
       onSave?.({ ...values, avatar: avatarUrl })
       message.success('Profile updated successfully!')
@@ -47,7 +45,6 @@ export function EditProfileTab({ profile, onSave }) {
 
   const handleAvatarChange = (info) => {
     if (info.file.status === 'done') {
-      // Get uploaded URL from response
       const url = info.file.response?.url || URL.createObjectURL(info.file.originFileObj)
       setAvatarUrl(url)
       message.success('Avatar uploaded!')
@@ -65,7 +62,6 @@ export function EditProfileTab({ profile, onSave }) {
       message.error('Image must be smaller than 2MB!')
       return false
     }
-    // For demo, create preview URL
     setAvatarUrl(URL.createObjectURL(file))
     return false // Prevent actual upload in demo
   }
@@ -75,7 +71,7 @@ export function EditProfileTab({ profile, onSave }) {
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Edit Profile</h3>
 
-        {/* Avatar Section */}
+        
         <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-100 dark:border-gray-700">
           <div className="relative">
             <Avatar src={avatarUrl} size={100} className="border-4 border-gray-100 dark:border-gray-700" />
@@ -97,7 +93,7 @@ export function EditProfileTab({ profile, onSave }) {
           </div>
         </div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -165,7 +161,7 @@ export function EditProfileTab({ profile, onSave }) {
             />
           </Form.Item>
 
-          {/* Password Link */}
+          
           <div className="py-4 mb-4 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
@@ -183,7 +179,7 @@ export function EditProfileTab({ profile, onSave }) {
             </div>
           </div>
 
-          {/* Actions */}
+          
           <div className="flex justify-end gap-3 pt-4">
             <Button size="large" className="rounded-lg px-6">
               Cancel

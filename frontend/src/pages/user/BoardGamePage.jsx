@@ -32,7 +32,6 @@ import { message } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
 
 
-// Icon mapping for game codes from database
 const GAME_ICONS = {
     'tic_tac_toe': Grid3x3,
     'caro_4': Target,
@@ -43,25 +42,20 @@ const GAME_ICONS = {
 }
 
 export default function BoardGamePage() {
-    // Game session protection
     const { startSession, endSession } = useGameSession()
 
-    // Games loaded from API
     const [games, setGames] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [activeGame, setActiveGame] = useState(0)
     const [previousGame, setPreviousGame] = useState(0) // Track previous game for BACK function
 
-    // Session state
     const [sessionId, setSessionId] = useState(null)
     const [hasSavedSession, setHasSavedSession] = useState(false)
     const [checkingSession, setCheckingSession] = useState(false)
 
-    // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
 
-    // Game state
     const [gameStarted, setGameStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [isPaused, setIsPaused] = useState(false) // Separate pause state for controls
@@ -69,17 +63,14 @@ export default function BoardGamePage() {
     const [timeRemaining, setTimeRemaining] = useState(0)
     const [selectedTime, setSelectedTime] = useState(0)
 
-    // Game-specific state (for saving)
     const [gameState, setGameState] = useState(null)
     const [savedState, setSavedState] = useState(null)
 
-    // Ref to track current game state for saving
     const gameStateRef = useRef(gameState)
     useEffect(() => {
         gameStateRef.current = gameState
     }, [gameState])
 
-    // Refs for save/exit callbacks (to avoid stale closure)
     const saveCallbackRef = useRef(null)
     const exitCallbackRef = useRef(null)
     const sessionIdRef = useRef(null)
@@ -87,7 +78,6 @@ export default function BoardGamePage() {
     const selectedTimeRef = useRef(0)
     const timeRemainingRef = useRef(0)
 
-    // Keep refs in sync with state
     useEffect(() => {
         sessionIdRef.current = sessionId
     }, [sessionId])
@@ -104,7 +94,6 @@ export default function BoardGamePage() {
         timeRemainingRef.current = timeRemaining
     }, [timeRemaining])
 
-    // Fetch games from API on mount
     useEffect(() => {
         const fetchGames = async () => {
             try {
@@ -123,10 +112,8 @@ export default function BoardGamePage() {
         fetchGames()
     }, [])
 
-    // Get current game
     const currentGame = games[activeGame] || null
 
-    // Check for saved session when game is selected
     useEffect(() => {
         if (!currentGame || gameStarted) return
 
@@ -156,12 +143,10 @@ export default function BoardGamePage() {
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
 
-    // Handle START button click
     const handleStartClick = () => {
         setShowTimeModal(true)
     }
 
-    // Handle RESUME button click (for saved session)
     const handleResumeClick = async () => {
         if (!currentGame) return
 
@@ -171,7 +156,6 @@ export default function BoardGamePage() {
 
             setSessionId(response.data?.session?.id)
 
-            // Restore saved state
             const restored = response.data?.save_state || {}
             setSavedState(restored)
             setScore(restored.score || 0)
@@ -182,11 +166,8 @@ export default function BoardGamePage() {
             setIsPlaying(true)
             setIsPaused(false)
 
-            // Register session protection (for navigation blocking)
-            // Use callback that reads from refs to get latest values
             startSession(
                 async () => {
-                    // Save callback using refs for latest values
                     const currentSessionId = sessionIdRef.current
                     if (!currentSessionId) return
 
@@ -206,7 +187,6 @@ export default function BoardGamePage() {
                     }
                 },
                 async () => {
-                    // Exit callback using refs for latest values
                     const currentSessionId = sessionIdRef.current
                     if (currentSessionId) {
                         try {
@@ -226,7 +206,6 @@ export default function BoardGamePage() {
         }
     }
 
-    // Handle time selection and start new game
     const handleTimeConfirm = async (timeInSeconds) => {
         if (!currentGame) return
 
@@ -245,11 +224,8 @@ export default function BoardGamePage() {
             setIsPlaying(true)
             setIsPaused(false)
 
-            // Register session protection (for navigation blocking)
-            // Use callback that reads from refs to get latest values
             startSession(
                 async () => {
-                    // Save callback using refs for latest values
                     const currentSessionId = sessionIdRef.current
                     if (!currentSessionId) return
 
@@ -269,7 +245,6 @@ export default function BoardGamePage() {
                     }
                 },
                 async () => {
-                    // Exit callback using refs for latest values
                     const currentSessionId = sessionIdRef.current
                     if (currentSessionId) {
                         try {
@@ -289,19 +264,16 @@ export default function BoardGamePage() {
         }
     }
 
-    // Handle PAUSE button click (when playing)
     const handlePauseClick = () => {
         setIsPlaying(false)
         setIsPaused(true)
     }
 
-    // Handle RESUME button click (when paused during game)
     const handleResumeGameClick = () => {
         setIsPlaying(true)
         setIsPaused(false)
     }
 
-    // Handle SAVE button click
     const handleSave = async () => {
         if (!sessionId) return
 
@@ -319,7 +291,6 @@ export default function BoardGamePage() {
 
             message.success({ content: 'Đã lưu game!', key: 'save' })
 
-            // Reset to game selection
             resetToSelection()
         } catch (err) {
             console.error('Save failed:', err)
@@ -327,7 +298,6 @@ export default function BoardGamePage() {
         }
     }
 
-    // Handle EXIT button - finish game immediately
     const handleExit = async () => {
         if (sessionId) {
             try {
@@ -340,14 +310,12 @@ export default function BoardGamePage() {
         resetToSelection()
     }
 
-    // Handle BACK button - return to previous game selection (before game starts)
     const handleBack = () => {
         if (!gameStarted) {
             setActiveGame(previousGame)
         }
     }
 
-    // Reset to game selection state
     const resetToSelection = useCallback(() => {
         setGameStarted(false)
         setIsPlaying(false)
@@ -358,11 +326,9 @@ export default function BoardGamePage() {
         setSessionId(null)
         setSavedState(null)
         setGameState(null)
-        // End session protection
         endSession()
     }, [endSession])
 
-    // Handle time up
     const handleTimeUp = useCallback(async () => {
         setIsPlaying(false)
 
@@ -375,13 +341,11 @@ export default function BoardGamePage() {
             }
         }
 
-        // Wait a bit then reset
         setTimeout(() => {
             resetToSelection()
         }, 2000)
     }, [sessionId, score])
 
-    // Handle timer tick
     const handleTick = useCallback(() => {
         setTimeRemaining(prev => {
             if (prev <= 1) return 0
@@ -389,12 +353,10 @@ export default function BoardGamePage() {
         })
     }, [])
 
-    // Handle score change from game
     const handleScoreChange = useCallback((newScore) => {
         setScore(newScore)
     }, [])
 
-    // Handle game end (lose)
     const handleGameEnd = useCallback(async (result) => {
         if (result === 'lose') {
             setIsPlaying(false)
@@ -414,16 +376,13 @@ export default function BoardGamePage() {
         }
     }, [sessionId, score])
 
-    // Handle game state change (for saving)
     const handleStateChange = useCallback((state) => {
         setGameState(state)
     }, [])
 
-    // Direction button handlers (for games that need them)
     const handleUp = () => console.log('UP')
     const handleDown = () => console.log('DOWN')
 
-    // Render game component based on current game
     const renderGame = () => {
         if (!currentGame || !gameStarted) return null
 
@@ -470,7 +429,6 @@ export default function BoardGamePage() {
             )
         }
 
-        // Default: show BoardGrid for other games
         return (
             <BoardGrid
                 rows={currentGame.board_row}
@@ -483,7 +441,7 @@ export default function BoardGamePage() {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Game Selector */}
+            
             <section className="shrink-0 bg-white border-b border-slate-100 p-4 rounded-xl mb-4 shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row items-center justify-between mb-3">
@@ -501,7 +459,7 @@ export default function BoardGamePage() {
                         </div>
                     </div>
 
-                    {/* Loading state */}
+                    
                     {loading && (
                         <div className="flex items-center justify-center py-8">
                             <Loader2 className="animate-spin text-indigo-500" size={32} />
@@ -509,14 +467,14 @@ export default function BoardGamePage() {
                         </div>
                     )}
 
-                    {/* Error state */}
+                    
                     {error && !loading && (
                         <div className="flex items-center justify-center py-8 text-rose-500">
                             <span>{error}</span>
                         </div>
                     )}
 
-                    {/* Games grid */}
+                    
                     {!loading && !error && games.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                             {games.map((game, idx) => {
@@ -563,7 +521,7 @@ export default function BoardGamePage() {
                         </div>
                     )}
 
-                    {/* Empty state */}
+                    
                     {!loading && !error && games.length === 0 && (
                         <div className="flex items-center justify-center py-8 text-slate-500">
                             <span>Không có game nào.</span>
@@ -572,12 +530,12 @@ export default function BoardGamePage() {
                 </div>
             </section>
 
-            {/* Board Display Area */}
+            
             <section className="flex-grow relative flex flex-col items-center justify-center p-4 lg:p-6 bg-slate-50 rounded-xl overflow-hidden">
-                {/* Background pattern */}
+                
                 <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
 
-                {/* Game Stats Bar - Timer & Score */}
+                
                 <div className="relative z-20 flex flex-wrap items-center justify-center gap-4 mb-4">
                     <GameTimer
                         timeRemaining={timeRemaining}
@@ -591,14 +549,14 @@ export default function BoardGamePage() {
                     />
                 </div>
 
-                {/* Game container */}
+                
                 <div className="relative z-10 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-100/60 ring-1 ring-slate-100">
-                    {/* Label */}
+                    
                     <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-300 tracking-widest z-20">
                         {currentGame ? currentGame.name.toUpperCase() : 'LOADING...'}
                     </div>
 
-                    {/* Game content */}
+                    
                     <div className="relative z-10 mt-4">
                         {gameStarted ? (
                             renderGame()
@@ -623,7 +581,7 @@ export default function BoardGamePage() {
                                     {currentGame?.description || 'Choose a game from the menu above to start playing'}
                                 </p>
 
-                                {/* Start/Resume buttons */}
+                                
                                 {currentGame && (
                                     <div className="flex gap-3">
                                         <button
@@ -660,14 +618,14 @@ export default function BoardGamePage() {
                 </div>
             </section>
 
-            {/* Controls Section - Changes based on game state */}
+            
             <section className="shrink-0 bg-white border-t border-slate-100 p-4 mt-4 rounded-xl shadow-sm">
                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
 
-                    {/* Before game starts: HELP + BACK */}
+                    
                     {!gameStarted && (
                         <>
-                            {/* Help button */}
+                            
                             <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
                                 <button
                                     aria-label="Help"
@@ -677,7 +635,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Navigation controls */}
+                            
                             <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
                                 <button
                                     onClick={handleLeft}
@@ -717,7 +675,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Back button - returns to previous game */}
+                            
                             <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
                                 <button
                                     onClick={handleBack}
@@ -730,10 +688,10 @@ export default function BoardGamePage() {
                         </>
                     )}
 
-                    {/* Game started and PLAYING: Direction buttons + PAUSE */}
+                    
                     {gameStarted && isPlaying && !isPaused && (
                         <>
-                            {/* Left side: UP button */}
+                            
                             <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
                                 <button
                                     onClick={handleUp}
@@ -744,7 +702,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Center: LEFT + PAUSE + RIGHT */}
+                            
                             <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
                                 <button
                                     onClick={handleLeft}
@@ -772,7 +730,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Right side: DOWN button */}
+                            
                             <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
                                 <button
                                     onClick={handleDown}
@@ -785,10 +743,10 @@ export default function BoardGamePage() {
                         </>
                     )}
 
-                    {/* Game started and PAUSED: SAVE + RESUME + EXIT */}
+                    
                     {gameStarted && isPaused && (
                         <>
-                            {/* Left side: SAVE button */}
+                            
                             <div className="order-2 md:order-1 flex-1 flex justify-center md:justify-start">
                                 <button
                                     onClick={handleSave}
@@ -799,7 +757,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Center: RESUME button */}
+                            
                             <div className="order-1 md:order-2 flex items-center justify-center">
                                 <button
                                     onClick={handleResumeGameClick}
@@ -811,7 +769,7 @@ export default function BoardGamePage() {
                                 </button>
                             </div>
 
-                            {/* Right side: EXIT button */}
+                            
                             <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
                                 <button
                                     onClick={handleExit}
@@ -826,7 +784,7 @@ export default function BoardGamePage() {
                 </div>
             </section>
 
-            {/* Time Selection Modal */}
+            
             <TimeSelectionModal
                 open={showTimeModal}
                 onClose={() => setShowTimeModal(false)}

@@ -16,14 +16,12 @@ export default function GameTimer({
 }) {
     const intervalRef = useRef(null)
 
-    // Format time as MM:SS
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
 
-    // Timer countdown effect
     useEffect(() => {
         if (isPlaying && timeRemaining > 0) {
             intervalRef.current = setInterval(() => {
@@ -40,7 +38,6 @@ export default function GameTimer({
         return () => clearInterval(intervalRef.current)
     }, [isPlaying, timeRemaining, onTick, onTimeUp])
 
-    // Warning state when < 30 seconds
     const isWarning = timeRemaining > 0 && timeRemaining <= 30
     const isCritical = timeRemaining > 0 && timeRemaining <= 10
 
@@ -55,7 +52,7 @@ export default function GameTimer({
                     : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
             }
         `}>
-            {/* Icon */}
+            
             <div className={`
                 w-10 h-10 rounded-xl flex items-center justify-center
                 ${isCritical
@@ -72,7 +69,7 @@ export default function GameTimer({
                 )}
             </div>
 
-            {/* Time display */}
+            
             <div className="flex flex-col">
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
                     Time Left
@@ -82,7 +79,7 @@ export default function GameTimer({
                 </span>
             </div>
 
-            {/* Decorative ring */}
+            
             <div className={`
                 absolute -right-1 -top-1 w-3 h-3 rounded-full
                 ${isCritical

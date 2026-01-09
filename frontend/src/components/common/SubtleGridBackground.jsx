@@ -11,7 +11,6 @@ import { motion } from 'framer-motion'
  * @param {React.ReactNode} props.children - Content to overlay
  */
 export default function SubtleGridBackground({ isDarkMode = true, children }) {
-  // Memoize orb configurations for performance
   const orbs = useMemo(() => [
     {
       id: 1,
@@ -41,7 +40,7 @@ export default function SubtleGridBackground({ isDarkMode = true, children }) {
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Base gradient - very subtle */}
+      
       <div
         className="absolute inset-0 transition-colors duration-500"
         style={{
@@ -51,7 +50,7 @@ export default function SubtleGridBackground({ isDarkMode = true, children }) {
         }}
       />
 
-      {/* Subtle dot grid pattern */}
+      
       <div
         className="absolute inset-0 transition-opacity duration-500"
         style={{
@@ -61,7 +60,7 @@ export default function SubtleGridBackground({ isDarkMode = true, children }) {
         }}
       />
 
-      {/* Floating gradient orbs - CSS-based for performance */}
+      
       {orbs.map((orb) => (
         <motion.div
           key={orb.id}
@@ -82,7 +81,7 @@ export default function SubtleGridBackground({ isDarkMode = true, children }) {
         />
       ))}
 
-      {/* Subtle noise texture overlay */}
+      
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
@@ -90,7 +89,7 @@ export default function SubtleGridBackground({ isDarkMode = true, children }) {
         }}
       />
 
-      {/* Content */}
+      
       <div className="relative z-10 h-full">
         {children}
       </div>

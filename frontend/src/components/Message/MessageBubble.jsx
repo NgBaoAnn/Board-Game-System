@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Avatar, Tooltip } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Reaction emojis
 const reactions = ['❤️', '😂', '🎮', '👍', '🔥', '👏']
 
 /**
@@ -38,7 +37,7 @@ export function MessageBubble({
         onMouseEnter={() => setShowReactions(true)}
         onMouseLeave={() => setShowReactions(false)}
       >
-        {/* Other person's avatar */}
+        
         {!isOwn && showAvatar && (
           message.avatar ? (
             <Avatar src={message.avatar} size={32} className="flex-shrink-0" />
@@ -52,7 +51,7 @@ export function MessageBubble({
         )}
         {!isOwn && !showAvatar && <div className="w-8" />}
 
-        {/* Message content with reaction picker */}
+        
         <div className="relative">
           <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-lg`}>
             <div
@@ -64,7 +63,7 @@ export function MessageBubble({
             >
               {message.content}
 
-              {/* Selected reaction badge */}
+              
               {selectedReaction && (
                 <motion.span
                   initial={{ scale: 0 }}
@@ -77,7 +76,7 @@ export function MessageBubble({
             </div>
           </div>
 
-          {/* Reaction picker */}
+          
           <AnimatePresence>
             {showReactions && (
               <motion.div
@@ -104,12 +103,12 @@ export function MessageBubble({
         </div>
       </div>
 
-      {/* Time and Read Receipt */}
+      
       <div className={`flex items-center gap-1.5 mt-1 ${isOwn ? 'mr-1' : 'ml-10'}`}>
         <span className="text-[10px] text-gray-500 dark:text-slate-400">
           {message.time}
         </span>
-        {/* Read receipt - show recipient avatar with pulse */}
+        
         {isOwn && message.read && (
           <motion.div
             initial={{ scale: 0 }}

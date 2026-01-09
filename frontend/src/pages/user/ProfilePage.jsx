@@ -13,7 +13,6 @@ import { AchievementsTab } from '@/components/Profile/AchievementsTab'
 import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
 import { FriendsTab } from '@/components/Profile/FriendsTab'
 
-// Mock data for Overview tab with rarity
 const achievements = [
   { id: 1, name: 'Strategist Master', progress: 90, current: 45, total: 50, rarity: 'legendary', icon: Trophy },
   { id: 2, name: 'Puzzle Solver', progress: 60, current: 12, total: 20, rarity: 'rare', icon: Brain },
@@ -75,7 +74,6 @@ export default function ProfilePage() {
 
   const handleClaimReward = (achievement) => {
     console.log('Claiming reward for:', achievement.name)
-    // TODO: Implement reward claim API
   }
 
   const tabItems = [
@@ -88,7 +86,7 @@ export default function ProfilePage() {
 
   return (
     <div className="p-4 md:p-8 lg:p-10 min-h-screen">
-      {/* Header */}
+      
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -104,7 +102,7 @@ export default function ProfilePage() {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="profile-tabs mb-8" />
 
-      {/* Overview Tab */}
+      
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="space-y-8">
@@ -182,18 +180,18 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Edit Profile Tab */}
+      
       {activeTab === 'edit' && (
         <EditProfileTab profile={profileData} onSave={(data) => console.log('Saved:', data)} />
       )}
 
-      {/* Achievements Tab */}
+      
       {activeTab === 'achievements' && <AchievementsTab />}
 
-      {/* Game History Tab */}
+      
       {activeTab === 'history' && <GameHistoryTab />}
 
-      {/* Friends Tab */}
+      
       {activeTab === 'friends' && <FriendsTab />}
     </div>
   )

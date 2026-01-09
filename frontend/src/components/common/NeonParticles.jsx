@@ -52,7 +52,6 @@ export default function NeonParticles({ isDarkMode = false }) {
       },
       particles: {
         color: {
-          // Cosmic Arcade neon colors
           value: isDarkMode
             ? ['#00f0ff', '#a855f7', '#ec4899', '#22c55e']
             : ['#4f46e5', '#7c3aed', '#db2777', '#0891b2'], // Brighter saturated colors for light mode

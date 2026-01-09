@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-/**
- * CustomCursor - Gaming-style crosshair cursor with animations
- * Optimized for zero-delay using direct DOM manipulation with transform
- */
 export default function CustomCursor() {
-  // Use ref for direct DOM manipulation - zero delay
   const cursorRef = useRef(null)
 
   const [isHovering, setIsHovering] = useState(false)
@@ -14,14 +9,11 @@ export default function CustomCursor() {
   const [ripples, setRipples] = useState([])
   const [isVisible, setIsVisible] = useState(false)
   
-  // Store position for ripple effects
   const positionRef = useRef({ x: -100, y: -100 })
 
-  // Track mouse movement using direct DOM manipulation - zero delay
   useEffect(() => {
     const updatePosition = (e) => {
       if (cursorRef.current) {
-        // Direct transform update - bypasses React render cycle for zero delay
         cursorRef.current.style.transform = `translate3d(${e.clientX - 12}px, ${e.clientY - 12}px, 0)`
       }
       positionRef.current = { x: e.clientX, y: e.clientY }
@@ -31,7 +23,6 @@ export default function CustomCursor() {
     const handleMouseLeave = () => setIsVisible(false)
     const handleMouseEnter = () => setIsVisible(true)
 
-    // Use passive listener for better scroll performance
     window.addEventListener('mousemove', updatePosition, { passive: true })
     document.addEventListener('mouseleave', handleMouseLeave)
     document.addEventListener('mouseenter', handleMouseEnter)
@@ -43,7 +34,6 @@ export default function CustomCursor() {
     }
   }, [isVisible])
 
-  // Detect hover on interactive elements
   useEffect(() => {
     const handleMouseOver = (e) => {
       const target = e.target
@@ -63,13 +53,11 @@ export default function CustomCursor() {
     return () => document.removeEventListener('mouseover', handleMouseOver)
   }, [])
 
-  // Handle click ripple effect
   const handleClick = useCallback((e) => {
     const id = Date.now()
     setRipples((prev) => [...prev, { id, x: e.clientX, y: e.clientY }])
     setIsClicking(true)
     
-    // Use requestAnimationFrame for smoother animation
     requestAnimationFrame(() => {
       setTimeout(() => setIsClicking(false), 150)
     })
@@ -83,7 +71,6 @@ export default function CustomCursor() {
     return () => window.removeEventListener('mousedown', handleClick)
   }, [handleClick])
 
-  // Hide on mobile/touch devices
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
@@ -93,15 +80,12 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Hide default cursor globally via CSS */}
       <style>{`
         * {
           cursor: none !important;
         }
-        /* Restore cursor for text selection areas if needed, or leave as custom */
       `}</style>
 
-      {/* Main Crosshair Cursor - using ref for zero-delay positioning */}
       <div
         ref={cursorRef}
         className="fixed pointer-events-none z-[9999] mix-blend-difference top-0 left-0 will-change-transform"
@@ -111,14 +95,12 @@ export default function CustomCursor() {
           transition: isClicking || isHovering ? 'transform 0s' : 'none',
         }}
       >
-        {/* Scale wrapper for hover/click animations */}
         <div
           className="transition-transform duration-100 ease-out"
           style={{
             transform: `scale(${isClicking ? 0.8 : isHovering ? 1.5 : 1})`,
           }}
         >
-        {/* Crosshair SVG */}
         <svg
           width="24"
           height="24"
@@ -126,7 +108,6 @@ export default function CustomCursor() {
           fill="none"
           className="animate-cursor-pulse"
         >
-          {/* Horizontal line */}
           <line
             x1="2"
             y1="12"
@@ -145,7 +126,6 @@ export default function CustomCursor() {
             strokeWidth="1.5"
             strokeLinecap="round"
           />
-          {/* Vertical line */}
           <line
             x1="12"
             y1="2"
@@ -164,7 +144,6 @@ export default function CustomCursor() {
             strokeWidth="1.5"
             strokeLinecap="round"
           />
-          {/* Center dot - slightly smaller for precision */}
           <circle
             cx="12"
             cy="12"
@@ -174,7 +153,6 @@ export default function CustomCursor() {
           />
         </svg>
 
-        {/* Outer ring (appears on hover) */}
         <div
           className="absolute inset-0 rounded-full border border-[#a855f7] transition-all duration-300 ease-out"
           style={{
@@ -185,7 +163,6 @@ export default function CustomCursor() {
         </div>
       </div>
 
-      {/* Click Ripples */}
       <AnimatePresence>
         {ripples.map((ripple) => (
           <motion.div

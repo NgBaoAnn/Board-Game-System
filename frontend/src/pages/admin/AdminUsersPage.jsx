@@ -45,7 +45,6 @@ export default function AdminUsersPage() {
                 setUsers(items);
                 setTotal(pagination.total || 0);
 
-                // Use counts from API
                 if (countsRes && countsRes.success !== false && countsRes.data) {
                     setCounts(countsRes.data);
                 } else {
@@ -66,7 +65,6 @@ export default function AdminUsersPage() {
         return () => controller.abort();
     }, [page, role, active, search]);
 
-    // Debounce the search input so we don't ping backend on every keystroke
     useEffect(() => {
         clearTimeout(searchDebounceRef.current);
         searchDebounceRef.current = setTimeout(() => {
@@ -109,10 +107,8 @@ export default function AdminUsersPage() {
             await userApi.updateUser(user.id, { active: newActiveStatus });
             message.success(`User ${newActiveStatus ? "activated" : "banned"} successfully`);
 
-            // Update local state immediately for better UX
             setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, active: newActiveStatus } : u)));
 
-            // Reload counts from API
             const countsRes = await userApi.getUserCounts();
             if (countsRes && countsRes.success !== false && countsRes.data) {
                 setCounts(countsRes.data);
@@ -142,7 +138,6 @@ export default function AdminUsersPage() {
             await userApi.updateUser(selectedUser.id, { role_id: selectedRole });
             message.success("User role updated successfully");
 
-            // Reload users list
             const usersRes = await userApi.getAllUsers(page, pageSize, search, role, active);
             if (usersRes && usersRes.success !== false && usersRes.data) {
                 const payload = usersRes.data || {};

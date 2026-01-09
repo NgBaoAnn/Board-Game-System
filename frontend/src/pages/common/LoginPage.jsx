@@ -13,13 +13,11 @@ import { joiValidator, commonSchemas } from '@/utils/validation'
 import authApi from '@/api/api-auth'
 import { useAuth } from '@/store/useAuth'
 
-// Validation schema
 const loginSchema = Joi.object({
   email: commonSchemas.email,
   password: commonSchemas.password,
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -75,12 +73,12 @@ export default function LoginPage() {
 
   const rightContent = (
     <AnimatedHeroBackground>
-      {/* Floating Game Pieces */}
+      
       <FloatingGamePieces count={20} />
 
-      {/* Content Overlay */}
+      
       <div className="relative h-full flex flex-col justify-between p-12 text-white z-10">
-        {/* Top Badge */}
+        
         <div className="flex justify-end">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -92,9 +90,9 @@ export default function LoginPage() {
           </motion.div>
         </div>
 
-        {/* Bottom Content */}
+        
         <div className="space-y-6">
-          {/* Testimonial Card */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -124,7 +122,7 @@ export default function LoginPage() {
             </p>
           </motion.div>
 
-          {/* Call to Action */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,7 +148,7 @@ export default function LoginPage() {
         animate={formState}
         className="space-y-0"
       >
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -173,7 +171,7 @@ export default function LoginPage() {
           </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -188,7 +186,7 @@ export default function LoginPage() {
           </p>
         </motion.div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -277,7 +275,7 @@ export default function LoginPage() {
           </Form.Item>
         </Form>
 
-        {/* Divider */}
+        
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
@@ -289,13 +287,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Social Buttons */}
+        
         <SocialLoginButtons
           onGoogleClick={() => message.info('Google login clicked')}
           onFacebookClick={() => message.info('Facebook login clicked')}
         />
 
-        {/* Register Link */}
+        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

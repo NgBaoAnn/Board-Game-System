@@ -78,7 +78,7 @@ export default function AdminSidebar() {
 
     return (
         <>
-            {/* Hamburger button for mobile */}
+            
             <button
                 className="xl:hidden fixed top-4 left-4 z-50 p-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg shadow-lg"
                 onClick={() => setDrawerVisible(true)}
@@ -86,12 +86,12 @@ export default function AdminSidebar() {
                 <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
 
-            {/* Desktop sidebar */}
+            
             <aside className="hidden xl:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark h-screen sticky top-0 overflow-y-auto">
                 {navContent}
             </aside>
 
-            {/* Mobile drawer */}
+            
             <div
                 className={`fixed top-0 left-0 h-full w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark transform transition-transform duration-300 z-50 ${
                     drawerVisible ? "translate-x-0" : "-translate-x-full"
@@ -100,7 +100,7 @@ export default function AdminSidebar() {
                 {navContent}
             </div>
 
-            {/* Backdrop */}
+            
             {drawerVisible && <div className="fixed inset-0 bg-stone-600/20 z-40" onClick={() => setDrawerVisible(false)}></div>}
         </>
     );

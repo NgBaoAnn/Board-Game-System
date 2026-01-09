@@ -11,7 +11,6 @@ import { FavoriteGameCard } from '@/components/Profile/FavoriteGameCard'
 import { AchievementsTab } from '@/components/Profile/AchievementsTab'
 import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
 
-// Mock player data (would come from API in real app)
 const mockPlayers = {
   1: {
     id: 1,
@@ -56,7 +55,6 @@ const mockPlayers = {
   },
 }
 
-// Mock achievements for display
 const achievements = [
   { id: 1, name: 'Strategist Master', progress: 90, current: 45, total: 50, rarity: 'legendary', icon: Trophy },
   { id: 2, name: 'Puzzle Solver', progress: 60, current: 12, total: 20, rarity: 'rare', icon: Brain },
@@ -103,7 +101,6 @@ export default function FriendProfilePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call
     setTimeout(() => {
       const playerData = mockPlayers[id] || mockPlayers[1]
       setPlayer(playerData)
@@ -131,7 +128,6 @@ export default function FriendProfilePage() {
     )
   }
 
-  // Only show public tabs
   const tabItems = [
     { key: 'overview', label: 'Overview' },
     { key: 'achievements', label: 'Achievements' },
@@ -140,7 +136,7 @@ export default function FriendProfilePage() {
 
   return (
     <div className="p-4 md:p-8 lg:p-10 min-h-screen">
-      {/* Header with back button */}
+      
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -160,7 +156,7 @@ export default function FriendProfilePage() {
           </h2>
         </div>
 
-        {/* Action buttons */}
+        
         <div className="flex items-center gap-3">
           {!player.isFriend && (
             <motion.button
@@ -187,13 +183,13 @@ export default function FriendProfilePage() {
         </div>
       </motion.header>
 
-      {/* Profile Card (read-only) */}
+      
       <ProfileCard profile={player} isReadOnly />
 
-      {/* Tabs - limited to public info */}
+      
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="profile-tabs mb-8" />
 
-      {/* Overview Tab */}
+      
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="space-y-8">
@@ -257,10 +253,10 @@ export default function FriendProfilePage() {
         </div>
       )}
 
-      {/* Achievements Tab */}
+      
       {activeTab === 'achievements' && <AchievementsTab />}
 
-      {/* Game History Tab */}
+      
       {activeTab === 'history' && <GameHistoryTab />}
     </div>
   )

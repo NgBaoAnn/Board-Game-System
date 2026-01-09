@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { Avatar } from 'antd'
 import { MoreVertical, Eye, Swords, Clock } from 'lucide-react'
 
-// Game icons mapping
 const gameIcons = {
   Chess: '♟️',
   Catan: '🏝️',
@@ -10,7 +9,6 @@ const gameIcons = {
   default: '🎮',
 }
 
-// Tier config for avatar glows
 const tierConfig = {
   grandmaster: { border: 'from-purple-500 to-violet-600', glow: 'avatar-glow-grandmaster' },
   diamond: { border: 'from-cyan-400 to-teal-500', glow: 'avatar-glow-diamond' },
@@ -37,12 +35,12 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
       whileHover={{ y: -6, transition: { duration: 0.2 } }}
       className="relative bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 flex flex-col items-center overflow-hidden group"
     >
-      {/* More options button */}
+      
       <button className="absolute top-3 right-3 text-gray-400 dark:text-slate-500 hover:text-gray-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg">
         <MoreVertical size={16} />
       </button>
 
-      {/* Avatar with tier border and online indicator */}
+      
       <div className="relative mb-3">
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${isOnline ? tier.glow : ''}`}>
           <Avatar
@@ -51,7 +49,7 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
             className={`border-2 border-white dark:border-slate-900 ${!isOnline ? 'grayscale opacity-80' : ''}`}
           />
         </div>
-        {/* Online indicator */}
+        
         <span
           className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-3 border-white dark:border-slate-900 ${
             isOnline ? 'bg-green-500 online-status-pulse' : 'bg-gray-400 dark:bg-slate-500'
@@ -59,12 +57,12 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
         />
       </div>
 
-      {/* Name */}
+      
       <h3 className="font-bold text-gray-900 dark:text-white text-base truncate w-full text-center mb-1">
         {friend.name}
       </h3>
 
-      {/* Activity status with game icon */}
+      
       {friend.activity ? (
         <div className="flex items-center gap-1.5 mb-1">
           {gameIcon && <span className="text-lg">{gameIcon}</span>}
@@ -76,7 +74,7 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
         </p>
       )}
 
-      {/* Playing duration */}
+      
       {friend.playingFor && (
         <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-slate-400 mb-3">
           <Clock size={10} />
@@ -84,7 +82,7 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
         </div>
       )}
 
-      {/* Action buttons */}
+      
       <div className="grid grid-cols-2 gap-2 w-full mt-auto pt-2">
         {friend.activity?.includes('Playing') ? (
           <>

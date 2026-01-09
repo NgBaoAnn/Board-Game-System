@@ -41,7 +41,6 @@ export function AchievementItem({ achievement, onClaim }) {
     },
   }
 
-  // Fallback color mapping for old format
   const colorToRarity = {
     yellow: 'legendary',
     blue: 'rare',
@@ -68,14 +67,14 @@ export function AchievementItem({ achievement, onClaim }) {
       whileHover={{ scale: 1.02, x: 4 }}
       className={`relative flex items-center gap-4 p-3 rounded-xl border-2 transition-all ${config.borderClass} bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
     >
-      {/* Rarity label */}
+      
       {config.label && (
         <span className={`absolute -top-2 -right-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${config.labelColor}`}>
           {config.label}
         </span>
       )}
 
-      {/* Icon */}
+      
       <motion.div
         whileHover={{ rotate: 10, scale: 1.1 }}
         className={`w-12 h-12 rounded-xl flex items-center justify-center ${config.bgClass} ${config.textClass}`}
@@ -83,7 +82,7 @@ export function AchievementItem({ achievement, onClaim }) {
         <Icon size={22} />
       </motion.div>
 
-      {/* Content */}
+      
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start mb-1">
           <span className="text-sm font-bold text-slate-900 dark:text-white truncate pr-2">

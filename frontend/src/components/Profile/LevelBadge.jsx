@@ -37,20 +37,20 @@ export function LevelBadge({
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      {/* Background glow */}
+      
       <div
         className="absolute inset-0 rounded-full blur-xl opacity-50"
         style={{ background: colors.glow }}
       />
 
-      {/* SVG Ring */}
+      
       <svg
         width={size}
         height={size}
         className="transform -rotate-90"
         style={{ filter: `drop-shadow(0 0 8px ${colors.glow})` }}
       >
-        {/* Background circle */}
+        
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -59,7 +59,7 @@ export function LevelBadge({
           strokeWidth="8"
           fill="none"
         />
-        {/* Progress circle */}
+        
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -73,7 +73,7 @@ export function LevelBadge({
           animate={{ strokeDashoffset }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
         />
-        {/* Gradient definition */}
+        
         <defs>
           <linearGradient id={`levelGradient-${tier}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={colors.from} />
@@ -82,7 +82,7 @@ export function LevelBadge({
         </defs>
       </svg>
 
-      {/* Center content */}
+      
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           initial={{ scale: 0 }}
@@ -98,7 +98,7 @@ export function LevelBadge({
         </span>
       </div>
 
-      {/* XP text below */}
+      
       <motion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}

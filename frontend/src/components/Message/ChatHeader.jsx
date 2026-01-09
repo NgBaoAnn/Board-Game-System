@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Gamepad2, Search, MoreVertical, Swords, Eye } from 'lucide-react'
 import { Avatar, Dropdown, message } from 'antd'
 
-// Game icons mapping
 const gameIcons = {
   Chess: '♟️',
   Catan: '🏝️',
@@ -11,7 +10,6 @@ const gameIcons = {
   default: '🎮',
 }
 
-// Quick game options
 const gameOptions = [
   { key: 'chess', label: '♟️ Play Chess', game: 'Chess' },
   { key: 'catan', label: '🏝️ Play Catan', game: 'Catan' },
@@ -52,7 +50,7 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
   return (
     <div className="h-16 flex-shrink-0 border-b border-gray-200/50 dark:border-slate-700/30 bg-white/80 dark:bg-slate-800/50 backdrop-blur-md flex items-center justify-between px-6 z-10">
       <div className="flex items-center">
-        {/* Avatar */}
+        
         {conversation.avatar ? (
           <Avatar src={conversation.avatar} size={40} className="shadow-sm mr-3" />
         ) : (
@@ -63,11 +61,11 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
           </div>
         )}
 
-        {/* Name and status */}
+        
         <div>
           <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{conversation.name}</h3>
           <div className="flex items-center gap-2">
-            {/* Online/Playing status */}
+            
             <div
               className={`flex items-center text-xs font-medium ${
                 isPlaying ? 'text-amber-600 dark:text-amber-400' : isOnline ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400'
@@ -92,9 +90,9 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
         </div>
       </div>
 
-      {/* Action buttons */}
+      
       <div className="flex items-center space-x-2">
-        {/* Spectate button (if playing) */}
+        
         <AnimatePresence>
           {isPlaying && (
             <motion.button
@@ -110,7 +108,7 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
           )}
         </AnimatePresence>
 
-        {/* Invite to Game button */}
+        
         {isOnline && !isPlaying && (
           <Dropdown
             menu={{ items: inviteMenuItems }}
@@ -129,7 +127,7 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
           </Dropdown>
         )}
 
-        {/* Other actions */}
+        
         <button className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
           <Search size={18} />
         </button>

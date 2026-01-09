@@ -25,7 +25,7 @@ export function TypingIndicator({ avatar, initials, gradient }) {
       exit="exit"
       className="flex items-end gap-2"
     >
-      {/* Avatar */}
+      
       {avatar ? (
         <Avatar src={avatar} size={32} className="flex-shrink-0" />
       ) : initials ? (
@@ -36,7 +36,7 @@ export function TypingIndicator({ avatar, initials, gradient }) {
         </div>
       ) : null}
 
-      {/* Typing bubble */}
+      
       <div className="bg-white dark:bg-slate-700/60 border border-gray-200 dark:border-slate-600/50 dark:backdrop-blur-sm rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <motion.span

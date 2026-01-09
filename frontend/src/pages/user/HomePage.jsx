@@ -1,16 +1,13 @@
 import { useState } from 'react'
-import { LayoutGrid, PlusCircle, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Clock, Zap, Crown, Gamepad2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GameCard from '@/components/Game/GameCard'
 import NewArrivalCard from '@/components/Game/NewArrivalCard'
 import HeroSection from '@/components/Home/HeroSection'
-import QuickActions from '@/components/Home/QuickActions'
 import SectionHeader from '@/components/common/SectionHeader'
 
-// Hero image for featured game
 const heroImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6nScqmqkDA1m73ZB3NIoVYRn-NoVZhlNJ6nHG9PfYNu9htB7sIwq13rXhzRACpmWTVotZmL-bJXc11wxiETP5COG0Do-JqiTUHndRbDQ9_yIdOhsXxOZbyGrpxvBaQ442jGILlt7ODsA-E1sYMF7xoGFwMX6tyG1iJLemgwFfesLcyU_GXtdEo8fkDZaqqzyIibwLNVvNe7YDw7vflxVsUtVsL0dveXcWKhDJRmGmw9sI21nucjFIu75w23J1uoO9MYLQ78muDoix'
 
-// Sample data with rarity, online players, and tags
 const popularGames = [
   {
     id: 1,
@@ -89,31 +86,54 @@ const newArrivals = [
   },
 ]
 
-// Quick actions with gradient colors
-const quickActions = [
+const liveGames = [
   {
     id: 1,
-    title: 'Browse Library',
-    icon: LayoutGrid,
-    colorClass: 'quick-action-blue',
-    iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-500',
+    gameName: 'Monopoly Classic',
+    hostName: 'DragonMaster',
+    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dragon',
+    players: 3,
+    maxPlayers: 6,
+    status: 'waiting',
+    timeElapsed: null,
+    isRanked: true,
+    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDA7vEIR_RPLJ-YS9YGou4QC8ktUwEWDbpBMcrZ3iMxUYoQpWRjw5YH_yf1-__8FYkpzxkmZFAxWkdiOY4Zft7x5_jGcvUOw_Tu6m1SFAHr05Z-RT21Dsc-xfan-JnLfC89NIt_cZTUx6ikFF_oFppVLTluEvuceyYkM0TVE24GIA9-grrgOBhGLq73GWFRcFURNUPMhn20XJ3e_V7iK7Cu97V7cloLtvm8e2AkFIR7LQO0L572Vm4bzNlfKGvpDcyH098NRfPwV1C2',
   },
   {
     id: 2,
-    title: 'Create Custom Table',
-    icon: PlusCircle,
-    colorClass: 'quick-action-green',
-    iconBg: 'bg-green-500/20',
-    iconColor: 'text-green-500',
+    gameName: 'Chess Arena',
+    hostName: 'GrandMaster99',
+    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=chess',
+    players: 1,
+    maxPlayers: 2,
+    status: 'waiting',
+    timeElapsed: null,
+    isRanked: true,
+    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJG3iIs6S7sYzD2VxpjHBJmcchytJ3n7BArtH7Wep8scO_R5UaglCjVxh9SdRRb_ysfcGsxbkl-v5p7P1RlIfA39EW5E7m91i52bzoRcDGJgHnZcy4cjSQTpcX5UZ4MS3yLpOjJVEbXIx_GD2ht_j_SLMF0TCVEJRuzWs0JuFk4FMfQ9PqSMkwUIkGmO4g1VRGtZwJ_q1YR6WLCACcKwUCtJ0_A3580MgOaBHvSYjzm3xr-pGrVhSVwMbXLimCiRJwTlQe_ia86cNZ',
   },
   {
     id: 3,
-    title: 'Join Random Lobby',
-    icon: Shuffle,
-    colorClass: 'quick-action-purple',
-    iconBg: 'bg-purple-500/20',
-    iconColor: 'text-purple-500',
+    gameName: 'Poker Night',
+    hostName: 'CardShark',
+    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=poker',
+    players: 5,
+    maxPlayers: 10,
+    status: 'in-progress',
+    timeElapsed: '12:34',
+    isRanked: false,
+    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQY-9JY2r5FbqNjNrYHA1C7TryNl0EdBTBuF1l0WXYyCZuFKJ_n4RO95zDNp3FH6Up8U7-v4DCkY0jWHVUMMuKenwsb7VBNFeR7EpJ2N6g4pnHrAe5QGfybkMR0tStnUxmtPEuyarAwwvZiCAnEZNSWu2VaqA36Qur0_KpPbdrPrabqIvIqNCsPcZF0wSZhfhJz1pOUQsapTK6rakRa0xx_LQ9daEeS4xhd9OpwMG8YrZrxvmrWUnDi4qlb9R0lGSpY3RVMeVEL6Ug',
+  },
+  {
+    id: 4,
+    gameName: 'Word Master',
+    hostName: 'WordWizard',
+    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=word',
+    players: 2,
+    maxPlayers: 4,
+    status: 'waiting',
+    timeElapsed: null,
+    isRanked: false,
+    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD6A2ruZqVGA-_JXC7lNl3RFQaMgk-bU9lDIZ2ywSru1XZrKfNmg-dcygzmHrTnrwqHm81JG527rADKfuKvmxVNvaX48L-KifLS9JcneaN2xRlP4x0OeS-BGUT329xiA66KINvSSw-O1WQOaaMzukFygfDVU9L0TWWcT05BxNQi9tQ989MFm_eIFSRzgp1sWNLll6u8227Xu4JdOGLuLdjp0MBvWFTY-edcU9BKT7w3P2ln1rcc0icfn_r4TSJ9k6XfWk32q5TNKvQd',
   },
 ]
 
@@ -130,8 +150,8 @@ export default function HomePage() {
     console.log('Watch Tutorial clicked')
   }
 
-  const handleQuickAction = (actionId) => {
-    console.log('Quick action clicked:', actionId)
+  const handleJoinGame = (gameId) => {
+    console.log('Join game clicked:', gameId)
   }
 
   const handleGameFavorite = (gameId, isFavorited) => {
@@ -148,7 +168,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col gap-10 max-w-[1200px] mx-auto">
-      {/* Hero Section */}
+      
       <HeroSection
         title="Strategy Awaits: Master Catan Today"
         description="Join over 10,000 players in the ultimate classic strategy game. Build settlements, trade resources, and pave your way to victory."
@@ -160,10 +180,138 @@ export default function HomePage() {
         onWatchTutorial={handleWatchTutorial}
       />
 
-      {/* Quick Actions */}
-      <QuickActions actions={quickActions} onActionClick={handleQuickAction} />
+      
+      <div className="flex flex-col gap-5">
+        <SectionHeader 
+          title="Live Games" 
+          viewAllLink="/lobbies"
+          badge={
+            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              {liveGames.length} Active
+            </span>
+          }
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {liveGames.map((game, index) => (
+            <motion.div
+              key={game.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e]/80 to-[#16213e]/80 border border-white/10 hover:border-[#00f0ff]/50 transition-all duration-300"
+            >
+              
+              <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
+                <img 
+                  src={game.gameImage} 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] via-[#1a1a2e]/80 to-transparent" />
+              </div>
+              
+              <div className="relative p-4 flex items-center gap-4">
+                
+                <div className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-white/20">
+                  <img 
+                    src={game.gameImage} 
+                    alt={game.gameName}
+                    className="w-full h-full object-cover"
+                  />
+                  {game.isRanked && (
+                    <div className="absolute top-0 right-0 p-0.5 bg-yellow-500 rounded-bl">
+                      <Crown className="w-3 h-3 text-black" />
+                    </div>
+                  )}
+                </div>
+                
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-white truncate">{game.gameName}</h4>
+                    {game.status === 'waiting' ? (
+                      <span className="flex-shrink-0 px-2 py-0.5 text-[10px] font-medium bg-[#00f0ff]/20 text-[#00f0ff] rounded-full">
+                        WAITING
+                      </span>
+                    ) : (
+                      <span className="flex-shrink-0 px-2 py-0.5 text-[10px] font-medium bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1">
+                        <Gamepad2 className="w-3 h-3" />
+                        LIVE
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-sm text-gray-400">
+                    
+                    <div className="flex items-center gap-1.5">
+                      <img 
+                        src={game.hostAvatar} 
+                        alt={game.hostName}
+                        className="w-5 h-5 rounded-full border border-white/20"
+                      />
+                      <span className="truncate max-w-[80px]">{game.hostName}</span>
+                    </div>
+                    
+                    
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      <span>{game.players}/{game.maxPlayers}</span>
+                    </div>
+                    
+                    
+                    {game.timeElapsed && (
+                      <div className="flex items-center gap-1 text-orange-400">
+                        <Clock className="w-4 h-4" />
+                        <span>{game.timeElapsed}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                
+                <button
+                  onClick={() => handleJoinGame(game.id)}
+                  disabled={game.status === 'in-progress'}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
+                    game.status === 'waiting'
+                      ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-black hover:shadow-lg hover:shadow-[#00f0ff]/25 hover:scale-105'
+                      : 'bg-white/10 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {game.status === 'waiting' ? (
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="w-4 h-4" />
+                      Join
+                    </span>
+                  ) : (
+                    'Spectate'
+                  )}
+                </button>
+              </div>
+              
+              
+              <div className="relative px-4 pb-3">
+                <div className="flex gap-1">
+                  {Array.from({ length: game.maxPlayers }, (_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-all ${
+                        i < game.players
+                          ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7]'
+                          : 'bg-white/10'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
-      {/* Popular Games */}
+      
       <div className="flex flex-col gap-5">
         <SectionHeader title="Popular Games" viewAllLink="/browse" />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -173,7 +321,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* New Arrivals with Carousel */}
+      
       <div className="flex flex-col gap-5 pb-10">
         <SectionHeader
           title="New Arrivals"
@@ -182,7 +330,7 @@ export default function HomePage() {
           onNext={handleNext}
         />
         
-        {/* Carousel Container */}
+        
         <div className="relative overflow-hidden">
           <motion.div 
             className="flex gap-6"
@@ -195,7 +343,7 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Carousel Dots */}
+        
         <div className="flex justify-center gap-2 mt-2">
           {Array.from({ length: maxIndex + 1 }, (_, i) => (
             <button

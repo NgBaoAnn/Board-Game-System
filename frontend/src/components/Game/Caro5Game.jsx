@@ -17,12 +17,10 @@ export default function Caro5Game({
     boardRows = 10,
     boardCols = 10,
 }) {
-    // Initialize empty board
     const createEmptyBoard = () => {
         return Array(boardRows).fill(null).map(() => Array(boardCols).fill(null))
     }
 
-    // Board state: boardRows x boardCols array, null = empty, 'X' = player, 'O' = AI
     const [board, setBoard] = useState(savedState?.board || createEmptyBoard())
     const [currentPlayer, setCurrentPlayer] = useState(savedState?.current_player || 'X')
     const [winner, setWinner] = useState(null)
@@ -33,13 +31,11 @@ export default function Caro5Game({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
 
-    // Check for winner - 5 in a row
     const checkWinner = useCallback((boardState) => {
         const rows = boardState.length
         const cols = boardState[0].length
         const winLength = 5
 
-        // Check all directions from each cell
         const directions = [
             [0, 1],   // horizontal
             [1, 0],   // vertical
@@ -56,7 +52,6 @@ export default function Caro5Game({
                     const line = [[row, col]]
                     let count = 1
 
-                    // Check in positive direction
                     for (let i = 1; i < winLength; i++) {
                         const nr = row + dr * i
                         const nc = col + dc * i
@@ -75,7 +70,6 @@ export default function Caro5Game({
             }
         }
 
-        // Check for draw
         const isDraw = boardState.every(row => row.every(cell => cell !== null))
         if (isDraw) {
             return { winner: 'draw', line: null }
@@ -84,7 +78,6 @@ export default function Caro5Game({
         return null
     }, [])
 
-    // Reset board for new round
     const resetBoard = useCallback(() => {
         setBoard(createEmptyBoard())
         setCurrentPlayer('X')
@@ -94,7 +87,6 @@ export default function Caro5Game({
         setShowResultMessage(null)
     }, [boardRows, boardCols])
 
-    // Evaluate position score for AI
     const evaluatePosition = useCallback((boardState, row, col, player) => {
         const rows = boardState.length
         const cols = boardState[0].length
@@ -105,7 +97,6 @@ export default function Caro5Game({
             let count = 1
             let openEnds = 0
 
-            // Check positive direction
             for (let i = 1; i <= 4; i++) {
                 const nr = row + dr * i
                 const nc = col + dc * i
@@ -116,7 +107,6 @@ export default function Caro5Game({
                 }
             }
 
-            // Check negative direction
             for (let i = 1; i <= 4; i++) {
                 const nr = row - dr * i
                 const nc = col - dc * i
@@ -127,7 +117,6 @@ export default function Caro5Game({
                 }
             }
 
-            // Score based on count and open ends
             if (count >= 5) score += 10000
             else if (count === 4 && openEnds >= 1) score += 1000
             else if (count === 3 && openEnds === 2) score += 100
@@ -138,13 +127,11 @@ export default function Caro5Game({
         return score
     }, [])
 
-    // AI makes a smart move
     const makeAiMove = useCallback((currentBoard) => {
         if (!isPlaying) return
 
         setIsAiThinking(true)
 
-        // Find all empty cells
         const emptyCells = []
         for (let row = 0; row < boardRows; row++) {
             for (let col = 0; col < boardCols; col++) {
@@ -159,7 +146,6 @@ export default function Caro5Game({
             return
         }
 
-        // Random delay 0.5-1.5 seconds
         const delay = 500 + Math.random() * 1000
 
         setTimeout(() => {
@@ -168,18 +154,14 @@ export default function Caro5Game({
                 return
             }
 
-            // Evaluate each possible move
             let bestMove = null
             let bestScore = -Infinity
 
             for (const { row, col } of emptyCells) {
-                // Check AI attack score
                 const attackScore = evaluatePosition(currentBoard, row, col, 'O')
-                // Check block player score (more important)
                 const blockScore = evaluatePosition(currentBoard, row, col, 'X') * 1.2
                 const totalScore = attackScore + blockScore
 
-                // Add some randomness for variety
                 const randomBonus = Math.random() * 5
 
                 if (totalScore + randomBonus > bestScore) {
@@ -188,7 +170,6 @@ export default function Caro5Game({
                 }
             }
 
-            // If no good move found, pick center-ish
             if (!bestMove || bestScore < 10) {
                 const centerRow = Math.floor(boardRows / 2)
                 const centerCol = Math.floor(boardCols / 2)
@@ -206,7 +187,6 @@ export default function Caro5Game({
                 const newBoard = prev.map(r => [...r])
                 newBoard[row][col] = 'O'
 
-                // Check if AI wins
                 const result = checkWinner(newBoard)
                 if (result) {
                     setWinner(result.winner)
@@ -214,14 +194,12 @@ export default function Caro5Game({
                     setGamesPlayed(p => p + 1)
 
                     if (result.winner === 'O') {
-                        // AI wins - show message and auto restart
                         setGamesLost(l => l + 1)
                         setShowResultMessage('lose')
                         setTimeout(() => {
                             resetBoard()
                         }, 2000)
                     } else if (result.winner === 'draw') {
-                        // Draw - auto restart after delay
                         setShowResultMessage('draw')
                         setTimeout(() => {
                             resetBoard()
@@ -238,7 +216,6 @@ export default function Caro5Game({
         }, delay)
     }, [isPlaying, checkWinner, resetBoard, boardRows, boardCols, evaluatePosition])
 
-    // Player makes a move
     const handleCellClick = useCallback((row, col) => {
         if (!isPlaying || winner || isAiThinking || currentPlayer !== 'X') return
         if (board[row][col] !== null) return
@@ -247,7 +224,6 @@ export default function Caro5Game({
         newBoard[row][col] = 'X'
         setBoard(newBoard)
 
-        // Check if player wins
         const result = checkWinner(newBoard)
         if (result) {
             setWinner(result.winner)
@@ -255,36 +231,30 @@ export default function Caro5Game({
             setGamesPlayed(p => p + 1)
 
             if (result.winner === 'X') {
-                // Player wins! +60 points (more than caro-4)
                 setGamesWon(w => w + 1)
                 onScoreChange?.(score + 60)
                 setShowResultMessage('win')
 
-                // Auto reset board after showing win message
                 setTimeout(() => {
                     resetBoard()
                 }, 2000)
             } else if (result.winner === 'draw') {
-                // Draw - auto reset after delay
                 setShowResultMessage('draw')
                 setTimeout(() => {
                     resetBoard()
                 }, 1500)
             }
         } else {
-            // Switch to AI
             setCurrentPlayer('O')
         }
     }, [isPlaying, winner, isAiThinking, currentPlayer, board, checkWinner, resetBoard, onScoreChange, score])
 
-    // AI move after player
     useEffect(() => {
         if (currentPlayer === 'O' && isPlaying && !winner && !isAiThinking) {
             makeAiMove(board)
         }
     }, [currentPlayer, isPlaying, winner, isAiThinking, board, makeAiMove])
 
-    // Notify parent of state changes for saving
     useEffect(() => {
         onStateChange?.({
             board,
@@ -295,7 +265,6 @@ export default function Caro5Game({
         })
     }, [board, currentPlayer, gamesWon, gamesLost, gamesPlayed, onStateChange])
 
-    // Restore saved state
     useEffect(() => {
         if (savedState) {
             setBoard(savedState.board || createEmptyBoard())
@@ -306,16 +275,13 @@ export default function Caro5Game({
         }
     }, [savedState])
 
-    // Check if cell is part of winning line
     const isWinningCell = (row, col) => {
         if (!winningLine) return false
         return winningLine.some(([r, c]) => r === row && c === col)
     }
 
-    // Calculate cell size based on board dimensions
     const cellSize = Math.max(24, Math.min(40, 420 / Math.max(boardRows, boardCols)))
 
-    // Render cell content for BoardGrid
     const renderCellContent = (row, col) => {
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
@@ -342,7 +308,7 @@ export default function Caro5Game({
 
     return (
         <div className="flex flex-col items-center gap-3">
-            {/* Game info */}
+            
             <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
                     <X size={14} className="text-indigo-600" />
@@ -358,7 +324,7 @@ export default function Caro5Game({
                 </div>
             </div>
 
-            {/* Status message */}
+            
             <div className="h-7 flex items-center justify-center">
                 {showResultMessage === 'win' && (
                     <div className="text-emerald-600 font-bold animate-bounce text-base">
@@ -388,7 +354,7 @@ export default function Caro5Game({
                 )}
             </div>
 
-            {/* Board using BoardGrid */}
+            
             <BoardGrid
                 rows={boardRows}
                 cols={boardCols}
@@ -397,7 +363,7 @@ export default function Caro5Game({
                 renderContent={renderCellContent}
             />
 
-            {/* Stats */}
+            
             <div className="flex gap-6 text-xs text-slate-500">
                 <div>
                     Thắng: <span className="font-bold text-emerald-600">{gamesWon}</span>

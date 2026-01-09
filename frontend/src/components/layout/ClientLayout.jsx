@@ -36,7 +36,6 @@ const menuItems = [
   { key: '/settings', icon: Settings, label: 'Settings' },
 ]
 
-// Mock online friends data
 const onlineFriends = [
   { id: 1, name: 'Alex', avatar: 'A', status: 'online', game: 'Chess' },
   { id: 2, name: 'Sarah', avatar: 'S', status: 'online', game: 'Catan' },
@@ -91,9 +90,9 @@ export default function ClientLayout() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-slate-900 flex">
-      {/* Custom Gaming Cursor */}
+      
       <CustomCursor />
-      {/* Sidebar - Adaptive Theme */}
+      
       <aside
         className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${
           isDarkMode
@@ -101,14 +100,14 @@ export default function ClientLayout() {
             : 'bg-white border-r border-gray-200'
         }`}
       >
-        {/* Floating Game Pieces Background */}
+        
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
           <FloatingGamePieces count={20} isDarkMode={isDarkMode} />
         </div>
 
         <div className="flex h-full flex-col justify-between p-4 relative z-10">
           <div className="flex flex-col gap-4">
-            {/* Logo with hover animation */}
+            
             <Link to="/" className="flex items-center gap-3 px-2 py-3 group">
               <motion.div
                 whileHover={{ rotate: 15, scale: 1.1 }}
@@ -128,7 +127,7 @@ export default function ClientLayout() {
               </div>
             </Link>
 
-            {/* Navigation with glow effect */}
+            
             <nav className="flex flex-col gap-1.5 mt-4">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.key
@@ -148,7 +147,7 @@ export default function ClientLayout() {
                           : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                       }`}
                     >
-                      {/* Active glow border */}
+                      
                       {isActive && (
                         <motion.div
                           layoutId="activeNavIndicator"
@@ -166,9 +165,9 @@ export default function ClientLayout() {
             </nav>
           </div>
 
-          {/* Bottom Section */}
+          
           <div className="flex flex-col gap-4">
-            {/* Online Friends Mini-list */}
+            
             {authenticated && (
               <div
                 className={`rounded-xl p-3 border transition-colors ${
@@ -235,7 +234,7 @@ export default function ClientLayout() {
               </div>
             )}
 
-            {/* Logout Button - Less intrusive */}
+            
             {authenticated && (
               <Tooltip title="Logout" placement="right">
                 <button
@@ -251,7 +250,7 @@ export default function ClientLayout() {
         </div>
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -273,7 +272,7 @@ export default function ClientLayout() {
                   : 'bg-white'
               }`}
             >
-              {/* Floating Game Pieces Background */}
+              
               <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
                 <FloatingGamePieces count={8} isDarkMode={isDarkMode} />
               </div>
@@ -287,7 +286,7 @@ export default function ClientLayout() {
                 >
                   <X size={24} />
                 </button>
-                {/* Mobile nav content - same as desktop */}
+                
                 <div className="flex flex-col gap-4 mt-12">
                   {menuItems.map((item) => {
                     const isActive = location.pathname === item.key
@@ -319,16 +318,16 @@ export default function ClientLayout() {
         )}
       </AnimatePresence>
 
-      {/* Main Content Wrapper */}
+      
       <main className="relative flex flex-1 flex-col min-w-0 lg:ml-64 transition-colors overflow-hidden">
-        {/* Gaming particles background */}
+        
         <div className="absolute inset-0 z-0">
           <GamingParticles isDarkMode={isDarkMode} />
         </div>
 
-        {/* Top Header */}
+        
         <header className="sticky top-0 z-20 flex h-16 items-center justify-end border-b border-gray-200/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-[3px] px-4 sm:px-6">
-          {/* Mobile menu button */}
+          
           <div className="flex items-center gap-4 lg:hidden mr-auto">
             <button onClick={() => setMobileMenuOpen(true)} className="text-slate-700 dark:text-white">
               <Menu size={24} />
@@ -338,12 +337,12 @@ export default function ClientLayout() {
             </span>
           </div>
 
-          {/* Right Actions */}
+          
           <div className="flex items-center gap-3">
             {authenticated ? (
               <>
 
-                {/* Notification icons with badges */}
+                
                 <div className="flex items-center gap-1">
                   <Tooltip title="Notifications">
                     <button className="relative flex size-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
@@ -369,7 +368,7 @@ export default function ClientLayout() {
                   </Tooltip>
                 </div>
 
-                {/* Theme Toggle */}
+                
                 <Tooltip title={isDarkMode ? 'Light Mode' : 'Dark Mode'}>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
@@ -405,7 +404,7 @@ export default function ClientLayout() {
 
                 <div className="h-8 w-px bg-gray-200 dark:bg-slate-600" />
 
-                {/* User dropdown */}
+                
                 <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
                   <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
                     <Avatar
@@ -446,7 +445,7 @@ export default function ClientLayout() {
           </div>
         </header>
 
-        {/* Scrollable Content */}
+        
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 relative z-10">
           <Outlet />
         </div>

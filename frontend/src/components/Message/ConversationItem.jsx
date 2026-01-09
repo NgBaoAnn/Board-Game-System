@@ -1,7 +1,6 @@
 import { Avatar } from 'antd'
 import { motion } from 'framer-motion'
 
-// Game icons mapping
 const gameIcons = {
   Chess: '♟️',
   Catan: '🏝️',
@@ -18,7 +17,6 @@ export function ConversationItem({ conversation, isActive, onClick }) {
   const hasUnread = conversation.unreadCount > 0
   const isPlaying = conversation.gameStatus?.includes('Playing')
 
-  // Parse game name from gameStatus
   const gameName = isPlaying ? conversation.gameStatus.replace('Playing ', '') : null
   const gameIcon = gameName ? (gameIcons[gameName] || gameIcons.default) : null
 
@@ -32,7 +30,7 @@ export function ConversationItem({ conversation, isActive, onClick }) {
           : 'hover:bg-gray-50 dark:hover:bg-slate-800/50 border-transparent'
       }`}
     >
-      {/* Avatar with status */}
+      
       <div className="relative flex-shrink-0 mr-3">
         {conversation.avatar ? (
           <Avatar src={conversation.avatar} size={48} />
@@ -43,13 +41,13 @@ export function ConversationItem({ conversation, isActive, onClick }) {
             {conversation.initials}
           </div>
         )}
-        {/* Online/Game status indicator */}
+        
         <span
           className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-800 ${
             isPlaying ? 'bg-amber-500' : isOnline ? 'bg-green-500 online-status-pulse' : 'bg-gray-400 dark:bg-slate-500'
           }`}
         />
-        {/* Game icon badge */}
+        
         {isPlaying && gameIcon && (
           <span className="absolute -top-1 -right-1 text-sm bg-white dark:bg-slate-800 rounded-full w-5 h-5 flex items-center justify-center border border-gray-200 dark:border-slate-600">
             {gameIcon}
@@ -57,7 +55,7 @@ export function ConversationItem({ conversation, isActive, onClick }) {
         )}
       </div>
 
-      {/* Info */}
+      
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-1">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate">
@@ -73,7 +71,7 @@ export function ConversationItem({ conversation, isActive, onClick }) {
               {conversation.unreadCount}
             </span>
           )}
-          {/* Game activity or last message */}
+          
           {conversation.activity ? (
             <p className="text-xs text-amber-600 dark:text-amber-400 font-medium truncate flex items-center gap-1">
               {gameIcon && <span>{gameIcon}</span>}
@@ -87,7 +85,7 @@ export function ConversationItem({ conversation, isActive, onClick }) {
         </div>
       </div>
 
-      {/* Typing indicator */}
+      
       {conversation.isTyping && (
         <div className="flex gap-0.5 ml-2">
           {[0, 1, 2].map((i) => (

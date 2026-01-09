@@ -1,7 +1,6 @@
 import { Input, Select, Segmented } from 'antd'
 import { Search } from 'lucide-react'
 
-// Leaderboard Filters Component
 export function LeaderboardFilters({
   searchText,
   onSearchChange,

@@ -18,12 +18,10 @@ import { useAuth } from '@/store/useAuth'
 import authApi from '@/api/api-auth'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 
-// Validation schema
 const passwordSchema = Joi.object({
   newPassword: commonSchemas.password,
 })
 
-// Reusable Section Component
 function SettingsSection({ icon: Icon, title, description, children }) {
   return (
     <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -39,7 +37,6 @@ function SettingsSection({ icon: Icon, title, description, children }) {
   )
 }
 
-// Theme Card Component
 function ThemeCard({ mode, isSelected, onClick, icon: Icon, title, subtitle }) {
   return (
     <div
@@ -84,7 +81,6 @@ function ThemeCard({ mode, isSelected, onClick, icon: Icon, title, subtitle }) {
   )
 }
 
-// Setting Row Component
 function SettingRow({ icon: Icon, iconBg, iconColor, title, description, children }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -114,7 +110,6 @@ export default function SettingPage() {
   const handlePasswordUpdate = async (values) => {
     setLoading(true)
     try {
-      // TODO: Implement password update API
       message.success('Password updated successfully!')
       form.resetFields()
     } catch (error) {
@@ -139,7 +134,7 @@ export default function SettingPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-8 pb-20">
-      {/* Header */}
+      
       <div>
         <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Settings</h2>
         <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">
@@ -147,7 +142,7 @@ export default function SettingPage() {
         </p>
       </div>
 
-      {/* Theme Section */}
+      
       <SettingsSection
         icon={Palette}
         title="Theme"
@@ -173,7 +168,7 @@ export default function SettingPage() {
         </div>
       </SettingsSection>
 
-      {/* Game Settings Section */}
+      
       <SettingsSection
         icon={Gamepad2}
         title="Game Settings"
@@ -218,7 +213,7 @@ export default function SettingPage() {
         </div>
       </SettingsSection>
 
-      {/* Account & Security Section */}
+      
       <SettingsSection
         icon={Shield}
         title="Account & Security"
@@ -278,7 +273,7 @@ export default function SettingPage() {
         </div>
       </SettingsSection>
 
-      {/* Footer */}
+      
       <footer className="pt-4 text-center text-gray-500 dark:text-gray-400 text-sm">
         <p>© 2024 BoardGameHub. Strategy Awaits.</p>
       </footer>

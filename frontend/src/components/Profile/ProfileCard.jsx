@@ -29,7 +29,7 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
       animate={{ opacity: 1, y: 0 }}
       className="relative rounded-2xl overflow-hidden mb-8"
     >
-      {/* Banner Background */}
+      
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -40,13 +40,13 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
         <div className="absolute inset-0 profile-banner" />
       </div>
 
-      {/* Content */}
+      
       <div className="relative z-10 p-6 md:p-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          {/* Avatar with XP Ring */}
+          
           <div className="relative">
             <div className="relative">
-              {/* Avatar container with tier glow */}
+              
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -58,13 +58,13 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
                   size={100}
                   className="border-4 border-slate-900"
                 />
-                {/* Online indicator */}
+                
                 {profile.isOnline && (
                   <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-3 border-slate-900 online-status-pulse" />
                 )}
               </motion.div>
 
-              {/* Edit button */}
+              
               {isOwnProfile && onEditAvatar && (
                 <button
                   onClick={onEditAvatar}
@@ -75,7 +75,7 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
               )}
             </div>
 
-            {/* Level Badge - positioned below avatar */}
+            
             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
               <LevelBadge
                 level={profile.level}
@@ -87,7 +87,7 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
             </div>
           </div>
 
-          {/* Info Section */}
+          
           <div className="flex-1 text-center md:text-left mt-8 md:mt-0 md:ml-4">
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
               <motion.h1
@@ -128,7 +128,7 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
               </div>
             </div>
 
-            {/* Social Actions for other users */}
+            
             {!isOwnProfile && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -152,7 +152,7 @@ export function ProfileCard({ profile, onEditAvatar, isOwnProfile = true }) {
             )}
           </div>
 
-          {/* Stats Cards */}
+          
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}

@@ -18,10 +18,10 @@ export default function NewArrivalCard({ game }) {
           style={{ backgroundImage: `url("${game.image}")` }}
         />
         
-        {/* Gradient overlay on hover */}
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         
-        {/* Animated NEW badge */}
+        
         <motion.span 
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}

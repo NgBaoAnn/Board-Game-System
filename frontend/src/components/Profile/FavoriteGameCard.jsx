@@ -1,6 +1,5 @@
 import { Play, Dice5 } from 'lucide-react'
 
-// Favorite Game Card
 export function FavoriteGameCard({ game, onClick }) {
   return (
     <div

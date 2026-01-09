@@ -8,7 +8,6 @@ import { FriendRequestCard } from '@/components/Community/FriendRequestCard'
 import { PlayerCard } from '@/components/Community/PlayerCard'
 import { EmptyState } from '@/components/Community/EmptyState'
 
-// Mock data for friend requests
 const mockRequests = [
   {
     id: 1,
@@ -42,7 +41,6 @@ const mockRequests = [
   },
 ]
 
-// Mock data for friends
 const mockFriends = [
   { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=4', status: 'online', activity: 'Playing Chess', playingFor: '15m', lastSeen: 'Online now', tier: 'grandmaster' },
   { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', playingFor: null, lastSeen: 'Online 5m ago', tier: 'diamond' },
@@ -52,7 +50,6 @@ const mockFriends = [
   { id: 6, name: 'StrategyQueen', avatar: 'https://i.pravatar.cc/150?img=9', status: 'online', activity: null, playingFor: null, lastSeen: 'Online 15m ago', tier: 'diamond' },
 ]
 
-// Mock data for all players (non-friends)
 const mockAllPlayers = [
   { id: 101, name: 'ChessMaster99', avatar: 'https://i.pravatar.cc/150?img=10', status: 'online', tier: 'grandmaster', lastSeen: 'Online now' },
   { id: 102, name: 'CatanKing', avatar: 'https://i.pravatar.cc/150?img=11', status: 'online', tier: 'diamond', lastSeen: 'Online now' },
@@ -77,21 +74,17 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Count online friends
   const onlineCount = useMemo(() => friends.filter((f) => f.status === 'online').length, [friends])
 
-  // Filter and sort friends
   const filteredFriends = useMemo(() => {
     let result = [...friends]
 
-    // Apply search filter
     if (searchQuery) {
       result = result.filter((f) =>
         f.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
-    // Apply sort
     result.sort((a, b) => {
       if (sortBy === 'status') {
         if (a.status === 'online' && b.status !== 'online') return -1
@@ -107,7 +100,6 @@ export default function CommunityPage() {
     return result
   }, [friends, searchQuery, sortBy])
 
-  // Filter all players by search
   const filteredPlayers = useMemo(() => {
     let result = [...allPlayers]
 
@@ -117,7 +109,6 @@ export default function CommunityPage() {
       )
     }
 
-    // Sort by online status first
     result.sort((a, b) => {
       if (a.status === 'online' && b.status !== 'online') return -1
       if (a.status !== 'online' && b.status === 'online') return 1
@@ -217,7 +208,7 @@ export default function CommunityPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+      
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,14 +219,14 @@ export default function CommunityPage() {
           <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7]">
             Friends & Community
           </h1>
-          {/* Online count badge */}
+          
           <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 px-3 py-1 rounded-full">
             <span className="w-2 h-2 bg-green-500 rounded-full online-status-pulse" />
             <span className="text-xs font-bold text-green-600 dark:text-green-400">{onlineCount} Online</span>
           </div>
         </div>
 
-        {/* Search bar */}
+        
         <div className="flex-1 max-w-md">
           <Input
             placeholder={activeTab === 'players' ? 'Search all players...' : 'Search friends...'}
@@ -248,7 +239,7 @@ export default function CommunityPage() {
         </div>
       </motion.div>
 
-      {/* Tabs */}
+      
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
@@ -256,9 +247,9 @@ export default function CommunityPage() {
         className="community-tabs"
       />
 
-      {/* Tab Content */}
+      
       <AnimatePresence mode="wait">
-        {/* Friend Requests Tab */}
+        
         {activeTab === 'requests' && (
           <motion.div
             key="requests"
@@ -289,7 +280,7 @@ export default function CommunityPage() {
           </motion.div>
         )}
 
-        {/* Friends Tab */}
+        
         {activeTab === 'friends' && (
           <motion.div
             key="friends"
@@ -337,7 +328,7 @@ export default function CommunityPage() {
           </motion.div>
         )}
 
-        {/* All Players Tab */}
+        
         {activeTab === 'players' && (
           <motion.div
             key="players"

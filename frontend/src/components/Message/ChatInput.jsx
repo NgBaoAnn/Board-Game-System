@@ -2,10 +2,8 @@ import { useState, useRef } from 'react'
 import { Popover } from 'antd'
 import { Send, Smile, PlusCircle, Image, Paperclip, Mic } from 'lucide-react'
 
-// Common emoji list
 const emojis = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '👎', '❤️', '🔥', '🎮', '🎲', '🏆', '⭐', '🎯', '💪', '🙌', '👏', '🤝', '✌️']
 
-// Chat Input Component
 export function ChatInput({ onSend, disabled }) {
   const [message, setMessage] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState(false)
@@ -16,7 +14,6 @@ export function ChatInput({ onSend, disabled }) {
     const trimmedMessage = message.trim()
     if (trimmedMessage && !isSendingRef.current) {
       isSendingRef.current = true
-      // Clear both state and input directly
       setMessage('')
       if (inputRef.current) {
         inputRef.current.value = ''
@@ -41,7 +38,6 @@ export function ChatInput({ onSend, disabled }) {
     inputRef.current?.focus()
   }
 
-  // Emoji picker content
   const emojiContent = (
     <div className="grid grid-cols-5 gap-2 p-2 w-48">
       {emojis.map((emoji, index) => (
@@ -56,7 +52,6 @@ export function ChatInput({ onSend, disabled }) {
     </div>
   )
 
-  // Attachment menu content
   const attachContent = (
     <div className="flex flex-col p-2 min-w-[160px]">
       <button className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300">
@@ -83,7 +78,7 @@ export function ChatInput({ onSend, disabled }) {
   return (
     <div className="p-4 bg-white/80 dark:bg-slate-800/50 backdrop-blur-md border-t border-gray-200/50 dark:border-slate-700/30">
       <div className="flex items-center space-x-2">
-        {/* Attachment Button */}
+        
         <Popover
           content={attachContent}
           trigger="click"
@@ -96,7 +91,7 @@ export function ChatInput({ onSend, disabled }) {
           </button>
         </Popover>
 
-        {/* Input Field */}
+        
         <div className="flex-1 relative">
           <input
             ref={inputRef}
@@ -108,7 +103,7 @@ export function ChatInput({ onSend, disabled }) {
             disabled={disabled}
             className="w-full rounded-full pl-5 pr-12 py-3 bg-gray-100 dark:bg-gray-700 border-none text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1d7af2]/50"
           />
-          {/* Emoji Button */}
+          
           <Popover content={emojiContent} trigger="click" placement="topRight">
             <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-[#1d7af2] transition-colors p-1">
               <Smile size={20} />
@@ -116,7 +111,7 @@ export function ChatInput({ onSend, disabled }) {
           </Popover>
         </div>
 
-        {/* Send Button */}
+        
         <button
           onClick={handleSend}
           disabled={!message.trim() || disabled}

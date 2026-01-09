@@ -42,19 +42,19 @@ export default function GameCard({ game, onFavorite }) {
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className={`group relative flex flex-col gap-3 rounded-2xl bg-white dark:bg-slate-800 p-3 shadow-lg transition-all ${rarityClasses[rarity]}`}
     >
-      {/* Image Container */}
+      
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-700">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
           style={{ backgroundImage: `url("${game.image}")` }}
         />
         
-        {/* Gradient overlay on hover */}
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         
-        {/* Top badges */}
+        
         <div className="absolute left-2 top-2 flex flex-col gap-1.5">
-          {/* Hot badge */}
+          
           {game.isHot && (
             <motion.span 
               initial={{ scale: 0 }}
@@ -66,7 +66,7 @@ export default function GameCard({ game, onFavorite }) {
             </motion.span>
           )}
           
-          {/* New badge */}
+          
           {game.isNew && (
             <motion.span 
               initial={{ scale: 0 }}
@@ -79,7 +79,7 @@ export default function GameCard({ game, onFavorite }) {
           )}
         </div>
 
-        {/* Favorite button */}
+        
         <button
           onClick={handleLike}
           className={`absolute right-2 top-2 rounded-full bg-white/90 dark:bg-slate-700/90 p-1.5 shadow-sm backdrop-blur-sm transition-all hover:scale-110 ${
@@ -89,7 +89,7 @@ export default function GameCard({ game, onFavorite }) {
           <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Online players badge */}
+        
         {game.onlinePlayers > 0 && (
           <div className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
             <span className="relative flex h-2 w-2">
@@ -100,7 +100,7 @@ export default function GameCard({ game, onFavorite }) {
           </div>
         )}
 
-        {/* Rarity indicator */}
+        
         <div className="absolute bottom-2 right-2">
           <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${rarityBadgeColors[rarity]}`}>
             {rarity}
@@ -108,7 +108,7 @@ export default function GameCard({ game, onFavorite }) {
         </div>
       </div>
 
-      {/* Card Info */}
+      
       <div className="flex flex-col gap-1.5 px-1 pb-2">
         <div className="flex items-start justify-between gap-2">
           <h4 className="text-base font-bold text-slate-800 dark:text-white line-clamp-1">{game.title}</h4>

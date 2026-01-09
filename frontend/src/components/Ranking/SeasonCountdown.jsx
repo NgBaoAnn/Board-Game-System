@@ -15,13 +15,11 @@ export function SeasonCountdown({
   minutesRemaining = 22,
   totalDays = 90,
 }) {
-  // Calculate progress (inverted - shows time left)
   const progress = useMemo(() => {
     const daysElapsed = totalDays - daysRemaining
     return Math.min(100, (daysElapsed / totalDays) * 100)
   }, [daysRemaining, totalDays])
 
-  // Determine urgency level
   const urgency = useMemo(() => {
     if (daysRemaining > 7) return 'safe'
     if (daysRemaining > 3) return 'warning'
@@ -68,10 +66,10 @@ export function SeasonCountdown({
         whileHover={{ scale: 1.05 }}
         className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${color.bg} border border-gray-200 dark:border-slate-700 cursor-pointer transition-colors hover:border-gray-300 dark:hover:border-slate-600 bg-white/50 dark:bg-transparent backdrop-blur-sm`}
       >
-        {/* Circular Progress Ring */}
+        
         <div className="relative">
           <svg width="50" height="50" className="-rotate-90">
-            {/* Background circle */}
+            
             <circle
               cx="25"
               cy="25"
@@ -80,7 +78,7 @@ export function SeasonCountdown({
               strokeWidth="4"
               fill="none"
             />
-            {/* Progress circle */}
+            
             <motion.circle
               cx="25"
               cy="25"
@@ -95,7 +93,7 @@ export function SeasonCountdown({
               transition={{ duration: 1, ease: 'easeOut' }}
             />
           </svg>
-          {/* Center icon */}
+          
           <div className="absolute inset-0 flex items-center justify-center">
             <Clock
               size={16}
@@ -104,7 +102,7 @@ export function SeasonCountdown({
           </div>
         </div>
 
-        {/* Time Display */}
+        
         <div className="flex flex-col">
           <span className="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-wider font-medium">
             Season ends in
@@ -119,7 +117,7 @@ export function SeasonCountdown({
           </div>
         </div>
 
-        {/* Rewards hint */}
+        
         <Gift size={16} className="text-yellow-500 dark:text-yellow-400 ml-1 opacity-60" />
       </motion.div>
     </Tooltip>

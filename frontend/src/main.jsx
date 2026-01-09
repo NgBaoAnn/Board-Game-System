@@ -5,8 +5,6 @@ import { StrictMode } from 'react'
 import AuthProvider from './context/AuthProvider'
 import ThemeProvider from './context/ThemeContext'
 
-// Initialize auth state on app load
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
@@ -17,4 +15,5 @@ createRoot(document.getElementById('root')).render(
     </ThemeProvider>
   </StrictMode>
 )
+
 

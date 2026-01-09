@@ -27,41 +27,34 @@ export default function HeroSection({
 }) {
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-xl">
-      {/* Animated Background */}
       <AnimatedHeroBackground className="absolute inset-0">
         <FloatingGamePieces count={12} />
       </AnimatedHeroBackground>
 
-      {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url("${image}")` }}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#1a0a2e]/95 via-[#0d1b3e]/85 to-transparent" />
 
-      {/* Content */}
       <div className="relative z-10 grid grid-cols-1 gap-0 md:grid-cols-2 min-h-[400px]">
         <div className="flex flex-col justify-center gap-6 p-8 md:p-12">
-          {/* Top badges */}
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="flex flex-wrap items-center gap-3"
           >
-            {/* Featured tag */}
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg">
               <Zap size={12} className="fill-current" />
               {tag}
             </span>
             
-            {/* Rating */}
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white text-xs font-medium border border-white/20">
               <Star size={12} className="text-yellow-400 fill-yellow-400" />
               {rating}
             </span>
 
-            {/* Online Now */}
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white text-xs font-medium border border-[#00f0ff]/30">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -72,7 +65,6 @@ export default function HeroSection({
             </span>
           </motion.div>
 
-          {/* Title with gradient text */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -86,7 +78,6 @@ export default function HeroSection({
             </p>
           </motion.div>
 
-          {/* Action buttons */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -112,7 +103,6 @@ export default function HeroSection({
           </motion.div>
         </div>
 
-        {/* Right side - decorative */}
         <div className="relative hidden md:block" />
       </div>
     </div>

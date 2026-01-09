@@ -4,7 +4,6 @@ import { Search, Calendar } from 'lucide-react'
 
 const { Option } = Select
 
-// Mock game history data
 const gameHistoryData = [
   { id: 1, game: 'Settlers of Catan', result: 'win', score: '+25', players: ['AlexM', 'SarahJ', 'BoardMaster99'], date: '2024-01-08', duration: '45 min' },
   { id: 2, game: 'Chess', result: 'win', score: '+18', players: ['GrandMaster42'], date: '2024-01-07', duration: '12 min' },
@@ -102,14 +101,13 @@ export function GameHistoryTab() {
     },
   ]
 
-  // Stats
   const totalGames = gameHistoryData.length
   const wins = gameHistoryData.filter(g => g.result === 'win').length
   const losses = gameHistoryData.filter(g => g.result === 'loss').length
 
   return (
     <div>
-      {/* Stats */}
+      
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 text-center">
           <span className="block text-2xl font-bold text-gray-900 dark:text-white">{totalGames}</span>
@@ -129,7 +127,7 @@ export function GameHistoryTab() {
         </div>
       </div>
 
-      {/* Filters */}
+      
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <Input
@@ -153,7 +151,7 @@ export function GameHistoryTab() {
           </Select>
         </div>
 
-        {/* Table */}
+        
         <Table
           columns={columns}
           dataSource={filteredData}

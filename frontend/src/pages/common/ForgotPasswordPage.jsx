@@ -9,12 +9,10 @@ import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 
-// Validation schema
 const forgotPasswordSchema = Joi.object({
   email: commonSchemas.email,
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -45,19 +43,14 @@ export default function ForgotPasswordPage() {
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      // TODO: Implement send OTP API
-      // await authApi.sendOTP(values.email)
       
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500))
       
-      // Store email for verify page
       sessionStorage.setItem('reset_email', values.email)
       
       setFormState('success')
       message.success('OTP code sent to your email!')
       
-      // Navigate to verify OTP page
       setTimeout(() => navigate('/verify-otp'), 500)
     } catch (error) {
       setFormState('error')
@@ -91,7 +84,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -103,7 +96,7 @@ export default function ForgotPasswordPage() {
           </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -118,7 +111,7 @@ export default function ForgotPasswordPage() {
           </p>
         </motion.div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -180,7 +173,7 @@ export default function ForgotPasswordPage() {
           </Form.Item>
         </Form>
 
-        {/* Back to Login */}
+        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

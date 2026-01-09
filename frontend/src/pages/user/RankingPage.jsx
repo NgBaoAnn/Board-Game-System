@@ -7,7 +7,6 @@ import { LeaderboardFilters } from '@/components/Ranking/LeaderboardFilters'
 import { TierBadge } from '@/components/Ranking/TierBadge'
 import { SeasonCountdown } from '@/components/Ranking/SeasonCountdown'
 
-// Mock leaderboard data with rank changes
 const leaderboardData = [
   { id: 1, rank: 1, name: 'Sarah Connor', avatar: 'https://i.pravatar.cc/150?img=1', title: 'Grandmaster', rating: 2485, gamesPlayed: 2150, winRate: 72, isChampion: true, rankChange: 0 },
   { id: 2, rank: 2, name: 'Alex Morgan', avatar: 'https://i.pravatar.cc/150?img=2', title: 'Grandmaster', rating: 2350, gamesPlayed: 1890, winRate: 68, rankChange: 1 },
@@ -161,7 +160,7 @@ export default function RankingPage() {
 
   return (
     <div className="p-4 md:p-8 overflow-y-auto">
-      {/* Header */}
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <motion.h2
@@ -184,7 +183,7 @@ export default function RankingPage() {
         <SeasonCountdown daysRemaining={14} hoursRemaining={5} minutesRemaining={22} />
       </div>
 
-      {/* Top 3 Podium */}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
         <div className="order-2 md:order-1">
           {top3[1] && <PodiumCard player={top3[1]} position={2} />}
@@ -197,7 +196,7 @@ export default function RankingPage() {
         </div>
       </div>
 
-      {/* Leaderboard Table */}
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

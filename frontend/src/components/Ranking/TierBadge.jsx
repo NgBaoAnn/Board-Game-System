@@ -47,7 +47,6 @@ export function TierBadge({ tier, size = 'md' }) {
     },
   }
 
-  // Normalize tier name
   const tierKey = tier?.toLowerCase().replace(' league', '').replace(' player', '').trim()
   const config = tierConfig[tierKey] || tierConfig.bronze
   const IconComponent = config.icon
@@ -73,7 +72,6 @@ export function TierBadge({ tier, size = 'md' }) {
     >
       <span className="flex items-center gap-0.5">
         {config.iconCount > 1 ? (
-          // Multiple icons (e.g., stars for Grandmaster)
           Array.from({ length: config.iconCount }).map((_, i) => (
             <IconComponent key={i} size={iconSizes[size]} className="fill-current" />
           ))

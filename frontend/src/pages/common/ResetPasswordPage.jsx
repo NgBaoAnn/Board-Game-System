@@ -10,7 +10,6 @@ import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 
-// Validation schema
 const resetPasswordSchema = Joi.object({
   newPassword: commonSchemas.password,
   confirmPassword: Joi.string()
@@ -22,7 +21,6 @@ const resetPasswordSchema = Joi.object({
     }),
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -54,7 +52,6 @@ export default function ResetPasswordPage() {
   const token = sessionStorage.getItem('reset_token') || ''
   const loading = formState === 'loading'
 
-  // Redirect if no token
   useEffect(() => {
     if (!token || !email) {
       navigate('/forgot-password')
@@ -64,13 +61,9 @@ export default function ResetPasswordPage() {
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      // TODO: Implement reset password API
-      // await authApi.resetPassword(email, token, values.newPassword)
       
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500))
       
-      // Clear session storage
       sessionStorage.removeItem('reset_email')
       sessionStorage.removeItem('reset_token')
       
@@ -109,7 +102,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -129,7 +122,7 @@ export default function ResetPasswordPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              {/* Title */}
+              
               <div className="mb-6 text-center">
                 <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
                   Reset Password
@@ -139,7 +132,7 @@ export default function ResetPasswordPage() {
                 </p>
               </div>
 
-              {/* Form */}
+              
               <Form
                 form={form}
                 layout="vertical"
@@ -262,7 +255,7 @@ export default function ResetPasswordPage() {
           )}
         </AnimatePresence>
 
-        {/* Back to Login */}
+        
         {!isSuccess && (
           <motion.div
             initial={{ opacity: 0 }}

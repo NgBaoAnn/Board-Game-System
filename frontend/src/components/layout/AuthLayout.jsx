@@ -17,13 +17,13 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-sans antialiased min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden">
-      {/* Neon Particles Background */}
+      
       <NeonParticles isDarkMode={isDarkMode} />
 
-      {/* Animated Background Gradient */}
+      
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-blue-950 dark:to-purple-950 animate-gradient opacity-30 z-0" />
 
-      {/* Grid Pattern Overlay */}
+      
       <div
         className="absolute inset-0 opacity-20 dark:opacity-5 z-0"
         style={{
@@ -32,7 +32,7 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
         }}
       />
 
-      {/* Back Button - Fixed top left */}
+      
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -48,14 +48,14 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
         </Link>
       </motion.div>
 
-      {/* Main Card Container */}
+      
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-5xl h-auto md:min-h-[750px] bg-white dark:bg-card-dark rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-100 dark:border-gray-700"
       >
-        {/* Left Side - Form */}
+        
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -65,7 +65,7 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
           {children}
         </motion.div>
 
-        {/* Right Side - Image/Content */}
+        
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -76,7 +76,7 @@ export default function AuthLayout({ children, rightContent, backTo = '/' }) {
         </motion.div>
       </motion.div>
 
-      {/* Theme Toggle Button - Fixed bottom right */}
+      
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

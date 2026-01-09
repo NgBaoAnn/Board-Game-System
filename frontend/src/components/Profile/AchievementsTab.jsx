@@ -1,7 +1,6 @@
 import { Progress } from 'antd'
 import { Trophy, Brain, Users, Target, Zap, Star, Crown, Shield, Sword, Gem } from 'lucide-react'
 
-// Mock achievements data
 const allAchievements = [
   { id: 1, name: 'Strategist Master', description: 'Win 50 strategy games', progress: 90, current: 45, total: 50, color: 'yellow', icon: Trophy, rarity: 'legendary', unlocked: true },
   { id: 2, name: 'Puzzle Solver', description: 'Complete 20 puzzle challenges', progress: 60, current: 12, total: 20, color: 'blue', icon: Brain, rarity: 'rare', unlocked: true },
@@ -54,7 +53,7 @@ function AchievementCard({ achievement }) {
         isLocked ? 'opacity-60 grayscale' : ''
       }`}
     >
-      {/* Header */}
+      
       <div className="flex items-start justify-between mb-4">
         <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${colorClasses[achievement.color] || colorClasses.blue}`}>
           <Icon size={24} />
@@ -64,11 +63,11 @@ function AchievementCard({ achievement }) {
         </span>
       </div>
 
-      {/* Content */}
+      
       <h4 className="font-bold text-gray-900 dark:text-white mb-1">{achievement.name}</h4>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{achievement.description}</p>
 
-      {/* Progress */}
+      
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">
@@ -87,7 +86,7 @@ function AchievementCard({ achievement }) {
         />
       </div>
 
-      {/* Completed Badge */}
+      
       {isCompleted && (
         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium">
@@ -108,7 +107,7 @@ export function AchievementsTab() {
 
   return (
     <div>
-      {/* Stats */}
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 text-center">
           <span className="block text-3xl font-bold text-gray-900 dark:text-white">{allAchievements.length}</span>
@@ -124,7 +123,7 @@ export function AchievementsTab() {
         </div>
       </div>
 
-      {/* Grid */}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allAchievements.map((achievement) => (
           <AchievementCard key={achievement.id} achievement={achievement} />

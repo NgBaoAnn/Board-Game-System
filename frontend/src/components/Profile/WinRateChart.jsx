@@ -1,6 +1,5 @@
 import { Progress } from 'antd'
 
-// Win Rate Circle Chart Component
 export function WinRateChart({ winRate, wins, losses }) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">

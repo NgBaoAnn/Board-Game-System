@@ -12,10 +12,8 @@ const axiosInstance = axios.create({
     },
 })
 
-// Mutex for refresh token
 let refreshPromise = null
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token')
@@ -27,13 +25,11 @@ axiosInstance.interceptors.request.use(
     (error) => Promise.reject(error)
 )
 
-// Response interceptor with refresh token
 axiosInstance.interceptors.response.use(
     (response) => response.data,
     async (error) => {
         const originalRequest = error.config
 
-        // 401 + not retry yet + not auth endpoints → try refresh
         if (
             error.response?.status === 401 &&
             !originalRequest._retry &&
@@ -41,7 +37,6 @@ axiosInstance.interceptors.response.use(
         ) {
             originalRequest._retry = true
 
-            // Use mutex to prevent multiple refresh calls
             if (!refreshPromise) {
                 refreshPromise = axios
                     .post(`${API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true })
@@ -58,12 +53,10 @@ axiosInstance.interceptors.response.use(
                     return axiosInstance(originalRequest)
                 }
             } catch {
-                // Refresh failed - just clear token, no redirect
                 localStorage.removeItem('access_token')
             }
         }
 
-        // For 401 on auth endpoints, just clear token (no redirect)
         if (error.response?.status === 401) {
             localStorage.removeItem('access_token')
         }

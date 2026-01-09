@@ -3,7 +3,6 @@ import { Avatar, Tooltip } from 'antd'
 import { UserPlus, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-// Tier config for avatar glows
 const tierConfig = {
   grandmaster: { border: 'from-purple-500 to-violet-600', glow: 'avatar-glow-grandmaster', label: 'Grandmaster' },
   diamond: { border: 'from-cyan-400 to-teal-500', glow: 'avatar-glow-diamond', label: 'Diamond' },
@@ -35,14 +34,14 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
       whileHover={{ y: -6, transition: { duration: 0.2 } }}
       className="relative bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-slate-700/50 p-5 flex flex-col items-center overflow-hidden group"
     >
-      {/* Tier badge */}
+      
       <Tooltip title={tier.label}>
         <span className={`absolute top-3 right-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r ${tier.border} text-white`}>
           {tier.label}
         </span>
       </Tooltip>
 
-      {/* Avatar with tier border and online indicator */}
+      
       <div className="relative mb-3">
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${isOnline ? tier.glow : ''}`}>
           <Avatar
@@ -51,7 +50,7 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
             className={`border-2 border-white dark:border-slate-900 ${!isOnline ? 'grayscale opacity-80' : ''}`}
           />
         </div>
-        {/* Online indicator */}
+        
         <span
           className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-3 border-white dark:border-slate-900 ${
             isOnline ? 'bg-green-500 online-status-pulse' : 'bg-gray-400 dark:bg-slate-500'
@@ -59,17 +58,17 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
         />
       </div>
 
-      {/* Name */}
+      
       <h3 className="font-bold text-gray-900 dark:text-white text-base truncate w-full text-center mb-1">
         {player.name}
       </h3>
 
-      {/* Status */}
+      
       <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-3">
         {isOnline ? 'Online now' : player.lastSeen || 'Offline'}
       </p>
 
-      {/* Action buttons */}
+      
       <div className="grid grid-cols-2 gap-2 w-full mt-auto pt-2">
         <motion.button
           whileHover={{ scale: 1.02 }}

@@ -1,7 +1,6 @@
 import { Avatar, Progress, Button } from 'antd'
 import { Swords, CheckCircle } from 'lucide-react'
 
-// Leaderboard Table Row Component
 export function LeaderboardRow({ player, onChallenge }) {
   return (
     <tr className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${player.isCurrentUser ? 'bg-[#1d7af2]/5 border-l-4 border-l-[#1d7af2]' : ''}`}>

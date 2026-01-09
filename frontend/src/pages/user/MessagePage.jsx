@@ -8,7 +8,6 @@ import { ChatInput } from '@/components/Message/ChatInput'
 import { ChatHeader } from '@/components/Message/ChatHeader'
 import { TypingIndicator } from '@/components/Message/TypingIndicator'
 
-// Mock data with game status
 const conversationsData = [
   {
     id: 1,
@@ -75,7 +74,6 @@ const messagesData = {
   ],
 }
 
-// Empty State Component
 function EmptyState({ type = 'chat' }) {
   return (
     <motion.div
@@ -148,9 +146,9 @@ export default function MessagePage() {
 
   return (
     <div className="absolute inset-0 flex overflow-hidden">
-      {/* Conversation List */}
+      
       <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200/50 dark:border-slate-700/30 bg-white/80 dark:bg-slate-800/40 backdrop-blur-md">
-        {/* Header */}
+        
         <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/30 flex justify-between items-center">
           <h2 className="font-bold text-lg text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#00f0ff] dark:to-[#a855f7] flex items-center gap-2">
             <MessageCircle size={20} className="text-[#1d7af2] dark:text-[#00f0ff]" />
@@ -161,7 +159,7 @@ export default function MessagePage() {
           </button>
         </div>
 
-        {/* Search */}
+        
         <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/30">
           <Input
             placeholder="Search conversations..."
@@ -172,7 +170,7 @@ export default function MessagePage() {
           />
         </div>
 
-        {/* Conversation List */}
+        
         <div className="flex-1 overflow-y-auto">
           {filteredConversations.length > 0 ? (
             filteredConversations.map((conversation, index) => (
@@ -195,23 +193,23 @@ export default function MessagePage() {
         </div>
       </div>
 
-      {/* Chat Area */}
+      
       <div className="hidden md:flex flex-1 flex-col bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm relative">
         {activeConversation ? (
           <>
-            {/* Chat Header */}
+            
             <ChatHeader conversation={activeConversation} />
 
-            {/* Messages */}
+            
             <div className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
-              {/* Date Separator */}
+              
               <div className="flex items-center justify-center my-4">
                 <span className="text-xs text-gray-500 dark:text-slate-400 bg-gray-200 dark:bg-slate-800 px-3 py-1 rounded-full">
                   Today
                 </span>
               </div>
 
-              {/* Messages */}
+              
               <AnimatePresence>
                 {currentMessages.map((message, index) => {
                   const showAvatar = index === 0 || currentMessages[index - 1]?.isOwn !== message.isOwn
@@ -230,7 +228,7 @@ export default function MessagePage() {
                 })}
               </AnimatePresence>
 
-              {/* Typing indicator */}
+              
               {activeConversation.isTyping && (
                 <TypingIndicator
                   initials={activeConversation.initials}
@@ -239,7 +237,7 @@ export default function MessagePage() {
               )}
             </div>
 
-            {/* Input */}
+            
             <ChatInput onSend={handleSendMessage} />
           </>
         ) : (

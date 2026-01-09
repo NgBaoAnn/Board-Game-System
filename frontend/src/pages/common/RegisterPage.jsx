@@ -13,7 +13,6 @@ import TypewriterText from '@/components/common/TypewriterText'
 import { joiValidator, commonSchemas } from '@/utils/validation'
 import authApi from '@/api/api-auth'
 
-// Validation schema
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).required().messages({
     'string.min': 'Username must be at least 3 characters',
@@ -34,7 +33,6 @@ const registerSchema = Joi.object({
   }),
 })
 
-// Animation variants
 const formVariants = {
   idle: { scale: 1 },
   loading: { opacity: 0.7 },
@@ -132,7 +130,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        {/* Logo */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -155,7 +153,7 @@ export default function RegisterPage() {
           </div>
         </motion.div>
 
-        {/* Title */}
+        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -167,7 +165,7 @@ export default function RegisterPage() {
           </h1>
         </motion.div>
 
-        {/* Form */}
+        
         <Form
           form={form}
           layout="vertical"
@@ -310,7 +308,7 @@ export default function RegisterPage() {
           </Form.Item>
         </Form>
 
-        {/* Divider */}
+        
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
@@ -322,13 +320,13 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Social Buttons */}
+        
         <SocialLoginButtons
           onGoogleClick={() => message.info('Google signup clicked')}
           onFacebookClick={() => message.info('Facebook signup clicked')}
         />
 
-        {/* Login Link */}
+        
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

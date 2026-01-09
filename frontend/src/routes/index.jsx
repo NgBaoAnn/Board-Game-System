@@ -22,7 +22,6 @@ import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
 
 export const router = createBrowserRouter([
-  // Routes with shared ClientLayout (sidebar + header)
   {
     element: <ClientLayout />,
     children: [
@@ -61,7 +60,6 @@ export const router = createBrowserRouter([
     ],
     errorElement: <NotFoundPage />,
   },
-  // Auth routes without shared layout
   {
     path: '/login',
     element: <LoginPage />,
@@ -82,7 +80,6 @@ export const router = createBrowserRouter([
     path: '/reset-password',
     element: <ResetPasswordPage />,
   },
-  // Admin routes
   {
     path: '/admin',
     element: (
