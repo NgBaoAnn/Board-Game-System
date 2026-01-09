@@ -40,11 +40,11 @@ export default function RankingPage() {
       align: 'center',
       render: (rank, record) => (
         <div className="flex items-center justify-center gap-2">
-          <span className={`font-bold text-lg font-mono ${record.isCurrentUser ? 'text-[#00f0ff]' : 'text-white'}`}>
+          <span className={`font-bold text-lg font-mono ${record.isCurrentUser ? 'text-[#1d7af2] dark:text-[#00f0ff]' : 'text-gray-900 dark:text-white'}`}>
             #{rank}
           </span>
           {record.rankChange !== 0 && (
-            <span className={record.rankChange > 0 ? 'rank-up' : 'rank-down'}>
+            <span className={record.rankChange > 0 ? 'text-green-500' : 'text-red-500'}>
               {record.rankChange > 0 ? (
                 <TrendingUp size={14} />
               ) : (
@@ -65,13 +65,13 @@ export default function RankingPage() {
             <Avatar
               src={record.avatar}
               size={44}
-              className={`border-2 ${record.isCurrentUser ? 'border-[#00f0ff]' : 'border-slate-600'}`}
+              className={`border-2 ${record.isCurrentUser ? 'border-[#1d7af2] dark:border-[#00f0ff]' : 'border-gray-200 dark:border-slate-600'}`}
             />
           ) : (
             <div
               className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                 record.isCurrentUser
-                  ? 'bg-gradient-to-br from-[#00f0ff] to-[#a855f7]'
+                  ? 'bg-gradient-to-br from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7]'
                   : 'bg-gradient-to-br from-indigo-500 to-purple-600'
               }`}
             >
@@ -79,11 +79,11 @@ export default function RankingPage() {
             </div>
           )}
           <div>
-            <div className="text-sm font-bold text-white flex items-center gap-1.5">
+            <div className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
               {name}
-              {record.verified && <CheckCircle size={14} className="text-[#00f0ff]" />}
+              {record.verified && <CheckCircle size={14} className="text-[#1d7af2] dark:text-[#00f0ff]" />}
               {record.isCurrentUser && (
-                <span className="text-[10px] bg-[#00f0ff]/20 text-[#00f0ff] px-1.5 py-0.5 rounded font-medium ml-1">
+                <span className="text-[10px] bg-blue-50 dark:bg-[#00f0ff]/20 text-[#1d7af2] dark:text-[#00f0ff] px-1.5 py-0.5 rounded font-medium ml-1">
                   YOU
                 </span>
               )}
@@ -100,7 +100,7 @@ export default function RankingPage() {
       dataIndex: 'rating',
       key: 'rating',
       render: (rating) => (
-        <span className="text-lg font-mono font-bold text-white">{rating.toLocaleString()}</span>
+        <span className="text-lg font-mono font-bold text-gray-900 dark:text-white">{rating.toLocaleString()}</span>
       ),
     },
     {
@@ -108,7 +108,7 @@ export default function RankingPage() {
       dataIndex: 'gamesPlayed',
       key: 'gamesPlayed',
       render: (games) => (
-        <span className="text-sm text-slate-300 font-medium">{games.toLocaleString()}</span>
+        <span className="text-sm text-gray-500 dark:text-slate-300 font-medium">{games.toLocaleString()}</span>
       ),
     },
     {
@@ -130,7 +130,7 @@ export default function RankingPage() {
           />
           <span
             className={`text-sm font-bold ${
-              winRate >= 55 ? 'text-green-400' : winRate >= 50 ? 'text-yellow-400' : 'text-red-400'
+              winRate >= 55 ? 'text-green-500 dark:text-green-400' : winRate >= 50 ? 'text-yellow-500 dark:text-yellow-400' : 'text-red-500 dark:text-red-400'
             }`}
           >
             {winRate}%
@@ -149,7 +149,7 @@ export default function RankingPage() {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               size="small"
-              className="bg-gradient-to-r from-[#00f0ff] to-[#a855f7] border-none text-white font-bold text-xs px-3 hover:shadow-lg hover:shadow-[#00f0ff]/20"
+              className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] border-none text-white font-bold text-xs px-3 hover:shadow-lg hover:shadow-[#1d7af2]/20 dark:hover:shadow-[#00f0ff]/20"
               icon={<Swords size={12} />}
             >
               Challenge
@@ -167,7 +167,7 @@ export default function RankingPage() {
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#a855f7] flex items-center gap-3"
+            className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7] flex items-center gap-3"
           >
             <Trophy className="text-yellow-400" size={36} />
             Global Leaderboard
@@ -176,7 +176,7 @@ export default function RankingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-slate-400 mt-2"
+            className="text-gray-500 dark:text-slate-400 mt-2"
           >
             Compete with the best players across all supported board games.
           </motion.p>
@@ -202,7 +202,7 @@ export default function RankingPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden"
+        className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-slate-700/50 overflow-hidden"
       >
         <LeaderboardFilters
           searchText={searchText}
@@ -219,7 +219,7 @@ export default function RankingPage() {
           dataSource={filteredPlayers}
           rowKey="id"
           pagination={{ pageSize: 10, showSizeChanger: false }}
-          rowClassName={(record) => (record.isCurrentUser ? 'current-user-row' : '')}
+          rowClassName={(record) => (record.isCurrentUser ? 'current-user-row bg-blue-50/50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-slate-700/30')}
           className="ranking-table"
         />
       </motion.div>

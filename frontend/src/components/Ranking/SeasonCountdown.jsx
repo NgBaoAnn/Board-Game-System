@@ -5,11 +5,9 @@ import { Tooltip } from 'antd'
 
 /**
  * SeasonCountdown - Circular progress ring with urgency colors
+ * Supports dark/light mode
  * @param {Object} props
  * @param {number} props.daysRemaining - Days remaining in the season
- * @param {number} props.hoursRemaining - Hours remaining
- * @param {number} props.minutesRemaining - Minutes remaining
- * @param {number} props.totalDays - Total days in season (for progress calculation)
  */
 export function SeasonCountdown({
   daysRemaining = 14,
@@ -31,14 +29,13 @@ export function SeasonCountdown({
   }, [daysRemaining])
 
   const colors = {
-    safe: { stroke: '#22c55e', text: 'text-green-400', bg: 'bg-green-500/10' },
-    warning: { stroke: '#eab308', text: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-    urgent: { stroke: '#ef4444', text: 'text-red-400', bg: 'bg-red-500/10' },
+    safe: { stroke: '#22c55e', text: 'text-green-500 dark:text-green-400', bg: 'bg-green-500/10' },
+    warning: { stroke: '#eab308', text: 'text-yellow-500 dark:text-yellow-400', bg: 'bg-yellow-500/10' },
+    urgent: { stroke: '#ef4444', text: 'text-red-500 dark:text-red-400', bg: 'bg-red-500/10' },
   }
 
   const color = colors[urgency]
   const circumference = 2 * Math.PI * 36 // radius = 36
-  const strokeDashoffset = circumference - (progress / 100) * circumference
 
   const rewardsPreview = (
     <div className="p-3 min-w-[200px]">
@@ -69,7 +66,7 @@ export function SeasonCountdown({
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         whileHover={{ scale: 1.05 }}
-        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${color.bg} border border-slate-700 cursor-pointer transition-colors hover:border-slate-600`}
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${color.bg} border border-gray-200 dark:border-slate-700 cursor-pointer transition-colors hover:border-gray-300 dark:hover:border-slate-600 bg-white/50 dark:bg-transparent backdrop-blur-sm`}
       >
         {/* Circular Progress Ring */}
         <div className="relative">
@@ -109,7 +106,7 @@ export function SeasonCountdown({
 
         {/* Time Display */}
         <div className="flex flex-col">
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+          <span className="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-wider font-medium">
             Season ends in
           </span>
           <div className={`font-mono font-bold ${color.text} ${urgency === 'urgent' ? 'countdown-urgent' : ''}`}>
@@ -123,7 +120,7 @@ export function SeasonCountdown({
         </div>
 
         {/* Rewards hint */}
-        <Gift size={16} className="text-yellow-400 ml-1 opacity-60" />
+        <Gift size={16} className="text-yellow-500 dark:text-yellow-400 ml-1 opacity-60" />
       </motion.div>
     </Tooltip>
   )

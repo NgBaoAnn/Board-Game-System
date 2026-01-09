@@ -13,7 +13,7 @@ export function LeaderboardFilters({
   onPeriodFilterChange,
 }) {
   return (
-    <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-700">
+    <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700">
       <Input
         placeholder="Search player..."
         prefix={<Search className="text-gray-400" size={18} />}
@@ -27,9 +27,9 @@ export function LeaderboardFilters({
           value={viewMode}
           onChange={onViewModeChange}
           options={['Global', 'Friends']}
-          className="bg-gray-100 dark:bg-gray-700"
+          className="bg-gray-100 dark:bg-slate-700"
         />
-        <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden md:block" />
+        <div className="h-8 w-px bg-gray-200 dark:bg-slate-700 hidden md:block" />
         <Select
           value={gameFilter}
           onChange={onGameFilterChange}

@@ -21,7 +21,12 @@ import {
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game } from '../../components/Game'
+import GameTimer from '../../components/Game/GameTimer.jsx'
+import GameScore from '../../components/Game/GameScore.jsx'
+import TimeSelectionModal from '../../components/Game/TimeSelectionModal.jsx'
+import TicTacToeGame from '../../components/Game/TicTacToeGame.jsx'
+import Caro4Game from '../../components/Game/Caro4Game.jsx'
+import Caro5Game from '../../components/Game/Caro5Game.jsx'
 import gameApi from '../../api/api-game.js'
 import { message } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
