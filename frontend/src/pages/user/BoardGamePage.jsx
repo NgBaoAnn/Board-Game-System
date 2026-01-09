@@ -1161,8 +1161,8 @@ export default function BoardGamePage() {
                                 </h3>
                                 <p className="text-sm text-slate-600">
                                     Vẽ pixel art trên canvas trắng. Chọn màu từ bảng màu, click hoặc nhấn Enter để vẽ.
-                                    Phím <span className="font-mono bg-slate-200 px-1 rounded">E</span>: Bật/tắt tẩy • 
-                                    <span className="font-mono bg-slate-200 px-1 rounded">C</span>: Xóa canvas • 
+                                    Phím <span className="font-mono bg-slate-200 px-1 rounded">E</span>: Bật/tắt tẩy •
+                                    <span className="font-mono bg-slate-200 px-1 rounded">C</span>: Xóa canvas •
                                     <span className="font-mono bg-slate-200 px-1 rounded">P</span> hoặc click phải: Lấy màu từ ô.
                                 </p>
                             </div>

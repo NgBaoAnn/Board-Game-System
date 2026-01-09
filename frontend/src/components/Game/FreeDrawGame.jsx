@@ -298,7 +298,7 @@ export default function FreeDrawGame({
                         >
                             {/* Cursor indicator */}
                             {isCursor && (
-                                <div 
+                                <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
                                         border: `3px solid ${isEraser ? '#ef4444' : selectedColor}`,
@@ -328,8 +328,8 @@ export default function FreeDrawGame({
                     onClick={toggleEraser}
                     className={`
                         flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold text-sm transition-all
-                        ${isEraser 
-                            ? 'bg-rose-500 text-white shadow-md' 
+                        ${isEraser
+                            ? 'bg-rose-500 text-white shadow-md'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }
                     `}
@@ -347,15 +347,15 @@ export default function FreeDrawGame({
                     <span>Xóa (C)</span>
                 </button>
 
-                
+
             </div>
 
             {/* Color palette */}
-            <div 
+            <div
                 className={`
                     px-3 py-2 rounded-xl transition-all
-                    ${isPaletteMode 
-                        ? 'bg-indigo-100 ring-2 ring-indigo-500 shadow-lg' 
+                    ${isPaletteMode
+                        ? 'bg-indigo-100 ring-2 ring-indigo-500 shadow-lg'
                         : 'bg-slate-50'
                     }
                 `}
@@ -365,7 +365,7 @@ export default function FreeDrawGame({
                         🎨 Dùng ←→ để chọn màu, Enter xác nhận
                     </div>
                 )}
-                <div 
+                <div
                     className="grid gap-1"
                     style={{
                         gridTemplateColumns: `repeat(${PALETTE_COLS}, 1fr)`,
@@ -389,8 +389,8 @@ export default function FreeDrawGame({
                                         ? 'ring-2 ring-offset-1 ring-indigo-500 scale-110 border-indigo-500'
                                         : 'border-slate-300 hover:scale-105'
                                     }
-                                    ${isPaletteCursor 
-                                        ? 'ring-3 ring-offset-1 ring-rose-500 scale-125 z-10' 
+                                    ${isPaletteCursor
+                                        ? 'ring-3 ring-offset-1 ring-rose-500 scale-125 z-10'
                                         : ''
                                     }
                                 `}
@@ -429,13 +429,13 @@ export default function FreeDrawGame({
             {/* Instructions */}
             <div className="text-xs text-slate-400 text-center max-w-sm space-y-1">
                 <div>
-                    Di chuyển bằng <span className="font-mono bg-slate-100 px-1 rounded">↑↓←→</span> • 
+                    Di chuyển bằng <span className="font-mono bg-slate-100 px-1 rounded">↑↓←→</span> •
                     Nhấn <span className="font-mono bg-slate-100 px-1 rounded">Enter</span> để vẽ
                 </div>
                 <div>
-                    <span className="font-mono bg-slate-100 px-1 rounded">G</span> chọn màu • 
-                    <span className="font-mono bg-slate-100 px-1 rounded">E</span> tẩy • 
-                    <span className="font-mono bg-slate-100 px-1 rounded">C</span> xóa • 
+                    <span className="font-mono bg-slate-100 px-1 rounded">G</span> chọn màu •
+                    <span className="font-mono bg-slate-100 px-1 rounded">E</span> tẩy •
+                    <span className="font-mono bg-slate-100 px-1 rounded">C</span> xóa •
                     <span className="font-mono bg-slate-100 px-1 rounded">P</span> lấy màu
                 </div>
             </div>
