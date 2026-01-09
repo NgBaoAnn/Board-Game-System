@@ -1,4 +1,6 @@
-import { LayoutGrid, PlusCircle, Shuffle } from 'lucide-react'
+import { useState } from 'react'
+import { LayoutGrid, PlusCircle, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 import GameCard from '@/components/Game/GameCard'
 import NewArrivalCard from '@/components/Game/NewArrivalCard'
 import HeroSection from '@/components/Home/HeroSection'
@@ -8,7 +10,7 @@ import SectionHeader from '@/components/common/SectionHeader'
 // Hero image for featured game
 const heroImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6nScqmqkDA1m73ZB3NIoVYRn-NoVZhlNJ6nHG9PfYNu9htB7sIwq13rXhzRACpmWTVotZmL-bJXc11wxiETP5COG0Do-JqiTUHndRbDQ9_yIdOhsXxOZbyGrpxvBaQ442jGILlt7ODsA-E1sYMF7xoGFwMX6tyG1iJLemgwFfesLcyU_GXtdEo8fkDZaqqzyIibwLNVvNe7YDw7vflxVsUtVsL0dveXcWKhDJRmGmw9sI21nucjFIu75w23J1uoO9MYLQ78muDoix'
 
-// Sample data - In production, this would come from API
+// Sample data with rarity, online players, and tags
 const popularGames = [
   {
     id: 1,
@@ -17,6 +19,10 @@ const popularGames = [
     rating: 4.5,
     players: '2-6 Players',
     duration: '60m+',
+    rarity: 'legendary',
+    onlinePlayers: 234,
+    isHot: true,
+    isNew: false,
   },
   {
     id: 2,
@@ -25,6 +31,10 @@ const popularGames = [
     rating: 4.8,
     players: '2 Players',
     duration: '15-30m',
+    rarity: 'epic',
+    onlinePlayers: 567,
+    isHot: false,
+    isNew: false,
   },
   {
     id: 3,
@@ -33,6 +43,10 @@ const popularGames = [
     rating: 4.2,
     players: '2-4 Players',
     duration: '45m',
+    rarity: 'rare',
+    onlinePlayers: 89,
+    isHot: false,
+    isNew: true,
   },
   {
     id: 4,
@@ -41,6 +55,10 @@ const popularGames = [
     rating: 4.7,
     players: '2-10 Players',
     duration: '30m+',
+    rarity: 'common',
+    onlinePlayers: 156,
+    isHot: true,
+    isNew: false,
   },
 ]
 
@@ -63,48 +81,69 @@ const newArrivals = [
     category: 'Family • Dexterity',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBz_YidSQm793BN9aANk1G0qq4lDrO84IRPZ7HoDrZr1tXYT-JgMjuBjPyK1fAnscUjC13O7541-5-euztiITYEwrr0auOjCQDVIP30Dn1sVPYgCRIKuMNej4J5ur3_9nz8R4geyKEqfpudTgCdRjKLZjEIIxiKMqe35BQIJ1xMONtrU_QirDpyi7XjJVHYzh-b1_ytPW6lN8d0iL6F7_VnVCtrfg7_uNgOL75eUaQVNhm2nCmUgP_WCHfZqq9vVOKe9eg_q6vA9_Xv',
   },
+  {
+    id: 4,
+    title: 'Cosmic Clash',
+    category: 'Sci-Fi • Combat',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6nScqmqkDA1m73ZB3NIoVYRn-NoVZhlNJ6nHG9PfYNu9htB7sIwq13rXhzRACpmWTVotZmL-bJXc11wxiETP5COG0Do-JqiTUHndRbDQ9_yIdOhsXxOZbyGrpxvBaQ442jGILlt7ODsA-E1sYMF7xoGFwMX6tyG1iJLemgwFfesLcyU_GXtdEo8fkDZaqqzyIibwLNVvNe7YDw7vflxVsUtVsL0dveXcWKhDJRmGmw9sI21nucjFIu75w23J1uoO9MYLQ78muDoix',
+  },
 ]
 
+// Quick actions with gradient colors
 const quickActions = [
   {
     id: 1,
     title: 'Browse Library',
     icon: LayoutGrid,
-    color: 'bg-blue-50 text-blue-500',
+    colorClass: 'quick-action-blue',
+    iconBg: 'bg-blue-500/20',
+    iconColor: 'text-blue-500',
   },
   {
     id: 2,
     title: 'Create Custom Table',
     icon: PlusCircle,
-    color: 'bg-green-50 text-green-600',
+    colorClass: 'quick-action-green',
+    iconBg: 'bg-green-500/20',
+    iconColor: 'text-green-500',
   },
   {
     id: 3,
     title: 'Join Random Lobby',
     icon: Shuffle,
-    color: 'bg-purple-50 text-purple-600',
+    colorClass: 'quick-action-purple',
+    iconBg: 'bg-purple-500/20',
+    iconColor: 'text-purple-500',
   },
 ]
 
 export default function HomePage() {
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const itemsPerView = 3
+  const maxIndex = Math.max(0, newArrivals.length - itemsPerView)
+
   const handlePlayNow = () => {
-    // TODO: Navigate to game or start game
     console.log('Play Now clicked')
   }
 
   const handleWatchTutorial = () => {
-    // TODO: Open tutorial modal or navigate to tutorial
     console.log('Watch Tutorial clicked')
   }
 
   const handleQuickAction = (actionId) => {
-    // TODO: Handle quick action based on actionId
     console.log('Quick action clicked:', actionId)
   }
 
   const handleGameFavorite = (gameId, isFavorited) => {
-    // TODO: Save favorite to API
     console.log('Game favorited:', gameId, isFavorited)
+  }
+
+  const handlePrevious = () => {
+    setCarouselIndex(Math.max(0, carouselIndex - 1))
+  }
+
+  const handleNext = () => {
+    setCarouselIndex(Math.min(maxIndex, carouselIndex + 1))
   }
 
   return (
@@ -116,6 +155,7 @@ export default function HomePage() {
         image={heroImage}
         rating={4.9}
         tag="Featured Game"
+        onlineCount={10234}
         onPlayNow={handlePlayNow}
         onWatchTutorial={handleWatchTutorial}
       />
@@ -133,17 +173,40 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* New Arrivals */}
+      {/* New Arrivals with Carousel */}
       <div className="flex flex-col gap-5 pb-10">
         <SectionHeader
           title="New Arrivals"
           showNavigation
-          onPrevious={() => console.log('Previous')}
-          onNext={() => console.log('Next')}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
         />
-        <div className="flex gap-6 overflow-x-auto pb-4">
-          {newArrivals.map((game) => (
-            <NewArrivalCard key={game.id} game={game} />
+        
+        {/* Carousel Container */}
+        <div className="relative overflow-hidden">
+          <motion.div 
+            className="flex gap-6"
+            animate={{ x: -carouselIndex * (280 + 24) }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          >
+            {newArrivals.map((game) => (
+              <NewArrivalCard key={game.id} game={game} />
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Carousel Dots */}
+        <div className="flex justify-center gap-2 mt-2">
+          {Array.from({ length: maxIndex + 1 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCarouselIndex(i)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                i === carouselIndex 
+                  ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] w-6' 
+                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
+              }`}
+            />
           ))}
         </div>
       </div>
