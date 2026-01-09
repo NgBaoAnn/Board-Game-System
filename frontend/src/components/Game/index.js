@@ -5,3 +5,6 @@ export { default as GameTimer } from './GameTimer'
 export { default as GameScore } from './GameScore'
 export { default as TimeSelectionModal } from './TimeSelectionModal'
 export { default as TicTacToeGame } from './TicTacToeGame'
+export { default as Caro4Game } from './Caro4Game'
+export { default as Caro5Game } from './Caro5Game'
+
