@@ -92,6 +92,19 @@ class UserController {
       next(err);
     }
   }
+
+  async getUserRegistrations(req, res, next) {
+    try {
+      const response = await userService.getUserRegistrations();
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Get user registrations successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new UserController();

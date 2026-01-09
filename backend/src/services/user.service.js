@@ -69,6 +69,10 @@ class UserService {
   async getUserCounts() {
     return await userRepo.getUserCounts();
   }
+
+  async getUserRegistrations() {
+    return await userRepo.getUserRegistrations();
+  }
 }
 
 module.exports = new UserService();
