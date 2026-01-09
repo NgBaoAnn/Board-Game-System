@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Users, Clock, Zap, Crown, Gamepad2 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import GameCard from '@/components/Game/GameCard'
 import NewArrivalCard from '@/components/Game/NewArrivalCard'
 import HeroSection from '@/components/Home/HeroSection'

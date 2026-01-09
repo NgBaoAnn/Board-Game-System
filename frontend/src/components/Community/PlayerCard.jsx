@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Avatar, Tooltip } from 'antd'
 import { UserPlus, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
