@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Avatar } from 'antd'
 import { UserCheck, UserX } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const gameIcons = {
   Chess: '♟️',
@@ -21,7 +22,12 @@ const tierConfig = {
  * Supports dark/light mode
  */
 export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
+  const navigate = useNavigate()
   const tier = tierConfig[friend.tier] || tierConfig.gold
+
+  const handleViewProfile = () => {
+    navigate(`/player/${friend.id}`)
+  }
 
   return (
     <motion.div
@@ -43,7 +49,7 @@ export function FriendRequestCard({ friend, onAccept, onDecline, index = 0 }) {
       )}
 
       
-      <div className="relative mb-3">
+      <div className="relative mb-3 cursor-pointer" onClick={handleViewProfile}>
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${tier.glow}`}>
           <Avatar src={friend.avatar} size={70} className="border-2 border-white dark:border-slate-900" />
         </div>

@@ -42,7 +42,7 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
       </Tooltip>
 
       
-      <div className="relative mb-3">
+      <div className="relative mb-3 cursor-pointer" onClick={handleViewProfile}>
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${isOnline ? tier.glow : ''}`}>
           <Avatar
             src={player.avatar}

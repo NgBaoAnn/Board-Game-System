@@ -1,6 +1,7 @@
 import { Avatar } from 'antd'
 import { motion } from 'framer-motion'
 import { Crown, Award, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * PodiumCard - Enhanced gaming-style podium card for top 3 players
@@ -8,6 +9,7 @@ import { Crown, Award, Sparkles } from 'lucide-react'
  * Supports dark/light mode
  */
 export function PodiumCard({ player, position }) {
+  const navigate = useNavigate()
   const configs = {
     1: {
       borderColor: 'border-yellow-400',
@@ -77,7 +79,7 @@ export function PodiumCard({ player, position }) {
         
         <div className="relative z-10 flex flex-col items-center mt-4 flex-1">
           
-          <div className="relative mb-4">
+          <div className="relative mb-4 cursor-pointer" onClick={() => navigate(`/player/${player.id}`)}>
             {player.avatar ? (
               <Avatar
                 src={player.avatar}
@@ -91,7 +93,7 @@ export function PodiumCard({ player, position }) {
               >
                 {player.initials}
               </div>
-            )}
+            )}}
 
             
             {position === 1 && (

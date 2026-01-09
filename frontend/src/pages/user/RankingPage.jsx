@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Table, Avatar, Progress, Button } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Swords, CheckCircle, TrendingUp, TrendingDown, Trophy } from 'lucide-react'
 import { PodiumCard } from '@/components/Ranking/PodiumCard'
@@ -18,6 +19,7 @@ const leaderboardData = [
 ]
 
 export default function RankingPage() {
+  const navigate = useNavigate()
   const [searchText, setSearchText] = useState('')
   const [gameFilter, setGameFilter] = useState('all')
   const [periodFilter, setPeriodFilter] = useState('season')
@@ -64,15 +66,17 @@ export default function RankingPage() {
             <Avatar
               src={record.avatar}
               size={44}
-              className={`border-2 ${record.isCurrentUser ? 'border-[#1d7af2] dark:border-[#00f0ff]' : 'border-gray-200 dark:border-slate-600'}`}
+              className={`border-2 cursor-pointer ${record.isCurrentUser ? 'border-[#1d7af2] dark:border-[#00f0ff]' : 'border-gray-200 dark:border-slate-600'}`}
+              onClick={() => navigate(`/player/${record.id}`)}
             />
           ) : (
             <div
-              className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+              className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm cursor-pointer ${
                 record.isCurrentUser
                   ? 'bg-gradient-to-br from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7]'
                   : 'bg-gradient-to-br from-indigo-500 to-purple-600'
               }`}
+              onClick={() => navigate(`/player/${record.id}`)}
             >
               {record.initials}
             </div>

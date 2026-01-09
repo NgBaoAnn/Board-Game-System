@@ -41,7 +41,7 @@ export function FriendCard({ friend, onViewProfile, onRemove, onInvite, index = 
       </button>
 
       
-      <div className="relative mb-3">
+      <div className="relative mb-3 cursor-pointer" onClick={() => onViewProfile(friend)}>
         <div className={`p-0.5 rounded-full bg-gradient-to-br ${tier.border} ${isOnline ? tier.glow : ''}`}>
           <Avatar
             src={friend.avatar}
