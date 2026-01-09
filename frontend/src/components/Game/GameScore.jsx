@@ -5,8 +5,9 @@ import { Trophy, Zap } from 'lucide-react'
  * GameScore - Component hiển thị điểm số
  * @param {number} score - Điểm số hiện tại
  * @param {string} label - Label hiển thị (mặc định: "Score")
+ * @param {boolean} compact - Compact mode cho sidebar
  */
-export default function GameScore({ score = 0, label = "Score" }) {
+export default function GameScore({ score = 0, label = "Score", compact = false }) {
     const [isAnimating, setIsAnimating] = useState(false)
     const [prevScore, setPrevScore] = useState(score)
 
@@ -27,6 +28,25 @@ export default function GameScore({ score = 0, label = "Score" }) {
     // Format score với comma
     const formatScore = (num) => {
         return num.toLocaleString()
+    }
+
+    if (compact) {
+        return (
+            <div className={`
+                flex items-center gap-2 px-3 py-2 rounded-xl
+                bg-gradient-to-r from-emerald-500 to-teal-600 text-white
+                transition-transform duration-200
+                ${isAnimating ? 'scale-105' : 'scale-100'}
+            `}>
+                <Trophy size={14} />
+                <span className="text-base font-bold font-mono">
+                    {formatScore(score)}
+                </span>
+                {isAnimating && (
+                    <Zap size={12} className="text-yellow-300 fill-current animate-ping" />
+                )}
+            </div>
+        )
     }
 
     return (
@@ -64,3 +84,4 @@ export default function GameScore({ score = 0, label = "Score" }) {
         </div>
     )
 }
+

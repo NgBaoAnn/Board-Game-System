@@ -16,6 +16,9 @@ export default function Caro4Game({
     onStateChange,
     boardRows = 7,
     boardCols = 7,
+    cursorRow = 0,
+    cursorCol = 0,
+    cellClickRef = null,
 }) {
     // Initialize empty board
     const createEmptyBoard = () => {
@@ -251,6 +254,13 @@ export default function Caro4Game({
         }
     }, [savedState])
 
+    // Hook cellClickRef for keyboard navigation
+    useEffect(() => {
+        if (cellClickRef) {
+            cellClickRef.current = handleCellClick
+        }
+    }, [cellClickRef, handleCellClick])
+
     // Check if cell is part of winning line
     const isWinningCell = (row, col) => {
         if (!winningLine) return false
@@ -265,6 +275,7 @@ export default function Caro4Game({
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
         const iconSize = Math.max(16, cellSize * 0.5)
+        const isCursor = row === cursorRow && col === cursorCol && isPlaying && !winner
 
         if (value === 'X') {
             return (
@@ -280,6 +291,12 @@ export default function Caro4Game({
                     size={iconSize * 0.85}
                     className={`${isWinning ? 'text-yellow-400 drop-shadow-lg' : 'text-rose-500'} stroke-[3]`}
                 />
+            )
+        }
+        // Show cursor indicator on empty cells
+        if (isCursor) {
+            return (
+                <div className="w-3 h-3 rounded-full bg-indigo-400/50 animate-pulse" />
             )
         }
         return null

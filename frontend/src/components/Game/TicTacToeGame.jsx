@@ -13,6 +13,9 @@ export default function TicTacToeGame({
     onGameEnd,
     savedState = null,
     onStateChange,
+    cursorRow = 0,
+    cursorCol = 0,
+    cellClickRef = null,
 }) {
     // Board state: 3x3 array, null = empty, 'X' = player, 'O' = AI
     const [board, setBoard] = useState(
@@ -219,6 +222,13 @@ export default function TicTacToeGame({
         }
     }, [savedState])
 
+    // Hook cellClickRef for keyboard navigation
+    useEffect(() => {
+        if (cellClickRef) {
+            cellClickRef.current = handleCellClick
+        }
+    }, [cellClickRef, handleCellClick])
+
     // Check if cell is part of winning line
     const isWinningCell = (row, col) => {
         if (!winningLine) return false
@@ -229,6 +239,7 @@ export default function TicTacToeGame({
     const renderCellContent = (row, col) => {
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
+        const isCursor = row === cursorRow && col === cursorCol && isPlaying && !winner
 
         if (value === 'X') {
             return (
@@ -244,6 +255,12 @@ export default function TicTacToeGame({
                     size={28}
                     className={`${isWinning ? 'text-yellow-400 drop-shadow-lg' : 'text-rose-500'} stroke-[3]`}
                 />
+            )
+        }
+        // Show cursor indicator on empty cells
+        if (isCursor) {
+            return (
+                <div className="w-4 h-4 rounded-full bg-indigo-400/50 animate-pulse" />
             )
         }
         return null
