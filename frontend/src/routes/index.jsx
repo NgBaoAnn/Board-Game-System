@@ -12,6 +12,7 @@ import AdminUsersPage from '../pages/admin/AdminUsersPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
+import RequireAuth from '@/components/common/RequireAuth'
 
 export const router = createBrowserRouter([
   // Routes with shared ClientLayout (sidebar + header)
@@ -19,16 +20,27 @@ export const router = createBrowserRouter([
     element: <ClientLayout />,
     children: [
       {
+        // Home is public - no auth required
         path: '/',
         element: <HomePage />,
       },
       {
+        // BoardGame requires authentication
         path: '/boardgame',
-        element: <BoardGamePage />,
+        element: (
+          <RequireAuth>
+            <BoardGamePage />
+          </RequireAuth>
+        ),
       },
       {
+        // Settings requires authentication
         path: '/settings',
-        element: <SettingPage />,
+        element: (
+          <RequireAuth>
+            <SettingPage />
+          </RequireAuth>
+        ),
       }
     ],
     errorElement: <NotFoundPage />,

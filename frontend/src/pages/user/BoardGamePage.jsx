@@ -1,70 +1,118 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
-    Heart,
     Grid3x3,
     Circle,
-    Dice6,
+    Joystick,
+    Puzzle,
+    Brain,
+    Target,
     ChevronLeft,
     ChevronRight,
     Play,
     Pause,
     HelpCircle,
     Undo2,
+    Loader2,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore } from '../../components/Game'
+import { GameTimer, GameScore, TimeSelectionModal } from '../../components/Game'
+import gameApi from '../../api/api-game.js'
+
+// Icon mapping for game codes from database
+const GAME_ICONS = {
+    'tic_tac_toe': Grid3x3,
+    'caro_4': Target,
+    'caro_5': Circle,
+    'snake': Joystick,
+    'match_3': Puzzle,
+    'memory': Brain,
+}
 
 export default function BoardGamePage() {
-    const games = [
-        { id: 'pixel-heart', title: 'Pixel Heart', subtitle: 'Selected', icon: Heart, iconColor: 'text-rose-500', timeLimit: 300 },
-        { id: 'tictactoe', title: 'Tic-tac-toe', subtitle: 'Classic', icon: Grid3x3, iconColor: '', timeLimit: 180 },
-        { id: 'gomoku', title: 'Gomoku', subtitle: 'Strategy', icon: Circle, iconColor: '', timeLimit: 600 },
-        { id: 'random', title: 'Random', subtitle: 'Surprise', icon: Dice6, iconColor: '', timeLimit: 240 },
-    ]
-
+    // Games loaded from API
+    const [games, setGames] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [activeGame, setActiveGame] = useState(0)
 
-    // Game state - timeLimit will be loaded from database per game
+    // Modal state
+    const [showTimeModal, setShowTimeModal] = useState(false)
+
+    // Game state
+    const [gameStarted, setGameStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [score, setScore] = useState(0)
-    const [timeRemaining, setTimeRemaining] = useState(games[0].timeLimit)
+    const [timeRemaining, setTimeRemaining] = useState(0)
+    const [selectedTime, setSelectedTime] = useState(0)
+
+    // Fetch games from API on mount
+    useEffect(() => {
+        const fetchGames = async () => {
+            try {
+                setLoading(true)
+                const response = await gameApi.getAllGames()
+                // API returns { success, status, message, data: [...] }
+                const gamesData = response.data || []
+                setGames(gamesData)
+                setError(null)
+            } catch (err) {
+                console.error('Failed to fetch games:', err)
+                setError('Không thể tải danh sách game. Vui lòng kiểm tra kết nối.')
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchGames()
+    }, [])
+
+    // Get current game
+    const currentGame = games[activeGame] || null
 
     const selectGame = (idx) => {
+        if (gameStarted) return
+        if (games.length === 0) return
         const newIdx = (idx + games.length) % games.length
         setActiveGame(newIdx)
-        // Reset game state when switching games
-        if (!isPlaying) {
-            setTimeRemaining(games[newIdx].timeLimit)
-            setScore(0)
-        }
     }
 
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
 
-    const handleStart = () => {
-        if (!isPlaying) {
-            // Start game
-            setIsPlaying(true)
-            setTimeRemaining(games[activeGame].timeLimit)
-            setScore(0)
-        } else {
-            // Pause game
+    const handleStartPauseClick = () => {
+        if (!gameStarted) {
+            setShowTimeModal(true)
+        } else if (isPlaying) {
             setIsPlaying(false)
+        } else {
+            setIsPlaying(true)
         }
+    }
+
+    const handleTimeConfirm = (timeInSeconds) => {
+        setSelectedTime(timeInSeconds)
+        setTimeRemaining(timeInSeconds)
+        setScore(0)
+        setGameStarted(true)
+        setIsPlaying(true)
+    }
+
+    const handleBack = () => {
+        setGameStarted(false)
+        setIsPlaying(false)
+        setScore(0)
+        setTimeRemaining(0)
+        setSelectedTime(0)
     }
 
     const handleTimeUp = useCallback(() => {
         setIsPlaying(false)
-        // TODO: Show game over modal
     }, [])
 
     const handleTick = useCallback(() => {
         setTimeRemaining(prev => Math.max(0, prev - 1))
     }, [])
 
-    // Demo: Add score when clicking on board (will be replaced by actual game logic)
     const handleCellClick = useCallback((row, col) => {
         if (isPlaying) {
             setScore(prev => prev + 10)
@@ -91,45 +139,74 @@ export default function BoardGamePage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {games.map((game, idx) => {
-                            const isActive = idx === activeGame
-                            const IconComponent = game.icon
-                            return (
-                                <button
-                                    key={game.id}
-                                    onClick={() => selectGame(idx)}
-                                    className={`group flex items-center gap-3 p-3 rounded-xl text-left transition-all relative overflow-hidden ${isActive
-                                        ? 'bg-white border-2 border-indigo-500 shadow-sm'
-                                        : 'border border-slate-100 bg-white hover:bg-slate-50 hover:border-indigo-200 hover:shadow-sm'
-                                        }`}
-                                >
-                                    <div
-                                        className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
-                                            ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ring-2 ring-rose-100'
-                                            : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
+                    {/* Loading state */}
+                    {loading && (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="animate-spin text-indigo-500" size={32} />
+                            <span className="ml-2 text-slate-500">Đang tải games...</span>
+                        </div>
+                    )}
+
+                    {/* Error state */}
+                    {error && !loading && (
+                        <div className="flex items-center justify-center py-8 text-rose-500">
+                            <span>{error}</span>
+                        </div>
+                    )}
+
+                    {/* Games grid */}
+                    {!loading && !error && games.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                            {games.map((game, idx) => {
+                                const isActive = idx === activeGame
+                                const IconComponent = GAME_ICONS[game.code] || Grid3x3
+                                const isDisabled = gameStarted && !isActive
+                                return (
+                                    <button
+                                        key={game.id}
+                                        onClick={() => selectGame(idx)}
+                                        disabled={isDisabled}
+                                        className={`group flex items-center gap-3 p-3 rounded-xl text-left transition-all relative overflow-hidden ${isActive
+                                            ? 'bg-white border-2 border-indigo-500 shadow-sm'
+                                            : isDisabled
+                                                ? 'border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
+                                                : 'border border-slate-100 bg-white hover:bg-slate-50 hover:border-indigo-200 hover:shadow-sm'
                                             }`}
                                     >
-                                        <IconComponent size={18} />
-                                    </div>
-                                    <div className="z-10">
-                                        <h3
-                                            className={`font-bold text-sm leading-tight ${isActive ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'
+                                        <div
+                                            className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
+                                                ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ring-2 ring-rose-100'
+                                                : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
                                                 }`}
                                         >
-                                            {game.title}
-                                        </h3>
-                                        <p
-                                            className={`text-[10px] font-semibold ${isActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-500'
-                                                }`}
-                                        >
-                                            {isActive ? 'Selected' : game.subtitle}
-                                        </p>
-                                    </div>
-                                </button>
-                            )
-                        })}
-                    </div>
+                                            <IconComponent size={18} />
+                                        </div>
+                                        <div className="z-10 flex-1 min-w-0">
+                                            <h3
+                                                className={`font-bold text-sm leading-tight truncate ${isActive ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'
+                                                    }`}
+                                            >
+                                                {game.name}
+                                            </h3>
+                                            <p
+                                                className={`text-[10px] font-semibold ${isActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-500'
+                                                    }`}
+                                            >
+                                                {isActive ? 'Selected' : `${game.board_row}×${game.board_col}`}
+                                            </p>
+                                        </div>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
+
+                    {/* Empty state */}
+                    {!loading && !error && games.length === 0 && (
+                        <div className="flex items-center justify-center py-8 text-slate-500">
+                            <span>Không có game nào.</span>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -157,7 +234,7 @@ export default function BoardGamePage() {
                     <div className="bg-indigo-50/50 rounded-xl p-4 sm:p-6 border border-indigo-100/50 relative overflow-hidden">
                         {/* Label */}
                         <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-300 tracking-widest z-20">
-                            MATRIX DISPLAY 13×13
+                            {currentGame ? `${currentGame.name.toUpperCase()} - ${currentGame.board_row}×${currentGame.board_col}` : 'LOADING...'}
                         </div>
 
                         {/* Grid background */}
@@ -165,7 +242,14 @@ export default function BoardGamePage() {
 
                         {/* Board Grid */}
                         <div className="relative z-10 mt-4">
-                            <BoardGrid onCellClick={handleCellClick} />
+                            {currentGame && (
+                                <BoardGrid
+                                    rows={currentGame.board_row}
+                                    cols={currentGame.board_col}
+                                    cellSize={Math.max(24, Math.min(48, 480 / Math.max(currentGame.board_row, currentGame.board_col)))}
+                                    onCellClick={handleCellClick}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -188,30 +272,43 @@ export default function BoardGamePage() {
                     <div className="order-1 md:order-2 flex items-center gap-4 sm:gap-6">
                         <button
                             onClick={handleLeft}
+                            disabled={gameStarted || loading || games.length === 0}
                             aria-label="Left"
-                            className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                            className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${gameStarted || loading || games.length === 0
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-slate-50 hover:text-indigo-500'
+                                }`}
                         >
                             <ChevronLeft size={28} />
                         </button>
 
                         <button
-                            onClick={handleStart}
+                            onClick={handleStartPauseClick}
+                            disabled={loading || games.length === 0}
                             aria-label={isPlaying ? "Pause" : "Start"}
-                            className={`arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${isPlaying
+                            className={`arcade-btn w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${loading || games.length === 0
+                                ? 'bg-slate-400 shadow-[0_6px_0_#94a3b8] border-slate-200 cursor-not-allowed'
+                                : isPlaying
                                     ? 'bg-gradient-to-b from-amber-500 to-orange-600 shadow-[0_6px_0_#c2410c] border-amber-100'
-                                    : 'bg-gradient-to-b from-indigo-500 to-indigo-600 shadow-[0_6px_0_#3730a3] border-indigo-100'
+                                    : gameStarted
+                                        ? 'bg-gradient-to-b from-emerald-500 to-green-600 shadow-[0_6px_0_#15803d] border-emerald-100'
+                                        : 'bg-gradient-to-b from-indigo-500 to-indigo-600 shadow-[0_6px_0_#3730a3] border-indigo-100'
                                 }`}
                         >
                             <span className="text-[9px] mb-0.5 font-bold opacity-90 tracking-wide">
-                                {isPlaying ? 'PAUSE' : 'START'}
+                                {isPlaying ? 'PAUSE' : gameStarted ? 'RESUME' : 'START'}
                             </span>
                             {isPlaying ? <Pause size={28} /> : <Play size={28} />}
                         </button>
 
                         <button
                             onClick={handleRight}
+                            disabled={gameStarted || loading || games.length === 0}
                             aria-label="Right"
-                            className="arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
+                            className={`arcade-btn w-14 h-14 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${gameStarted || loading || games.length === 0
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-slate-50 hover:text-indigo-500'
+                                }`}
                         >
                             <ChevronRight size={28} />
                         </button>
@@ -220,6 +317,7 @@ export default function BoardGamePage() {
                     {/* Back button */}
                     <div className="order-3 md:order-3 flex-1 flex justify-center md:justify-end">
                         <button
+                            onClick={handleBack}
                             aria-label="Back"
                             className="arcade-btn px-4 py-3 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors tracking-wide"
                         >
@@ -228,6 +326,14 @@ export default function BoardGamePage() {
                     </div>
                 </div>
             </section>
+
+            {/* Time Selection Modal */}
+            <TimeSelectionModal
+                open={showTimeModal}
+                onClose={() => setShowTimeModal(false)}
+                onConfirm={handleTimeConfirm}
+                gameName={currentGame?.name || 'Game'}
+            />
         </div>
     )
 }
