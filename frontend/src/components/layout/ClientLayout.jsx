@@ -90,24 +90,23 @@ export default function ClientLayout() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-slate-900 flex">
-      
-      <CustomCursor />
-      
+
+      {/* <CustomCursor /> */}
+
       <aside
-        className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${
-          isDarkMode
+        className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${isDarkMode
             ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
             : 'bg-white border-r border-gray-200'
-        }`}
+          }`}
       >
-        
+
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
           <FloatingGamePieces count={20} isDarkMode={isDarkMode} />
         </div>
 
         <div className="flex h-full flex-col justify-between p-4 relative z-10">
           <div className="flex flex-col gap-4">
-            
+
             <Link to="/" className="flex items-center gap-3 px-2 py-3 group">
               <motion.div
                 whileHover={{ rotate: 15, scale: 1.1 }}
@@ -117,9 +116,8 @@ export default function ClientLayout() {
               </motion.div>
               <div className="flex flex-col">
                 <h1
-                  className={`text-lg font-bold leading-tight tracking-tight transition-colors ${
-                    isDarkMode ? 'text-white' : 'text-slate-800'
-                  }`}
+                  className={`text-lg font-bold leading-tight tracking-tight transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'
+                    }`}
                 >
                   BoardGameHub
                 </h1>
@@ -127,7 +125,7 @@ export default function ClientLayout() {
               </div>
             </Link>
 
-            
+
             <nav className="flex flex-col gap-1.5 mt-4">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.key
@@ -137,17 +135,16 @@ export default function ClientLayout() {
                     <motion.div
                       whileHover={{ x: 4 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                        isActive
+                      className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive
                           ? isDarkMode
                             ? 'bg-white/10 text-white'
                             : 'bg-slate-100 text-slate-900'
                           : isDarkMode
-                          ? 'text-gray-400 hover:bg-white/5 hover:text-white'
-                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                      }`}
+                            ? 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
                     >
-                      
+
                       {isActive && (
                         <motion.div
                           layoutId="activeNavIndicator"
@@ -165,22 +162,20 @@ export default function ClientLayout() {
             </nav>
           </div>
 
-          
+
           <div className="flex flex-col gap-4">
-            
+
             {authenticated && (
               <div
-                className={`rounded-xl p-3 border transition-colors ${
-                  isDarkMode
+                className={`rounded-xl p-3 border transition-colors ${isDarkMode
                     ? 'bg-white/5 border-white/10'
                     : 'bg-slate-50 border-slate-200'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span
-                    className={`text-xs font-semibold uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-slate-500'
-                    }`}
+                    className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-slate-500'
+                      }`}
                   >
                     Online Friends
                   </span>
@@ -199,18 +194,16 @@ export default function ClientLayout() {
                           {friend.avatar}
                         </Avatar>
                         <span
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${
-                            friend.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
-                          } ${isDarkMode ? 'border-[#1a0a2e]' : 'border-white'}`}
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${friend.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
+                            } ${isDarkMode ? 'border-[#1a0a2e]' : 'border-white'}`}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`font-medium truncate transition-colors ${
-                            isDarkMode
+                          className={`font-medium truncate transition-colors ${isDarkMode
                               ? 'text-gray-300 group-hover:text-white'
                               : 'text-slate-700 group-hover:text-slate-900'
-                          }`}
+                            }`}
                         >
                           {friend.name}
                         </p>
@@ -223,18 +216,17 @@ export default function ClientLayout() {
                 </div>
                 <Link
                   to="/community"
-                  className={`block text-center text-xs mt-3 transition-colors ${
-                    isDarkMode
+                  className={`block text-center text-xs mt-3 transition-colors ${isDarkMode
                       ? 'text-gray-500 hover:text-[#00f0ff]'
                       : 'text-slate-500 hover:text-[#00f0ff]'
-                  }`}
+                    }`}
                 >
                   View All Friends →
                 </Link>
               </div>
             )}
 
-            
+
             {authenticated && (
               <Tooltip title="Logout" placement="right">
                 <button
@@ -250,7 +242,7 @@ export default function ClientLayout() {
         </div>
       </aside>
 
-      
+
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -266,13 +258,12 @@ export default function ClientLayout() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25 }}
-              className={`fixed left-0 top-0 w-64 h-full z-50 lg:hidden overflow-hidden ${
-                isDarkMode
+              className={`fixed left-0 top-0 w-64 h-full z-50 lg:hidden overflow-hidden ${isDarkMode
                   ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
                   : 'bg-white'
-              }`}
+                }`}
             >
-              
+
               <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
                 <FloatingGamePieces count={8} isDarkMode={isDarkMode} />
               </div>
@@ -280,13 +271,12 @@ export default function ClientLayout() {
               <div className="p-4 relative z-10 h-full flex flex-col">
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`absolute top-4 right-4 ${
-                    isDarkMode ? 'text-gray-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'
-                  }`}
+                  className={`absolute top-4 right-4 ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'
+                    }`}
                 >
                   <X size={24} />
                 </button>
-                
+
                 <div className="flex flex-col gap-4 mt-12">
                   {menuItems.map((item) => {
                     const isActive = location.pathname === item.key
@@ -296,15 +286,14 @@ export default function ClientLayout() {
                         key={item.key}
                         to={item.key}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
-                          isActive
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${isActive
                             ? isDarkMode
                               ? 'bg-white/10 text-white'
                               : 'bg-slate-100 text-slate-900'
                             : isDarkMode
-                            ? 'text-gray-400 hover:bg-white/5 hover:text-white'
-                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
+                              ? 'text-gray-400 hover:bg-white/5 hover:text-white'
+                              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
                       >
                         <IconComponent size={22} />
                         <span>{item.label}</span>
@@ -318,16 +307,16 @@ export default function ClientLayout() {
         )}
       </AnimatePresence>
 
-      
+
       <main className="relative flex flex-1 flex-col min-w-0 lg:ml-64 transition-colors overflow-hidden">
-        
+
         <div className="absolute inset-0 z-0">
           <GamingParticles isDarkMode={isDarkMode} />
         </div>
 
-        
+
         <header className="sticky top-0 z-20 flex h-16 items-center justify-end border-b border-gray-200/10 dark:border-white/5 bg-white/5 dark:bg-black/5 backdrop-blur-[3px] px-4 sm:px-6">
-          
+
           <div className="flex items-center gap-4 lg:hidden mr-auto">
             <button onClick={() => setMobileMenuOpen(true)} className="text-slate-700 dark:text-white">
               <Menu size={24} />
@@ -337,12 +326,12 @@ export default function ClientLayout() {
             </span>
           </div>
 
-          
+
           <div className="flex items-center gap-3">
             {authenticated ? (
               <>
 
-                
+
                 <div className="flex items-center gap-1">
                   <Tooltip title="Notifications">
                     <button className="relative flex size-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
@@ -368,7 +357,7 @@ export default function ClientLayout() {
                   </Tooltip>
                 </div>
 
-                
+
                 <Tooltip title={isDarkMode ? 'Light Mode' : 'Dark Mode'}>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
@@ -404,7 +393,7 @@ export default function ClientLayout() {
 
                 <div className="h-8 w-px bg-gray-200 dark:bg-slate-600" />
 
-                
+
                 <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
                   <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
                     <Avatar
@@ -445,7 +434,7 @@ export default function ClientLayout() {
           </div>
         </header>
 
-        
+
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 relative z-10">
           <Outlet />
         </div>

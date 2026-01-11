@@ -4,8 +4,7 @@ import BoardGrid from '../Board/BoardGrid.jsx'
 
 /**
  * Caro5Game - Caro game with 5-in-a-row win condition (Gomoku)
- * Uses BoardGrid for the game board (typically 10x10 or larger)
- * Player wins by getting 5 pieces in a row (horizontal, vertical, or diagonal)
+ * Player can choose X or O before starting
  */
 export default function Caro5Game({
     isPlaying = false,
@@ -19,21 +18,36 @@ export default function Caro5Game({
     cursorCol = 0,
     cellClickRef = null,
 }) {
+    // Player symbol selection state
+    const [playerSymbol, setPlayerSymbol] = useState(savedState?.player_symbol || null)
+    const [hasSelectedSymbol, setHasSelectedSymbol] = useState(savedState?.has_selected || false)
+
+    // Derived AI symbol
+    const aiSymbol = playerSymbol === 'X' ? 'O' : 'X'
+
     // Initialize empty board
     const createEmptyBoard = () => {
         return Array(boardRows).fill(null).map(() => Array(boardCols).fill(null))
     }
 
-    // Board state: boardRows x boardCols array, null = empty, 'X' = player, 'O' = AI
+    // Board state
     const [board, setBoard] = useState(savedState?.board || createEmptyBoard())
     const [currentPlayer, setCurrentPlayer] = useState(savedState?.current_player || 'X')
     const [winner, setWinner] = useState(null)
     const [isAiThinking, setIsAiThinking] = useState(false)
     const [gamesWon, setGamesWon] = useState(savedState?.games_won || 0)
     const [gamesLost, setGamesLost] = useState(savedState?.games_lost || 0)
+    const [gamesDraw, setGamesDraw] = useState(savedState?.games_draw || 0)
     const [gamesPlayed, setGamesPlayed] = useState(savedState?.games_played || 0)
     const [winningLine, setWinningLine] = useState(null)
-    const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
+    const [showResultMessage, setShowResultMessage] = useState(null)
+
+    // Handle symbol selection
+    const handleSelectSymbol = (symbol) => {
+        setPlayerSymbol(symbol)
+        setHasSelectedSymbol(true)
+        setCurrentPlayer('X')
+    }
 
     // Check for winner - 5 in a row
     const checkWinner = useCallback((boardState) => {
@@ -41,7 +55,6 @@ export default function Caro5Game({
         const cols = boardState[0].length
         const winLength = 5
 
-        // Check all directions from each cell
         const directions = [
             [0, 1],   // horizontal
             [1, 0],   // vertical
@@ -58,7 +71,6 @@ export default function Caro5Game({
                     const line = [[row, col]]
                     let count = 1
 
-                    // Check in positive direction
                     for (let i = 1; i < winLength; i++) {
                         const nr = row + dr * i
                         const nc = col + dc * i
@@ -107,7 +119,6 @@ export default function Caro5Game({
             let count = 1
             let openEnds = 0
 
-            // Check positive direction
             for (let i = 1; i <= 4; i++) {
                 const nr = row + dr * i
                 const nc = col + dc * i
@@ -118,7 +129,6 @@ export default function Caro5Game({
                 }
             }
 
-            // Check negative direction
             for (let i = 1; i <= 4; i++) {
                 const nr = row - dr * i
                 const nc = col - dc * i
@@ -129,7 +139,6 @@ export default function Caro5Game({
                 }
             }
 
-            // Score based on count and open ends
             if (count >= 5) score += 10000
             else if (count === 4 && openEnds >= 1) score += 1000
             else if (count === 3 && openEnds === 2) score += 100
@@ -142,7 +151,7 @@ export default function Caro5Game({
 
     // AI makes a smart move
     const makeAiMove = useCallback((currentBoard) => {
-        if (!isPlaying) return
+        if (!isPlaying || !hasSelectedSymbol) return
 
         setIsAiThinking(true)
 
@@ -161,7 +170,6 @@ export default function Caro5Game({
             return
         }
 
-        // Random delay 0.5-1.5 seconds
         const delay = 500 + Math.random() * 1000
 
         setTimeout(() => {
@@ -175,13 +183,9 @@ export default function Caro5Game({
             let bestScore = -Infinity
 
             for (const { row, col } of emptyCells) {
-                // Check AI attack score
-                const attackScore = evaluatePosition(currentBoard, row, col, 'O')
-                // Check block player score (more important)
-                const blockScore = evaluatePosition(currentBoard, row, col, 'X') * 1.2
+                const attackScore = evaluatePosition(currentBoard, row, col, aiSymbol)
+                const blockScore = evaluatePosition(currentBoard, row, col, playerSymbol) * 1.2
                 const totalScore = attackScore + blockScore
-
-                // Add some randomness for variety
                 const randomBonus = Math.random() * 5
 
                 if (totalScore + randomBonus > bestScore) {
@@ -206,31 +210,25 @@ export default function Caro5Game({
 
             setBoard(prev => {
                 const newBoard = prev.map(r => [...r])
-                newBoard[row][col] = 'O'
+                newBoard[row][col] = aiSymbol
 
-                // Check if AI wins
                 const result = checkWinner(newBoard)
                 if (result) {
                     setWinner(result.winner)
                     setWinningLine(result.line)
                     setGamesPlayed(p => p + 1)
 
-                    if (result.winner === 'O') {
-                        // AI wins - show message and auto restart
+                    if (result.winner === aiSymbol) {
                         setGamesLost(l => l + 1)
                         setShowResultMessage('lose')
-                        setTimeout(() => {
-                            resetBoard()
-                        }, 2000)
+                        setTimeout(() => resetBoard(), 2000)
                     } else if (result.winner === 'draw') {
-                        // Draw - auto restart after delay
+                        setGamesDraw(d => d + 1)
                         setShowResultMessage('draw')
-                        setTimeout(() => {
-                            resetBoard()
-                        }, 1500)
+                        setTimeout(() => resetBoard(), 1500)
                     }
                 } else {
-                    setCurrentPlayer('X')
+                    setCurrentPlayer(playerSymbol)
                 }
 
                 return newBoard
@@ -238,72 +236,69 @@ export default function Caro5Game({
 
             setIsAiThinking(false)
         }, delay)
-    }, [isPlaying, checkWinner, resetBoard, boardRows, boardCols, evaluatePosition])
+    }, [isPlaying, hasSelectedSymbol, aiSymbol, playerSymbol, checkWinner, resetBoard, boardRows, boardCols, evaluatePosition])
 
     // Player makes a move
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || winner || isAiThinking || currentPlayer !== 'X') return
+        if (!isPlaying || !hasSelectedSymbol || winner || isAiThinking || currentPlayer !== playerSymbol) return
         if (board[row][col] !== null) return
 
         const newBoard = board.map(r => [...r])
-        newBoard[row][col] = 'X'
+        newBoard[row][col] = playerSymbol
         setBoard(newBoard)
 
-        // Check if player wins
         const result = checkWinner(newBoard)
         if (result) {
             setWinner(result.winner)
             setWinningLine(result.line)
             setGamesPlayed(p => p + 1)
 
-            if (result.winner === 'X') {
-                // Player wins! +60 points (more than caro-4)
+            if (result.winner === playerSymbol) {
                 setGamesWon(w => w + 1)
                 onScoreChange?.(score + 60)
                 setShowResultMessage('win')
-
-                // Auto reset board after showing win message
-                setTimeout(() => {
-                    resetBoard()
-                }, 2000)
+                setTimeout(() => resetBoard(), 2000)
             } else if (result.winner === 'draw') {
-                // Draw - auto reset after delay
+                setGamesDraw(d => d + 1)
                 setShowResultMessage('draw')
-                setTimeout(() => {
-                    resetBoard()
-                }, 1500)
+                setTimeout(() => resetBoard(), 1500)
             }
         } else {
-            // Switch to AI
-            setCurrentPlayer('O')
+            setCurrentPlayer(aiSymbol)
         }
-    }, [isPlaying, winner, isAiThinking, currentPlayer, board, checkWinner, resetBoard, onScoreChange, score])
+    }, [isPlaying, hasSelectedSymbol, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
 
-    // AI move after player
+    // AI move when it's AI's turn
     useEffect(() => {
-        if (currentPlayer === 'O' && isPlaying && !winner && !isAiThinking) {
+        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && !winner && !isAiThinking) {
             makeAiMove(board)
         }
-    }, [currentPlayer, isPlaying, winner, isAiThinking, board, makeAiMove])
+    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, winner, isAiThinking, board, makeAiMove])
 
     // Notify parent of state changes for saving
     useEffect(() => {
         onStateChange?.({
             board,
             current_player: currentPlayer,
+            player_symbol: playerSymbol,
+            has_selected: hasSelectedSymbol,
             games_won: gamesWon,
             games_lost: gamesLost,
+            games_draw: gamesDraw,
             games_played: gamesPlayed,
         })
-    }, [board, currentPlayer, gamesWon, gamesLost, gamesPlayed, onStateChange])
+    }, [board, currentPlayer, playerSymbol, hasSelectedSymbol, gamesWon, gamesLost, gamesDraw, gamesPlayed, onStateChange])
 
     // Restore saved state
     useEffect(() => {
         if (savedState) {
             setBoard(savedState.board || createEmptyBoard())
             setCurrentPlayer(savedState.current_player || 'X')
+            setPlayerSymbol(savedState.player_symbol || null)
+            setHasSelectedSymbol(savedState.has_selected || false)
             setGamesWon(savedState.games_won || 0)
             setGamesLost(savedState.games_lost || 0)
+            setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
         }
     }, [savedState])
@@ -321,15 +316,15 @@ export default function Caro5Game({
         return winningLine.some(([r, c]) => r === row && c === col)
     }
 
-    // Calculate cell size based on board dimensions
+    // Calculate cell size
     const cellSize = Math.max(24, Math.min(40, 420 / Math.max(boardRows, boardCols)))
 
-    // Render cell content for BoardGrid
+    // Render cell content
     const renderCellContent = (row, col) => {
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
         const iconSize = Math.max(14, cellSize * 0.5)
-        const isCursor = row === cursorRow && col === cursorCol && isPlaying && !winner
+        const isCursor = row === cursorRow && col === cursorCol && isPlaying && !winner && hasSelectedSymbol
 
         if (value === 'X') {
             return (
@@ -347,27 +342,54 @@ export default function Caro5Game({
                 />
             )
         }
-        // Show cursor indicator on empty cells
         if (isCursor) {
-            return (
-                <div className="w-2.5 h-2.5 rounded-full bg-indigo-400/50 animate-pulse" />
-            )
+            return <div className="w-2.5 h-2.5 rounded-full bg-indigo-400/50 animate-pulse" />
         }
         return null
+    }
+
+    // Symbol selection screen
+    if (!hasSelectedSymbol) {
+        return (
+            <div className="flex flex-col items-center gap-6 p-6">
+                <h2 className="text-xl font-bold text-slate-700">Chọn quân cờ của bạn</h2>
+                <p className="text-sm text-slate-500">X luôn đi trước • 5 để thắng</p>
+
+                <div className="flex gap-6">
+                    <button
+                        onClick={() => handleSelectSymbol('X')}
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-400 transition-all group"
+                    >
+                        <X size={48} className="text-indigo-600 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-indigo-700">Đi X</span>
+                        <span className="text-xs text-indigo-500">Bạn đi trước</span>
+                    </button>
+
+                    <button
+                        onClick={() => handleSelectSymbol('O')}
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 hover:border-rose-400 transition-all group"
+                    >
+                        <Circle size={44} className="text-rose-500 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-rose-600">Đi O</span>
+                        <span className="text-xs text-rose-400">Máy đi trước</span>
+                    </button>
+                </div>
+            </div>
+        )
     }
 
     return (
         <div className="flex flex-col items-center gap-3">
             {/* Game info */}
             <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
-                    <X size={14} className="text-indigo-600" />
-                    <span className="font-semibold text-indigo-700">Bạn</span>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${playerSymbol === 'X' ? 'bg-indigo-50' : 'bg-rose-50'}`}>
+                    {playerSymbol === 'X' ? <X size={14} className="text-indigo-600" /> : <Circle size={14} className="text-rose-500" />}
+                    <span className={`font-semibold ${playerSymbol === 'X' ? 'text-indigo-700' : 'text-rose-600'}`}>Bạn</span>
                 </div>
                 <span className="text-slate-400">vs</span>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 rounded-lg">
-                    <Circle size={14} className="text-rose-500" />
-                    <span className="font-semibold text-rose-600">Máy</span>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${aiSymbol === 'X' ? 'bg-indigo-50' : 'bg-rose-50'}`}>
+                    {aiSymbol === 'X' ? <X size={14} className="text-indigo-600" /> : <Circle size={14} className="text-rose-500" />}
+                    <span className={`font-semibold ${aiSymbol === 'X' ? 'text-indigo-700' : 'text-rose-600'}`}>Máy</span>
                 </div>
                 <div className="ml-3 px-3 py-1.5 bg-purple-50 rounded-lg">
                     <span className="font-semibold text-purple-700">5 để thắng</span>
@@ -397,14 +419,14 @@ export default function Caro5Game({
                         Máy đang suy nghĩ...
                     </div>
                 )}
-                {!showResultMessage && !isAiThinking && currentPlayer === 'X' && isPlaying && (
+                {!showResultMessage && !isAiThinking && currentPlayer === playerSymbol && isPlaying && (
                     <div className="text-indigo-600 font-medium text-sm">
                         Đến lượt bạn!
                     </div>
                 )}
             </div>
 
-            {/* Board using BoardGrid */}
+            {/* Board */}
             <BoardGrid
                 rows={boardRows}
                 cols={boardCols}
@@ -414,15 +436,18 @@ export default function Caro5Game({
             />
 
             {/* Stats */}
-            <div className="flex gap-6 text-xs text-slate-500">
+            <div className="flex gap-4 text-xs text-slate-500">
                 <div>
                     Thắng: <span className="font-bold text-emerald-600">{gamesWon}</span>
+                </div>
+                <div>
+                    Hòa: <span className="font-bold text-amber-600">{gamesDraw}</span>
                 </div>
                 <div>
                     Thua: <span className="font-bold text-rose-600">{gamesLost}</span>
                 </div>
                 <div>
-                    Đã chơi: <span className="font-bold text-slate-700">{gamesPlayed}</span>
+                    Tổng: <span className="font-bold text-slate-700">{gamesPlayed}</span>
                 </div>
             </div>
         </div>

@@ -20,13 +20,15 @@ import {
     RotateCcw,
     CornerDownLeft,
     Pencil,
+    Trophy,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
 import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
 import gameApi from '../../api/api-game.js'
-import { message } from 'antd'
+import { message, Modal } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
+import { ExclamationCircleFilled } from '@ant-design/icons'
 
 
 // Icon mapping for game codes from database
@@ -59,6 +61,8 @@ export default function BoardGamePage() {
     // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
     const [showHelpModal, setShowHelpModal] = useState(false)
+    const [showAchievementModal, setShowAchievementModal] = useState(false)
+    const [newAchievements, setNewAchievements] = useState([])
 
     // Game state
     const [gameStarted, setGameStarted] = useState(false)
@@ -67,6 +71,8 @@ export default function BoardGamePage() {
     const [score, setScore] = useState(0)
     const [timeRemaining, setTimeRemaining] = useState(0)
     const [selectedTime, setSelectedTime] = useState(0)
+    const [symbolSelected, setSymbolSelected] = useState(false) // Track if player has selected X/O
+    const [showExitConfirm, setShowExitConfirm] = useState(false) // Exit confirmation modal
 
     // Game-specific state (for saving)
     const [gameState, setGameState] = useState(null)
@@ -338,17 +344,34 @@ export default function BoardGamePage() {
         }
     }
 
-    // Handle EXIT button - finish game immediately
-    const handleExit = async () => {
+    // Handle EXIT button - show confirmation first
+    const handleExitClick = () => {
+        setShowExitConfirm(true)
+    }
+
+    // Confirm exit - finish game
+    const handleExitConfirm = async () => {
+        setShowExitConfirm(false)
         if (sessionId) {
             try {
-                await gameApi.finishSession(sessionId, score)
+                const response = await gameApi.finishSession(sessionId, score)
                 message.info('Game kết thúc! Điểm: ' + score)
+
+                // Check for new achievements
+                if (response?.data?.newAchievements?.length > 0) {
+                    setNewAchievements(response.data.newAchievements)
+                    setShowAchievementModal(true)
+                }
             } catch (err) {
                 console.error('Finish failed:', err)
             }
         }
         resetToSelection()
+    }
+
+    // Cancel exit
+    const handleExitCancel = () => {
+        setShowExitConfirm(false)
     }
 
     // Handle BACK button - return to previous game selection (before game starts)
@@ -379,8 +402,14 @@ export default function BoardGamePage() {
 
         if (sessionId) {
             try {
-                await gameApi.finishSession(sessionId, score)
+                const response = await gameApi.finishSession(sessionId, score)
                 message.info('Hết giờ! Điểm của bạn: ' + score)
+
+                // Check for new achievements
+                if (response?.data?.newAchievements?.length > 0) {
+                    setNewAchievements(response.data.newAchievements)
+                    setShowAchievementModal(true)
+                }
             } catch (err) {
                 console.error('Finish failed:', err)
             }
@@ -412,8 +441,14 @@ export default function BoardGamePage() {
 
             if (sessionId) {
                 try {
-                    await gameApi.finishSession(sessionId, score)
+                    const response = await gameApi.finishSession(sessionId, score)
                     message.error('Game Over! Điểm của bạn: ' + score)
+
+                    // Check for new achievements
+                    if (response?.data?.newAchievements?.length > 0) {
+                        setNewAchievements(response.data.newAchievements)
+                        setShowAchievementModal(true)
+                    }
                 } catch (err) {
                     console.error('Finish failed:', err)
                 }
@@ -428,6 +463,10 @@ export default function BoardGamePage() {
     // Handle game state change (for saving)
     const handleStateChange = useCallback((state) => {
         setGameState(state)
+        // Track symbol selection for timer
+        if (state?.has_selected !== undefined) {
+            setSymbolSelected(state.has_selected)
+        }
     }, [])
 
     // Cursor navigation handlers
@@ -771,7 +810,7 @@ export default function BoardGamePage() {
                         <div className="flex items-center justify-between gap-3">
                             <GameTimer
                                 timeRemaining={timeRemaining}
-                                isPlaying={isPlaying}
+                                isPlaying={isPlaying && (symbolSelected || !['tic_tac_toe', 'caro_4', 'caro_5'].includes(currentGame?.code))}
                                 onTimeUp={handleTimeUp}
                                 onTick={handleTick}
                                 compact={true}
@@ -1025,7 +1064,7 @@ export default function BoardGamePage() {
                                         <Save size={16} /> SAVE
                                     </button>
                                     <button
-                                        onClick={handleExit}
+                                        onClick={handleExitClick}
                                         aria-label="Exit"
                                         className="arcade-btn px-4 py-2 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors"
                                     >
@@ -1190,6 +1229,105 @@ export default function BoardGamePage() {
                     </div>
                 </div>
             )}
+
+            {/* Achievement Notification Modal */}
+            <Modal
+                open={showAchievementModal}
+                onCancel={() => setShowAchievementModal(false)}
+                footer={null}
+                centered
+                width={400}
+                styles={{
+                    content: {
+                        borderRadius: 20,
+                        padding: 0,
+                        overflow: 'hidden',
+                    },
+                }}
+            >
+                <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white p-6 text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm animate-bounce">
+                        <Trophy size={40} className="text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">🎉 Thành Tựu Mới!</h2>
+                    <p className="text-white/90 text-sm">
+                        Chúc mừng bạn đã mở khóa thành tựu mới!
+                    </p>
+                </div>
+
+                <div className="p-6 bg-white">
+                    <div className="space-y-3">
+                        {newAchievements.map((achievement, index) => (
+                            <div
+                                key={achievement.id || index}
+                                className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200"
+                            >
+                                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                                    <Trophy size={20} className="text-amber-600" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="font-bold text-amber-800">
+                                        {achievement.name || 'Thành tựu mới'}
+                                    </div>
+                                    {achievement.description && (
+                                        <div className="text-xs text-amber-600">
+                                            {achievement.description}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => setShowAchievementModal(false)}
+                        className="w-full mt-4 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold rounded-xl hover:brightness-110 transition-all shadow-lg"
+                    >
+                        Tuyệt vời! 🎮
+                    </button>
+                </div>
+            </Modal>
+
+            {/* Exit Confirmation Modal */}
+            <Modal
+                open={showExitConfirm}
+                onCancel={handleExitCancel}
+                footer={null}
+                centered
+                width={380}
+                styles={{
+                    content: {
+                        borderRadius: 20,
+                        padding: 0,
+                        overflow: 'hidden',
+                    },
+                }}
+            >
+                <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white p-6 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <ExclamationCircleFilled className="text-3xl" />
+                    </div>
+                    <h2 className="text-xl font-bold mb-2">Thoát Game?</h2>
+                    <p className="text-white/90 text-sm">
+                        Bạn có chắc muốn thoát? Tiến trình chưa lưu sẽ mất.
+                    </p>
+                </div>
+
+                <div className="p-5 bg-white space-y-3">
+                    <button
+                        onClick={handleExitConfirm}
+                        className="w-full py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold rounded-xl hover:brightness-110 transition-all shadow-lg"
+                    >
+                        Xác nhận thoát
+                    </button>
+                    <button
+                        onClick={handleExitCancel}
+                        className="w-full py-3 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 transition-all"
+                    >
+                        Tiếp tục chơi
+                    </button>
+                </div>
+            </Modal>
         </div>
     )
 }
