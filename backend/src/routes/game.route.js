@@ -56,6 +56,12 @@ router.get(
 );
 
 router.get(
+  "/games/sessions/history/:userId",
+  authMiddleware.authenticate,
+  gameController.getGameHistory
+);
+
+router.get(
   "/games/stats/play",
   authMiddleware.authenticate,
   authMiddleware.authorize([ROLE.ADMIN]),

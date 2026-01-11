@@ -112,6 +112,69 @@ class FriendRepo {
   removeFriend(userA, userB) {
     return db(MODULE.FRIEND).where({ user_a: userA, user_b: userB }).del();
   }
+
+  async getNonFriends({ userId, offset = 0, limit = 10, search = '' }) {
+    // Get all friend IDs
+    const friendIds = await this.getAllFriendIds(userId);
+    
+    // Get all pending request user IDs (both sent and received)
+    const pendingRequests = await db(MODULE.FRIEND_REQUEST)
+      .where('from', userId)
+      .orWhere('to', userId)
+      .select('from', 'to');
+    
+    const pendingUserIds = pendingRequests.flatMap(r => 
+      r.from === userId ? [r.to] : [r.from]
+    );
+    
+    // Combine excluded IDs
+    const excludedIds = [...new Set([userId, ...friendIds, ...pendingUserIds])];
+    
+    let query = db(MODULE.USER)
+      .whereNotIn('id', excludedIds)
+      .where('active', true);
+    
+    if (search) {
+      query = query.where(function() {
+        this.whereILike('username', `%${search}%`)
+          .orWhereILike('email', `%${search}%`);
+      });
+    }
+    
+    return query
+      .select('id', 'username', 'email', 'avatar_url', 'created_at')
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async countNonFriends({ userId, search = '' }) {
+    const friendIds = await this.getAllFriendIds(userId);
+    
+    const pendingRequests = await db(MODULE.FRIEND_REQUEST)
+      .where('from', userId)
+      .orWhere('to', userId)
+      .select('from', 'to');
+    
+    const pendingUserIds = pendingRequests.flatMap(r => 
+      r.from === userId ? [r.to] : [r.from]
+    );
+    
+    const excludedIds = [...new Set([userId, ...friendIds, ...pendingUserIds])];
+    
+    let query = db(MODULE.USER)
+      .whereNotIn('id', excludedIds)
+      .where('active', true);
+    
+    if (search) {
+      query = query.where(function() {
+        this.whereILike('username', `%${search}%`)
+          .orWhereILike('email', `%${search}%`);
+      });
+    }
+    
+    return query.count('* as total').first();
+  }
 }
 
 module.exports = new FriendRepo();

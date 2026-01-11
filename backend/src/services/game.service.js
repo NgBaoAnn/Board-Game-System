@@ -217,6 +217,43 @@ class GameService {
   async getGameActivity(filter) {
     return await gameRepo.getGameActivity(filter);
   }
+
+  async getGameHistory({ userId, page = 1, limit = 10 }) {
+    const offset = (page - 1) * limit;
+
+    const [sessions, total] = await Promise.all([
+      gameRepo.getGameHistoryByUserId({ userId, offset, limit }),
+      gameRepo.countGameHistoryByUserId(userId),
+    ]);
+
+    // Calculate duration for each session
+    const sessionsWithDuration = sessions.map((session) => {
+      let duration = null;
+      if (session.created_at && session.ended_at) {
+        const start = new Date(session.created_at);
+        const end = new Date(session.ended_at);
+        const diffMs = end - start;
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 60) {
+          duration = `${diffMins} min`;
+        } else {
+          const hours = Math.floor(diffMins / 60);
+          const mins = diffMins % 60;
+          duration = mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+        }
+      }
+      return { ...session, duration };
+    });
+
+    return {
+      data: sessionsWithDuration,
+      pagination: {
+        page,
+        limit,
+        total: Number(total.total),
+      },
+    };
+  }
 }
 
 module.exports = new GameService();

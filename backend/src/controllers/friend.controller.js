@@ -124,6 +124,26 @@ class FriendController {
       next(err);
     }
   }
+
+  async getNonFriends(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const { page, limit, search } = req.query;
+      const response = await friendService.getNonFriends({
+        userId,
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
+        search: search || '',
+      });
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Get non-friends successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new FriendController();
