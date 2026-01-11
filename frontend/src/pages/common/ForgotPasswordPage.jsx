@@ -8,6 +8,7 @@ import AuthLayout from '@/components/layout/AuthLayout'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 import { joiValidator, commonSchemas } from '@/utils/validation'
+import authApi from '@/api/api-auth'
 
 const forgotPasswordSchema = Joi.object({
   email: commonSchemas.email,
@@ -43,8 +44,7 @@ export default function ForgotPasswordPage() {
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await authApi.forgotPassword(values.email)
       
       sessionStorage.setItem('reset_email', values.email)
       

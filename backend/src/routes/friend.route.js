@@ -8,6 +8,7 @@ router.get("/friends/requests/sent", friendController.getSentRequests);
 router.patch("/friends/requests/:id/accept", friendController.acceptRequest);
 router.patch("/friends/requests/:id/decline", friendController.declineRequest);
 router.get("/friends", friendController.getFriends);
+router.get("/friends/non-friends", friendController.getNonFriends);
 router.delete("/friends/:friendId", friendController.removeFriend);
 
 module.exports = router;

@@ -11,16 +11,20 @@ export default function Caro4Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 7,
     boardCols = 7,
+    cursorRow = 0,
+    cursorCol = 0,
+    cellClickRef = null,
 }) {
+    // Initialize empty board
     const createEmptyBoard = () => {
         return Array(boardRows).fill(null).map(() => Array(boardCols).fill(null))
     }
 
+    // Board state: boardRows x boardCols array, null = empty, 'X' = player, 'O' = AI
     const [board, setBoard] = useState(savedState?.board || createEmptyBoard())
     const [currentPlayer, setCurrentPlayer] = useState(savedState?.current_player || 'X')
     const [winner, setWinner] = useState(null)
@@ -31,11 +35,13 @@ export default function Caro4Game({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
 
+    // Check for winner - 4 in a row
     const checkWinner = useCallback((boardState) => {
         const rows = boardState.length
         const cols = boardState[0].length
         const winLength = 4
 
+        // Check all directions from each cell
         const directions = [
             [0, 1],   // horizontal
             [1, 0],   // vertical
@@ -52,6 +58,7 @@ export default function Caro4Game({
                     const line = [[row, col]]
                     let count = 1
 
+                    // Check in positive direction
                     for (let i = 1; i < winLength; i++) {
                         const nr = row + dr * i
                         const nc = col + dc * i
@@ -70,6 +77,7 @@ export default function Caro4Game({
             }
         }
 
+        // Check for draw
         const isDraw = boardState.every(row => row.every(cell => cell !== null))
         if (isDraw) {
             return { winner: 'draw', line: null }
@@ -78,6 +86,7 @@ export default function Caro4Game({
         return null
     }, [])
 
+    // Reset board for new round
     const resetBoard = useCallback(() => {
         setBoard(createEmptyBoard())
         setCurrentPlayer('X')
@@ -87,11 +96,13 @@ export default function Caro4Game({
         setShowResultMessage(null)
     }, [boardRows, boardCols])
 
+    // AI makes a smart move
     const makeAiMove = useCallback((currentBoard) => {
         if (!isPlaying) return
 
         setIsAiThinking(true)
 
+        // Find all empty cells
         const emptyCells = []
         for (let row = 0; row < boardRows; row++) {
             for (let col = 0; col < boardCols; col++) {
@@ -106,6 +117,8 @@ export default function Caro4Game({
             return
         }
 
+        // Simple AI: prioritize center, then random
+        // Random delay 0.5-1.5 seconds
         const delay = 500 + Math.random() * 1000
 
         setTimeout(() => {
@@ -114,16 +127,19 @@ export default function Caro4Game({
                 return
             }
 
+            // Pick move - prefer center area
             let selectedMove
             const centerRow = Math.floor(boardRows / 2)
             const centerCol = Math.floor(boardCols / 2)
 
+            // Sort by distance to center
             const sortedCells = [...emptyCells].sort((a, b) => {
                 const distA = Math.abs(a.row - centerRow) + Math.abs(a.col - centerCol)
                 const distB = Math.abs(b.row - centerRow) + Math.abs(b.col - centerCol)
                 return distA - distB
             })
 
+            // 70% chance to pick from top 30% closest cells, 30% random
             if (Math.random() < 0.7 && sortedCells.length > 3) {
                 const topCells = sortedCells.slice(0, Math.ceil(sortedCells.length * 0.3))
                 selectedMove = topCells[Math.floor(Math.random() * topCells.length)]
@@ -137,6 +153,7 @@ export default function Caro4Game({
                 const newBoard = prev.map(r => [...r])
                 newBoard[row][col] = 'O'
 
+                // Check if AI wins
                 const result = checkWinner(newBoard)
                 if (result) {
                     setWinner(result.winner)
@@ -144,12 +161,14 @@ export default function Caro4Game({
                     setGamesPlayed(p => p + 1)
 
                     if (result.winner === 'O') {
+                        // AI wins - show message and auto restart
                         setGamesLost(l => l + 1)
                         setShowResultMessage('lose')
                         setTimeout(() => {
                             resetBoard()
                         }, 2000)
                     } else if (result.winner === 'draw') {
+                        // Draw - auto restart after delay
                         setShowResultMessage('draw')
                         setTimeout(() => {
                             resetBoard()
@@ -166,6 +185,7 @@ export default function Caro4Game({
         }, delay)
     }, [isPlaying, checkWinner, resetBoard, boardRows, boardCols])
 
+    // Player makes a move
     const handleCellClick = useCallback((row, col) => {
         if (!isPlaying || winner || isAiThinking || currentPlayer !== 'X') return
         if (board[row][col] !== null) return
@@ -174,6 +194,7 @@ export default function Caro4Game({
         newBoard[row][col] = 'X'
         setBoard(newBoard)
 
+        // Check if player wins
         const result = checkWinner(newBoard)
         if (result) {
             setWinner(result.winner)
@@ -181,30 +202,36 @@ export default function Caro4Game({
             setGamesPlayed(p => p + 1)
 
             if (result.winner === 'X') {
+                // Player wins! +50 points (more than tic-tac-toe)
                 setGamesWon(w => w + 1)
                 onScoreChange?.(score + 50)
                 setShowResultMessage('win')
 
+                // Auto reset board after showing win message
                 setTimeout(() => {
                     resetBoard()
                 }, 2000)
             } else if (result.winner === 'draw') {
+                // Draw - auto reset after delay
                 setShowResultMessage('draw')
                 setTimeout(() => {
                     resetBoard()
                 }, 1500)
             }
         } else {
+            // Switch to AI
             setCurrentPlayer('O')
         }
     }, [isPlaying, winner, isAiThinking, currentPlayer, board, checkWinner, resetBoard, onScoreChange, score])
 
+    // AI move after player
     useEffect(() => {
         if (currentPlayer === 'O' && isPlaying && !winner && !isAiThinking) {
             makeAiMove(board)
         }
     }, [currentPlayer, isPlaying, winner, isAiThinking, board, makeAiMove])
 
+    // Notify parent of state changes for saving
     useEffect(() => {
         onStateChange?.({
             board,
@@ -215,6 +242,7 @@ export default function Caro4Game({
         })
     }, [board, currentPlayer, gamesWon, gamesLost, gamesPlayed, onStateChange])
 
+    // Restore saved state
     useEffect(() => {
         if (savedState) {
             setBoard(savedState.board || createEmptyBoard())
@@ -225,17 +253,28 @@ export default function Caro4Game({
         }
     }, [savedState])
 
+    // Hook cellClickRef for keyboard navigation
+    useEffect(() => {
+        if (cellClickRef) {
+            cellClickRef.current = handleCellClick
+        }
+    }, [cellClickRef, handleCellClick])
+
+    // Check if cell is part of winning line
     const isWinningCell = (row, col) => {
         if (!winningLine) return false
         return winningLine.some(([r, c]) => r === row && c === col)
     }
 
+    // Calculate cell size based on board dimensions
     const cellSize = Math.max(28, Math.min(48, 400 / Math.max(boardRows, boardCols)))
 
+    // Render cell content for BoardGrid
     const renderCellContent = (row, col) => {
         const value = board[row][col]
         const isWinning = isWinningCell(row, col)
         const iconSize = Math.max(16, cellSize * 0.5)
+        const isCursor = row === cursorRow && col === cursorCol && isPlaying && !winner
 
         if (value === 'X') {
             return (
@@ -253,12 +292,18 @@ export default function Caro4Game({
                 />
             )
         }
+        // Show cursor indicator on empty cells
+        if (isCursor) {
+            return (
+                <div className="w-3 h-3 rounded-full bg-indigo-400/50 animate-pulse" />
+            )
+        }
         return null
     }
 
     return (
         <div className="flex flex-col items-center gap-4">
-            
+            {/* Game info */}
             <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
                     <X size={16} className="text-indigo-600" />
@@ -274,7 +319,7 @@ export default function Caro4Game({
                 </div>
             </div>
 
-            
+            {/* Status message */}
             <div className="h-8 flex items-center justify-center">
                 {showResultMessage === 'win' && (
                     <div className="text-emerald-600 font-bold animate-bounce text-lg">
@@ -304,7 +349,7 @@ export default function Caro4Game({
                 )}
             </div>
 
-            
+            {/* Board using BoardGrid */}
             <BoardGrid
                 rows={boardRows}
                 cols={boardCols}
@@ -313,7 +358,7 @@ export default function Caro4Game({
                 renderContent={renderCellContent}
             />
 
-            
+            {/* Stats */}
             <div className="flex gap-6 text-xs text-slate-500">
                 <div>
                     Thắng: <span className="font-bold text-emerald-600">{gamesWon}</span>

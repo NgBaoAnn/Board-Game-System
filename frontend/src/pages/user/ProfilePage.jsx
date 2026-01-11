@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Tabs, Select } from 'antd'
+import { useState, useEffect } from 'react'
+import { Tabs, Select, Spin } from 'antd'
 import { motion } from 'framer-motion'
 import { Trophy, Brain, Users, Crown, Gamepad2 } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
@@ -12,6 +12,7 @@ import { EditProfileTab } from '@/components/Profile/EditProfileTab'
 import { AchievementsTab } from '@/components/Profile/AchievementsTab'
 import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
 import { FriendsTab } from '@/components/Profile/FriendsTab'
+import { userApi } from '@/api/user'
 
 const achievements = [
   { id: 1, name: 'Strategist Master', progress: 90, current: 45, total: 50, rarity: 'legendary', icon: Trophy },
@@ -28,7 +29,6 @@ const recentActivities = [
     badge: '+25 PTS',
     badgeType: 'success',
     detail: 'vs. AlexM, SarahJ, & BoardMaster99',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA0rYUZTmwMe11ZhJQSf5l8BZPDiLW22TF5V0RoiJKOPguv2CPq2CZuiFd5FkZIbJABPMNg_3zT6q0FBIWmd62l_IveebetIvauJc1NpZP0NPFPJLSVHOQDBtrvbPLullL4pkM-rv1EyEG2IUD4lCxbST_a9gmJTWvx7g_6YX1ZnJ1YgY2Xw85cseQTHAycvAkumrzXL85T_h9Mfg14HVoo-3JUxcqJXstXiu3XWg8joz9UVRyzw0EVp17rNS5_Uwli3n4RDew5jVE',
   },
   {
     id: 2,
@@ -43,7 +43,7 @@ const recentActivities = [
 ]
 
 const favoriteGames = [
-  { id: 1, name: 'Settlers of Catan', matches: 425, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA0rYUZTmwMe11ZhJQSf5l8BZPDiLW22TF5V0RoiJKOPguv2CPq2CZuiFd5FkZIbJABPMNg_3zT6q0FBIWmd62l_IveebetIvauJc1NpZP0NPFPJLSVHOQDBtrvbPLullL4pkM-rv1EyEG2IUD4lCxbST_a9gmJTWvx7g_6YX1ZnJ1YgY2Xw85cseQTHAycvAkumrzXL85T_h9Mfg14HVoo-3JUxcqJXstXiu3XWg8joz9UVRyzw0EVp17rNS5_Uwli3n4RDew5jVE' },
+  { id: 1, name: 'Settlers of Catan', matches: 425 },
   { id: 2, name: 'Monopoly Classic', matches: 89 },
 ]
 
@@ -51,29 +51,94 @@ export default function ProfilePage() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [activityFilter, setActivityFilter] = useState('all')
+  const [profileData, setProfileData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const profileData = {
-    name: user?.username || 'Marcus Chen',
-    email: user?.email || 'marcus@example.com',
-    avatar: user?.avatar || 'https://i.pravatar.cc/150?img=11',
-    level: 42,
-    currentXP: 2450,
-    xpToNextLevel: 3000,
-    tier: 'grandmaster',
-    title: 'Grandmaster',
-    isOnline: true,
-    bio: 'Strategy enthusiast. Catan veteran. Always up for a game of Chess or Terraforming Mars. Let\'s roll the dice!',
-    location: 'San Francisco, CA',
-    joinedDate: 'March 2021',
-    totalScore: 2450,
-    globalRank: 12,
-    wins: 342,
-    losses: 158,
-    winRate: 68,
-  }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await userApi.getProfile(user.id)
+        const userData = response.user || response.data || response
+        
+        setProfileData({
+          id: userData.id,
+          name: userData.username || userData.name || user?.username,
+          email: userData.email || user?.email,
+          avatar: userData.avatar_url || userData.avatar || user?.avatar,
+          level: userData.level || 1,
+          currentXP: userData.currentXP || 0,
+          xpToNextLevel: userData.xpToNextLevel || 1000,
+          tier: userData.tier || 'bronze',
+          title: userData.title || 'Player',
+          isOnline: true,
+          bio: userData.bio || '',
+          location: userData.location || '',
+          joinedDate: userData.created_at 
+            ? new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
+            : '',
+          totalScore: userData.totalScore || 0,
+          globalRank: userData.globalRank || 0,
+          wins: userData.wins || 0,
+          losses: userData.losses || 0,
+          winRate: userData.winRate || 0,
+        })
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+        // Fallback to user from auth if API fails
+        setProfileData({
+          id: user?.id,
+          name: user?.username || 'User',
+          email: user?.email || '',
+          avatar: user?.avatar || 'https://i.pravatar.cc/150',
+          level: 1,
+          currentXP: 0,
+          xpToNextLevel: 1000,
+          tier: 'bronze',
+          title: 'Player',
+          isOnline: true,
+          bio: '',
+          location: '',
+          joinedDate: '',
+          totalScore: 0,
+          globalRank: 0,
+          wins: 0,
+          losses: 0,
+          winRate: 0,
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [user])
 
   const handleClaimReward = (achievement) => {
     console.log('Claiming reward for:', achievement.name)
+  }
+
+  const handleSaveProfile = async (data) => {
+    try {
+      await userApi.updateUser(user?.id, data)
+      // Refresh profile after save
+      const response = await userApi.getProfile(user.id)
+      const userData = response.user || response.data || response
+      setProfileData(prev => ({
+        ...prev,
+        name: userData.username || userData.name,
+        email: userData.email,
+        avatar: userData.avatar_url || userData.avatar,
+        bio: userData.bio || '',
+        location: userData.location || '',
+      }))
+    } catch (error) {
+      console.error('Failed to save profile:', error)
+    }
   }
 
   const tabItems = [
@@ -83,6 +148,14 @@ export default function ProfilePage() {
     { key: 'history', label: 'Game History' },
     { key: 'friends', label: 'Friends' },
   ]
+
+  if (loading || !profileData) {
+    return (
+      <div className="p-4 md:p-8 lg:p-10 min-h-screen flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-8 lg:p-10 min-h-screen">
@@ -102,7 +175,7 @@ export default function ProfilePage() {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="profile-tabs mb-8" />
 
-      
+      {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="space-y-8">
@@ -137,7 +210,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             </motion.div>
-            <WinRateChart winRate={profileData.winRate} wins={profileData.wins} losses={profileData.losses} />
+            <WinRateChart winRate={profileData?.winRate || 0} wins={profileData?.wins || 0} losses={profileData?.losses || 0} />
           </div>
 
           <div className="lg:col-span-2 space-y-6">
@@ -180,18 +253,18 @@ export default function ProfilePage() {
         </div>
       )}
 
-      
+      {/* Edit Profile Tab */}
       {activeTab === 'edit' && (
-        <EditProfileTab profile={profileData} onSave={(data) => console.log('Saved:', data)} />
+        <EditProfileTab profile={profileData} onSave={handleSaveProfile} />
       )}
 
-      
+      {/* Achievements Tab */}
       {activeTab === 'achievements' && <AchievementsTab />}
 
-      
-      {activeTab === 'history' && <GameHistoryTab />}
+      {/* Game History Tab */}
+      {activeTab === 'history' && <GameHistoryTab userId={user?.id} />}
 
-      
+      {/* Friends Tab */}
       {activeTab === 'friends' && <FriendsTab />}
     </div>
   )

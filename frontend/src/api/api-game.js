@@ -67,6 +67,19 @@ const gameApi = {
         const response = await axiosInstance.get(`/games/sessions/exists/${gameId}`);
         return response;
     },
+
+    /**
+     * Get game history for a user
+     * @param {string} userId - User ID
+     * @param {number} page - Page number
+     * @param {number} limit - Items per page
+     */
+    getGameHistory: async (userId, page = 1, limit = 10) => {
+        const response = await axiosInstance.get(`/games/sessions/history/${userId}`, {
+            params: { page, limit }
+        });
+        return response;
+    },
 };
 
 export default gameApi;

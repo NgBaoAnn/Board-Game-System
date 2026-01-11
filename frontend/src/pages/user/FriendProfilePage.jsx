@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tabs, Button, message } from 'antd'
+import { Tabs, Button, message, Spin } from 'antd'
 import { motion } from 'framer-motion'
 import { Trophy, Brain, Users, User, UserPlus, Swords, ArrowLeft, Gamepad2 } from 'lucide-react'
 import { ProfileCard } from '@/components/Profile/ProfileCard'
@@ -10,50 +10,8 @@ import { ActivityCard } from '@/components/Profile/ActivityCard'
 import { FavoriteGameCard } from '@/components/Profile/FavoriteGameCard'
 import { AchievementsTab } from '@/components/Profile/AchievementsTab'
 import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
-
-const mockPlayers = {
-  1: {
-    id: 1,
-    name: 'Sarah Jenkins',
-    email: 'sarah@example.com',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    level: 38,
-    currentXP: 1850,
-    xpToNextLevel: 2500,
-    tier: 'diamond',
-    title: 'Diamond',
-    isOnline: true,
-    isFriend: false,
-    bio: 'Catan enthusiast and Chess lover. Always looking for a good challenge!',
-    location: 'New York, NY',
-    joinedDate: 'June 2022',
-    totalScore: 1850,
-    globalRank: 45,
-    wins: 215,
-    losses: 98,
-    winRate: 69,
-  },
-  2: {
-    id: 2,
-    name: 'Marcus Chen',
-    avatar: 'https://i.pravatar.cc/150?img=4',
-    level: 42,
-    currentXP: 2450,
-    xpToNextLevel: 3000,
-    tier: 'grandmaster',
-    title: 'Grandmaster',
-    isOnline: true,
-    isFriend: true,
-    bio: 'Strategy enthusiast. Catan veteran.',
-    location: 'San Francisco, CA',
-    joinedDate: 'March 2021',
-    totalScore: 2450,
-    globalRank: 12,
-    wins: 342,
-    losses: 158,
-    winRate: 68,
-  },
-}
+import friendApi from '@/api/api-friend'
+import { userApi } from '@/api/user'
 
 const achievements = [
   { id: 1, name: 'Strategist Master', progress: 90, current: 45, total: 50, rarity: 'legendary', icon: Trophy },
@@ -101,15 +59,55 @@ export default function FriendProfilePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setTimeout(() => {
-      const playerData = mockPlayers[id] || mockPlayers[1]
-      setPlayer(playerData)
-      setLoading(false)
-    }, 300)
-  }, [id])
+    const fetchProfile = async () => {
+      setLoading(true)
+      try {
+        const response = await userApi.getProfile(id)
+        const userData = response.user || response.data || response
+        
+        // Map API response to expected format
+        setPlayer({
+          id: userData.id,
+          name: userData.username || userData.name,
+          email: userData.email,
+          avatar: userData.avatar_url || userData.avatar,
+          level: userData.level || 1,
+          currentXP: userData.currentXP || 0,
+          xpToNextLevel: userData.xpToNextLevel || 1000,
+          tier: userData.tier || 'bronze',
+          title: userData.title || 'Player',
+          isOnline: userData.isOnline || false,
+          isFriend: userData.isFriend || false,
+          bio: userData.bio || '',
+          location: userData.location || '',
+          joinedDate: userData.created_at ? new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
+          totalScore: userData.totalScore || 0,
+          globalRank: userData.globalRank || 0,
+          wins: userData.wins || 0,
+          losses: userData.losses || 0,
+          winRate: userData.winRate || 0,
+        })
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+        message.error('Failed to load profile')
+        navigate(-1)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const handleAddFriend = () => {
-    message.success(`Friend request sent to ${player.name}!`)
+    if (id) {
+      fetchProfile()
+    }
+  }, [id, navigate])
+
+  const handleAddFriend = async () => {
+    try {
+      await friendApi.sendRequest(player.id)
+      message.success(`Friend request sent to ${player.name}!`)
+    } catch (error) {
+      message.error(error.message || 'Failed to send friend request')
+    }
   }
 
   const handleChallenge = () => {
@@ -257,7 +255,7 @@ export default function FriendProfilePage() {
       {activeTab === 'achievements' && <AchievementsTab />}
 
       
-      {activeTab === 'history' && <GameHistoryTab />}
+      {activeTab === 'history' && <GameHistoryTab userId={id} />}
     </div>
   )
 }

@@ -17,7 +17,6 @@ export default function TimeSelectionModal({ open, onClose, onConfirm, gameName 
         { value: 180, label: '3 Phút', icon: '🎯' },
         { value: 300, label: '5 Phút', icon: '⏱️' },
         { value: 600, label: '10 Phút', icon: '🏆' },
-        { value: 0, label: 'Unlimited', icon: '∞' },
     ]
 
     const handleConfirm = () => {

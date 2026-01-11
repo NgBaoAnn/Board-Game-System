@@ -7,12 +7,14 @@ import { Timer, AlertTriangle } from 'lucide-react'
  * @param {boolean} isPlaying - Game đang chạy hay không
  * @param {function} onTimeUp - Callback khi hết giờ
  * @param {function} onTick - Callback mỗi giây (để update parent state)
+ * @param {boolean} compact - Compact mode cho sidebar
  */
 export default function GameTimer({
     timeRemaining = 0,
     isPlaying = false,
     onTimeUp,
-    onTick
+    onTick,
+    compact = false
 }) {
     const intervalRef = useRef(null)
 
@@ -40,6 +42,30 @@ export default function GameTimer({
 
     const isWarning = timeRemaining > 0 && timeRemaining <= 30
     const isCritical = timeRemaining > 0 && timeRemaining <= 10
+
+    if (compact) {
+        return (
+            <div className={`
+                flex items-center gap-2 px-3 py-2 rounded-xl
+                transition-all duration-300
+                ${isCritical
+                    ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white animate-pulse'
+                    : isWarning
+                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'
+                        : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                }
+            `}>
+                {isWarning ? (
+                    <AlertTriangle size={14} className="animate-bounce" />
+                ) : (
+                    <Timer size={14} />
+                )}
+                <span className="text-base font-bold font-mono">
+                    {formatTime(timeRemaining)}
+                </span>
+            </div>
+        )
+    }
 
     return (
         <div className={`
@@ -92,3 +118,4 @@ export default function GameTimer({
         </div>
     )
 }
+

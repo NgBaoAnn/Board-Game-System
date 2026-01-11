@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Tabs, Select, Input, message, Modal } from 'antd'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import { Tabs, Select, Input, message, Modal, Spin } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Search, Gamepad2, Sparkles, Globe } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -7,72 +7,89 @@ import { FriendCard } from '@/components/Community/FriendCard'
 import { FriendRequestCard } from '@/components/Community/FriendRequestCard'
 import { PlayerCard } from '@/components/Community/PlayerCard'
 import { EmptyState } from '@/components/Community/EmptyState'
-
-const mockRequests = [
-  {
-    id: 1,
-    name: 'Sarah Jenkins',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    note: 'Wants to be friends',
-    mutualFriends: 4,
-    gamesInCommon: ['Chess', 'Catan'],
-    tier: 'diamond',
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: 'David Miller',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    note: 'Found via Catan Group',
-    mutualFriends: 2,
-    gamesInCommon: ['Catan'],
-    tier: 'gold',
-    isNew: false,
-  },
-  {
-    id: 3,
-    name: 'Elena Rodriguez',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    note: '4 Mutual Friends',
-    mutualFriends: 4,
-    gamesInCommon: ['Chess', 'Monopoly', 'Catan'],
-    tier: 'platinum',
-    isNew: true,
-  },
-]
-
-const mockFriends = [
-  { id: 1, name: 'Marcus Chen', avatar: 'https://i.pravatar.cc/150?img=4', status: 'online', activity: 'Playing Chess', playingFor: '15m', lastSeen: 'Online now', tier: 'grandmaster' },
-  { id: 2, name: 'Jessica Wu', avatar: 'https://i.pravatar.cc/150?img=5', status: 'online', activity: 'In Lobby', playingFor: null, lastSeen: 'Online 5m ago', tier: 'diamond' },
-  { id: 3, name: 'Tom Hiddleston', avatar: 'https://i.pravatar.cc/150?img=6', status: 'offline', activity: null, playingFor: null, lastSeen: 'Last seen 2h ago', tier: 'platinum' },
-  { id: 4, name: 'Anna Bell', avatar: 'https://i.pravatar.cc/150?img=7', status: 'offline', activity: null, playingFor: null, lastSeen: 'Last seen 1d ago', tier: 'gold' },
-  { id: 5, name: 'Game Master X', avatar: 'https://i.pravatar.cc/150?img=8', status: 'online', activity: 'Playing Monopoly', playingFor: '32m', lastSeen: 'Online now', tier: 'grandmaster' },
-  { id: 6, name: 'StrategyQueen', avatar: 'https://i.pravatar.cc/150?img=9', status: 'online', activity: null, playingFor: null, lastSeen: 'Online 15m ago', tier: 'diamond' },
-]
-
-const mockAllPlayers = [
-  { id: 101, name: 'ChessMaster99', avatar: 'https://i.pravatar.cc/150?img=10', status: 'online', tier: 'grandmaster', lastSeen: 'Online now' },
-  { id: 102, name: 'CatanKing', avatar: 'https://i.pravatar.cc/150?img=11', status: 'online', tier: 'diamond', lastSeen: 'Online now' },
-  { id: 103, name: 'BoardGameNoob', avatar: 'https://i.pravatar.cc/150?img=12', status: 'offline', tier: 'bronze', lastSeen: 'Last seen 3h ago' },
-  { id: 104, name: 'MonopolyMogul', avatar: 'https://i.pravatar.cc/150?img=13', status: 'online', tier: 'platinum', lastSeen: 'Online now' },
-  { id: 105, name: 'StrategyGuru', avatar: 'https://i.pravatar.cc/150?img=14', status: 'offline', tier: 'gold', lastSeen: 'Last seen 1d ago' },
-  { id: 106, name: 'DiceMaster', avatar: 'https://i.pravatar.cc/150?img=15', status: 'online', tier: 'silver', lastSeen: 'Online now' },
-  { id: 107, name: 'CardShark', avatar: 'https://i.pravatar.cc/150?img=16', status: 'offline', tier: 'gold', lastSeen: 'Last seen 5h ago' },
-  { id: 108, name: 'TacticalTom', avatar: 'https://i.pravatar.cc/150?img=17', status: 'online', tier: 'diamond', lastSeen: 'Online now' },
-  { id: 109, name: 'PuzzlePro', avatar: 'https://i.pravatar.cc/150?img=18', status: 'offline', tier: 'platinum', lastSeen: 'Last seen 2d ago' },
-  { id: 110, name: 'GameWizard', avatar: 'https://i.pravatar.cc/150?img=19', status: 'online', tier: 'grandmaster', lastSeen: 'Online now' },
-  { id: 111, name: 'RookieRider', avatar: 'https://i.pravatar.cc/150?img=20', status: 'offline', tier: 'bronze', lastSeen: 'Last seen 1w ago' },
-  { id: 112, name: 'VictoryViper', avatar: 'https://i.pravatar.cc/150?img=21', status: 'online', tier: 'gold', lastSeen: 'Online now' },
-]
+import friendApi from '@/api/api-friend'
 
 export default function CommunityPage() {
   const navigate = useNavigate()
-  const [requests, setRequests] = useState(mockRequests)
-  const [friends, setFriends] = useState(mockFriends)
-  const [allPlayers] = useState(mockAllPlayers)
+  const [requests, setRequests] = useState([])
+  const [friends, setFriends] = useState([])
+  const [allPlayers, setAllPlayers] = useState([])
   const [sortBy, setSortBy] = useState('status')
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [requestsLoading, setRequestsLoading] = useState(false)
+
+  // Fetch friends list
+  const fetchFriends = useCallback(async () => {
+    try {
+      const response = await friendApi.getFriends(1, 100)
+      const friendsData = response.data?.data || response.data || []
+      setFriends(friendsData.map(f => ({
+        id: f.id,
+        name: f.username || f.name,
+        avatar: f.avatar_url || f.avatar,
+        status: 'offline', // API doesn't provide real-time status yet
+        activity: null,
+        lastSeen: 'Recently',
+        tier: 'gold',
+      })))
+    } catch (error) {
+      console.error('Failed to fetch friends:', error)
+    }
+  }, [])
+
+  // Fetch received requests
+  const fetchRequests = useCallback(async () => {
+    setRequestsLoading(true)
+    try {
+      const response = await friendApi.getReceivedRequests(1, 100)
+      const requestsData = response.data?.data || response.data || []
+      setRequests(requestsData.map(r => ({
+        id: r.id,
+        name: r.from_user?.username || r.username || 'Unknown',
+        avatar: r.from_user?.avatar_url || r.avatar || 'https://i.pravatar.cc/150',
+        note: r.message || 'Wants to be friends',
+        mutualFriends: 0,
+        gamesInCommon: [],
+        tier: 'gold',
+        isNew: true,
+        fromUserId: r.from,
+      })))
+    } catch (error) {
+      console.error('Failed to fetch requests:', error)
+    } finally {
+      setRequestsLoading(false)
+    }
+  }, [])
+
+  // Fetch all players (non-friends)
+  const fetchAllPlayers = useCallback(async () => {
+    try {
+      const response = await friendApi.getNonFriends(1, 50)
+      const usersData = response.data?.data || response.data || []
+      setAllPlayers(usersData.map(u => ({
+        id: u.id,
+        name: u.username || u.name,
+        avatar: u.avatar_url || u.avatar,
+        status: 'offline',
+        tier: 'gold',
+        lastSeen: 'Recently',
+      })))
+    } catch (error) {
+      console.error('Failed to fetch players:', error)
+    }
+  }, [])
+
+  // Initial data loading
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      await Promise.all([fetchFriends(), fetchRequests(), fetchAllPlayers()])
+      setLoading(false)
+    }
+    loadData()
+  }, [fetchFriends, fetchRequests, fetchAllPlayers])
 
   const onlineCount = useMemo(() => friends.filter((f) => f.status === 'online').length, [friends])
 
@@ -118,22 +135,30 @@ export default function CommunityPage() {
     return result
   }, [allPlayers, searchQuery])
 
-  const handleAcceptRequest = (id) => {
+  const handleAcceptRequest = async (id) => {
     const accepted = requests.find((r) => r.id === id)
-    if (accepted) {
-      setFriends((prev) => [
-        ...prev,
-        { ...accepted, status: 'online', activity: null, lastSeen: 'Just added', tier: accepted.tier },
-      ])
+    if (!accepted) return
+    
+    try {
+      await friendApi.acceptRequest(id)
       setRequests((prev) => prev.filter((r) => r.id !== id))
+      await fetchFriends() // Refresh friends list
       message.success(`${accepted.name} is now your friend!`)
+    } catch (error) {
+      message.error(error.message || 'Failed to accept request')
     }
   }
 
-  const handleDeclineRequest = (id) => {
+  const handleDeclineRequest = async (id) => {
     const declined = requests.find((r) => r.id === id)
-    setRequests((prev) => prev.filter((r) => r.id !== id))
-    message.info(`Declined friend request from ${declined?.name}`)
+    
+    try {
+      await friendApi.declineRequest(id)
+      setRequests((prev) => prev.filter((r) => r.id !== id))
+      message.info(`Declined friend request from ${declined?.name}`)
+    } catch (error) {
+      message.error(error.message || 'Failed to decline request')
+    }
   }
 
   const handleViewProfile = (friend) => {
@@ -155,15 +180,25 @@ export default function CommunityPage() {
       content: `Are you sure you want to remove ${friend?.name} from your friends?`,
       okText: 'Remove',
       okType: 'danger',
-      onOk: () => {
-        setFriends((prev) => prev.filter((f) => f.id !== id))
-        message.success(`${friend?.name} has been removed`)
+      onOk: async () => {
+        try {
+          await friendApi.removeFriend(id)
+          setFriends((prev) => prev.filter((f) => f.id !== id))
+          message.success(`${friend?.name} has been removed`)
+        } catch (error) {
+          message.error(error.message || 'Failed to remove friend')
+        }
       },
     })
   }
 
-  const handleAddFriend = (player) => {
-    message.success(`Friend request sent to ${player.name}!`)
+  const handleAddFriend = async (player) => {
+    try {
+      await friendApi.sendRequest(player.id)
+      message.success(`Friend request sent to ${player.name}!`)
+    } catch (error) {
+      message.error(error.message || 'Failed to send friend request')
+    }
   }
 
   const handleFindPlayers = () => {
@@ -205,6 +240,14 @@ export default function CommunityPage() {
       ),
     },
   ]
+
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-8 max-w-7xl mx-auto flex items-center justify-center min-h-[400px]">
+        <Spin size="large" tip="Loading..." />
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

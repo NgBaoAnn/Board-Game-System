@@ -1,4 +1,5 @@
 const gameRepo = require("../repositories/game.repo");
+const achievementRepo = require("../repositories/achievement.repo");
 const NotFoundError = require("../errors/notfound.exception");
 const BadRequestError = require("../errors/badrequest.exception");
 const { GAME_SESSION_STATUS } = require("../constants/game-session.constants");
@@ -161,15 +162,74 @@ class GameService {
       throw new BadRequestError("Session already finished");
     }
 
+    // Get current achievements before updating score
+    const achievementsBefore =
+      await achievementRepo.findUserAchievementsByGameId(
+        session.user_id,
+        session.game_id
+      );
+    const achievementIdsBefore = new Set(
+      achievementsBefore.map((a) => a.id || a.achievement_id)
+    );
+
     const updatedSession = await gameRepo.updateSession(sessionId, {
       status: GAME_SESSION_STATUS.FINISHED,
       final_score: score,
       ended_at: new Date(),
     });
 
-    await this.updateBestScore(session.user_id, session.game_id, score);
+    const bestScoreResult = await this.updateBestScore(
+      session.user_id,
+      session.game_id,
+      score
+    );
 
-    return updatedSession;
+    // Double-check and manually grant achievements as a fallback
+    // The database trigger should handle this, but we verify here
+    await this._checkAndGrantAchievements(
+      session.user_id,
+      session.game_id,
+      bestScoreResult.best_score
+    );
+
+    // Get achievements after update
+    const achievementsAfter =
+      await achievementRepo.findUserAchievementsByGameId(
+        session.user_id,
+        session.game_id
+      );
+
+    // Filter only newly unlocked achievements
+    const newAchievements = achievementsAfter.filter(
+      (a) => !achievementIdsBefore.has(a.id || a.achievement_id)
+    );
+
+    return {
+      session: updatedSession,
+      bestScore: bestScoreResult,
+      newAchievements: newAchievements,
+    };
+  }
+
+  async _checkAndGrantAchievements(userId, gameId, bestScore) {
+    // Get all achievements for this game
+    const achievements = await achievementRepo.findByGameId(gameId);
+
+    for (const achievement of achievements) {
+      // Check if user already has this achievement
+      const userHasAchievement = await achievementRepo.findUserAchievement(
+        userId,
+        achievement.id
+      );
+
+      // If user doesn't have it and meets the condition, grant it
+      if (!userHasAchievement && bestScore >= achievement.condition_value) {
+        await achievementRepo.createUserAchievement({
+          user_id: userId,
+          achievement_id: achievement.id,
+        });
+      }
+    }
   }
 
   async updateBestScore(userId, gameId, score) {
@@ -216,6 +276,43 @@ class GameService {
 
   async getGameActivity(filter) {
     return await gameRepo.getGameActivity(filter);
+  }
+
+  async getGameHistory({ userId, page = 1, limit = 10 }) {
+    const offset = (page - 1) * limit;
+
+    const [sessions, total] = await Promise.all([
+      gameRepo.getGameHistoryByUserId({ userId, offset, limit }),
+      gameRepo.countGameHistoryByUserId(userId),
+    ]);
+
+    // Calculate duration for each session
+    const sessionsWithDuration = sessions.map((session) => {
+      let duration = null;
+      if (session.created_at && session.ended_at) {
+        const start = new Date(session.created_at);
+        const end = new Date(session.ended_at);
+        const diffMs = end - start;
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 60) {
+          duration = `${diffMins} min`;
+        } else {
+          const hours = Math.floor(diffMins / 60);
+          const mins = diffMins % 60;
+          duration = mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+        }
+      }
+      return { ...session, duration };
+    });
+
+    return {
+      data: sessionsWithDuration,
+      pagination: {
+        page,
+        limit,
+        total: Number(total.total),
+      },
+    };
   }
 }
 

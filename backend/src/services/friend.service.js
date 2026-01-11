@@ -164,6 +164,24 @@ class FriendService {
 
     return { message: "Friend removed successfully" };
   }
+
+  async getNonFriends({ userId, page = 1, limit = 10, search = '' }) {
+    const offset = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      friendRepo.getNonFriends({ userId, offset, limit, search }),
+      friendRepo.countNonFriends({ userId, search }),
+    ]);
+
+    return {
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total: Number(total.total),
+      },
+    };
+  }
 }
 
 module.exports = new FriendService();

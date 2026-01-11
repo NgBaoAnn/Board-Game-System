@@ -185,6 +185,27 @@ class GameController {
       next(err);
     }
   }
+
+  async getGameHistory(req, res, next) {
+    try {
+      const userId = req.params.userId;
+      const { page, limit } = req.query;
+
+      const result = await gameService.getGameHistory({
+        userId,
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Game history retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new GameController();

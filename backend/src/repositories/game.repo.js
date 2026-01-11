@@ -117,6 +117,34 @@ class GameRepo {
       .limit(limit);
   }
 
+  getGameHistoryByUserId({ userId, offset = 0, limit = 10 }) {
+    return db(MODULE.GAME_SESSION)
+      .select(
+        "game_sessions.id",
+        "game_sessions.status",
+        "game_sessions.final_score",
+        "game_sessions.created_at",
+        "game_sessions.ended_at",
+        "games.name as game_name",
+        "games.code as game_code",
+        "games.image_url as game_image"
+      )
+      .leftJoin(MODULE.GAME, "game_sessions.game_id", "games.id")
+      .where("game_sessions.user_id", userId)
+      .where("game_sessions.status", "finished")
+      .orderBy("game_sessions.created_at", "desc")
+      .limit(limit)
+      .offset(offset);
+  }
+
+  countGameHistoryByUserId(userId) {
+    return db(MODULE.GAME_SESSION)
+      .where("user_id", userId)
+      .where("status", "finished")
+      .count("* as total")
+      .first();
+  }
+
   async countGameSession(gameId) {
     const result = await db(MODULE.GAME_SESSION)
       .where("game_id", gameId)
