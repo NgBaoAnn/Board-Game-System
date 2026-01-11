@@ -41,6 +41,7 @@ export default function Caro5Game({
     const [gamesPlayed, setGamesPlayed] = useState(savedState?.games_played || 0)
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null)
+    const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
 
     // Handle symbol selection
     const handleSelectSymbol = (symbol) => {
@@ -106,6 +107,7 @@ export default function Caro5Game({
         setWinningLine(null)
         setIsAiThinking(false)
         setShowResultMessage(null)
+        setLastAiMove(null)
     }, [boardRows, boardCols])
 
     // Evaluate position score for AI
@@ -211,6 +213,9 @@ export default function Caro5Game({
             setBoard(prev => {
                 const newBoard = prev.map(r => [...r])
                 newBoard[row][col] = aiSymbol
+
+                // Track AI's last move for red highlight
+                setLastAiMove({ row, col })
 
                 const result = checkWinner(newBoard)
                 if (result) {
@@ -433,6 +438,11 @@ export default function Caro5Game({
                 cellSize={cellSize}
                 onCellClick={handleCellClick}
                 renderContent={renderCellContent}
+                getCellClassName={(row, col) =>
+                    lastAiMove && lastAiMove.row === row && lastAiMove.col === col && !winner
+                        ? 'ring-2 ring-rose-500 ring-inset z-10'
+                        : ''
+                }
             />
 
             {/* Stats */}

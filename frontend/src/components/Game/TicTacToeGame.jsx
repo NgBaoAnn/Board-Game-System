@@ -40,6 +40,7 @@ export default function TicTacToeGame({
     const [gamesPlayed, setGamesPlayed] = useState(savedState?.games_played || 0)
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
+    const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
 
     // Handle symbol selection
     const handleSelectSymbol = (symbol) => {
@@ -101,6 +102,7 @@ export default function TicTacToeGame({
         setWinningLine(null)
         setIsAiThinking(false)
         setShowResultMessage(null)
+        setLastAiMove(null)
     }, [])
 
     // AI makes a random move
@@ -141,7 +143,8 @@ export default function TicTacToeGame({
                 const newBoard = prev.map(r => [...r])
                 newBoard[row][col] = aiSymbol
 
-                // Check if AI wins
+                // Track AI's last move for red highlight
+                setLastAiMove({ row, col })
                 const result = checkWinner(newBoard)
                 if (result) {
                     setWinner(result.winner)
@@ -374,6 +377,11 @@ export default function TicTacToeGame({
                 cellSize={80}
                 onCellClick={handleCellClick}
                 renderContent={renderCellContent}
+                getCellClassName={(row, col) =>
+                    lastAiMove && lastAiMove.row === row && lastAiMove.col === col && !winner
+                        ? 'ring-2 ring-rose-500 ring-inset z-10'
+                        : ''
+                }
             />
 
             {/* Stats */}

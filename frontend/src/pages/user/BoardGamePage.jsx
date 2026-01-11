@@ -42,6 +42,17 @@ const GAME_ICONS = {
     'free_draw': Pencil,
 }
 
+// Logo mapping for game images from public folder
+const GAME_LOGOS = {
+    'tic_tac_toe': '/tic-tac-toe.png',
+    'caro_4': '/caro-4.png',
+    'caro_5': '/caro-5.png',
+    'snake': '/snake-game.png',
+    'match_3': '/match-3.png',
+    'memory': '/memory.png',
+    'free_draw': '/draw free.png',
+}
+
 export default function BoardGamePage() {
     // Game session protection
     const { startSession, endSession } = useGameSession()
@@ -747,7 +758,15 @@ export default function BoardGamePage() {
                         ) : (
                             <div className="flex flex-col items-center justify-center py-8 px-12">
                                 <div className="text-6xl mb-4">
-                                    {currentGame && GAME_ICONS[currentGame.code] ? (
+                                    {currentGame && GAME_LOGOS[currentGame.code] ? (
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg">
+                                            <img
+                                                src={GAME_LOGOS[currentGame.code]}
+                                                alt={currentGame.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : currentGame && GAME_ICONS[currentGame.code] ? (
                                         <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
                                             {(() => {
                                                 const Icon = GAME_ICONS[currentGame.code]
@@ -875,14 +894,24 @@ export default function BoardGamePage() {
                                                 : 'border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-300'
                                             }`}
                                     >
-                                        <div
-                                            className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
-                                                ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm'
-                                                : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
-                                                }`}
-                                        >
-                                            <IconComponent size={18} />
-                                        </div>
+                                        {GAME_LOGOS[game.code] ? (
+                                            <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden shadow-sm">
+                                                <img
+                                                    src={GAME_LOGOS[game.code]}
+                                                    alt={game.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
+                                                    ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm'
+                                                    : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
+                                                    }`}
+                                            >
+                                                <IconComponent size={18} />
+                                            </div>
+                                        )}
                                         <div className="z-10 flex-1 min-w-0">
                                             <h3
                                                 className={`font-bold text-sm leading-tight truncate ${isActive ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'
