@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import AuthLayout from '@/components/layout/AuthLayout'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
+import authApi from '@/api/api-auth'
 
 const formVariants = {
   idle: { scale: 1 },
@@ -90,10 +91,9 @@ export default function VerifyOTPPage() {
 
     setFormState('loading')
     try {
+      const response = await authApi.verifyOtp(email, otpCode)
       
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      
-      sessionStorage.setItem('reset_token', otpCode)
+      sessionStorage.setItem('reset_token', response.data?.reset_token || otpCode)
       
       setFormState('success')
       message.success('OTP verified successfully!')
@@ -110,15 +110,14 @@ export default function VerifyOTPPage() {
     if (!canResend) return
 
     try {
-      
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await authApi.forgotPassword(email)
       
       message.success('New OTP sent!')
       setCountdown(60)
       setCanResend(false)
       setOtp(['', '', '', '', '', ''])
     } catch (error) {
-      message.error('Failed to resend OTP')
+      message.error(error.message || 'Failed to resend OTP')
     }
   }
 

@@ -9,6 +9,7 @@ import PasswordStrength from '@/components/common/PasswordStrength'
 import FloatingGamePieces from '@/components/common/FloatingGamePieces'
 import AnimatedHeroBackground from '@/components/common/AnimatedHeroBackground'
 import { joiValidator, commonSchemas } from '@/utils/validation'
+import authApi from '@/api/api-auth'
 
 const resetPasswordSchema = Joi.object({
   newPassword: commonSchemas.password,
@@ -61,8 +62,7 @@ export default function ResetPasswordPage() {
   const onFinish = async (values) => {
     setFormState('loading')
     try {
-      
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await authApi.resetPassword(token, values.newPassword)
       
       sessionStorage.removeItem('reset_email')
       sessionStorage.removeItem('reset_token')
