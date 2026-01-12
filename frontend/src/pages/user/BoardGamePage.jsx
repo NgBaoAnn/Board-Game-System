@@ -192,31 +192,55 @@ export default function BoardGamePage() {
         setShowSwitchConfirm(true)
     }
 
+    // Helper to perform save (returns true if successful)
+    const performSaveSession = async () => {
+        if (!sessionId) return false
+
+        try {
+            message.loading({ content: 'Đang lưu...', key: 'save' })
+
+            const saveState = {
+                score,
+                time_limit: selectedTime,
+                time_remain: timeRemaining,
+                ...gameStateRef.current,
+            }
+
+            await gameApi.saveSession(sessionId, saveState)
+            message.success({ content: 'Đã lưu game!', key: 'save' })
+            return true
+        } catch (err) {
+            console.error('Save failed:', err)
+            message.error({ content: 'Không thể lưu game', key: 'save' })
+            return false
+        }
+    }
+
     // Handle Switch Confirm
     const handleSwitchConfirm = async (shouldSave) => {
         setShowSwitchConfirm(false)
         
+        // If user wants to save, try to save first
         if (shouldSave && sessionId) {
-            await handleSave()
-        } else if (sessionId) {
-            // If not saving, we should probably finish the session to clean up? 
-            // Or just leave it abandoned? Let's finish it as abandoned/incomplete if API supports, 
-            // or just rely on resetToSelection causing endSession()
-            // endSession() is called in resetToSelection
+            const success = await performSaveSession()
+            // If save failed, abort switch to protect data
+            if (!success) return
         }
 
+        // Calculate new index
+        let newIdx = activeGame
+        if (pendingSwitchDirection === 'prev') {
+            newIdx = (activeGame - 1 + games.length) % games.length
+        } else if (pendingSwitchDirection === 'next') {
+            newIdx = (activeGame + 1) % games.length
+        }
+
+        // Reset game state
         resetToSelection()
         
-        // After reset, select the next game
-        // We need to use setTimeout to allow state to clear before selecting new game?
-        // Actually resetToSelection sets gameStarted=false synchronously.
-        // So we can select immediately.
-        
-        if (pendingSwitchDirection === 'prev') {
-            selectGame(activeGame - 1)
-        } else if (pendingSwitchDirection === 'next') {
-            selectGame(activeGame + 1)
-        }
+        // Manually set new game
+        setPreviousGame(activeGame)
+        setActiveGame(newIdx)
         
         setPendingSwitchDirection(null)
     }
@@ -377,28 +401,12 @@ export default function BoardGamePage() {
     }
 
     // Handle SAVE button click
+    // Handle SAVE button click
     const handleSave = async () => {
-        if (!sessionId) return
-
-        try {
-            message.loading({ content: 'Đang lưu...', key: 'save' })
-
-            const saveState = {
-                score,
-                time_limit: selectedTime,
-                time_remain: timeRemaining,
-                ...gameStateRef.current,
-            }
-
-            await gameApi.saveSession(sessionId, saveState)
-
-            message.success({ content: 'Đã lưu game!', key: 'save' })
-
-            // Reset to game selection
+        const success = await performSaveSession()
+        if (success) {
+            // Reset to game selection only on success
             resetToSelection()
-        } catch (err) {
-            console.error('Save failed:', err)
-            message.error({ content: 'Không thể lưu game', key: 'save' })
         }
     }
 
