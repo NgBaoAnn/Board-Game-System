@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Dropdown, Avatar, message, Input, Tooltip } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,21 +8,19 @@ import {
   Users,
   Trophy,
   Settings,
-  Bell,
   MessageSquare,
   LogOut,
   User,
   ChevronDown,
-  Search,
   Menu,
   X,
-  Zap,
   Sun,
   Moon,
 } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
 import { useTheme } from '@/context/ThemeContext'
 import authApi from '@/api/api-auth'
+import conversationApi from '@/api/api-conversation'
 import GamingParticles from '@/components/common/GamingParticles'
 
 
@@ -34,11 +32,6 @@ const menuItems = [
   { key: '/settings', icon: Settings, label: 'Settings' },
 ]
 
-const onlineFriends = [
-  { id: 1, name: 'Alex', avatar: 'A', status: 'online', game: 'Chess' },
-  { id: 2, name: 'Sarah', avatar: 'S', status: 'online', game: 'Catan' },
-  { id: 3, name: 'Mike', avatar: 'M', status: 'away', game: null },
-]
 
 export default function ClientLayout() {
   const location = useLocation()
@@ -46,7 +39,30 @@ export default function ClientLayout() {
   const { user, authenticated, setUser, setAuthenticated } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [globalOnline] = useState(10234) // Mock global online count
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread message count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!authenticated) return
+    try {
+      const response = await conversationApi.getUnreadCount()
+      setUnreadCount(response.data?.count || 0)
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error)
+    }
+  }, [authenticated])
+
+  // Fetch unread count on mount and when location changes (coming back from messages)
+  useEffect(() => {
+    fetchUnreadCount()
+  }, [fetchUnreadCount, location.pathname])
+
+  // Refresh unread count periodically (every 30 seconds)
+  useEffect(() => {
+    if (!authenticated) return
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [authenticated, fetchUnreadCount])
 
 
 
@@ -163,67 +179,6 @@ export default function ClientLayout() {
 
           <div className="flex flex-col gap-4">
 
-            {authenticated && (
-              <div
-                className={`rounded-xl p-3 border transition-colors ${isDarkMode
-                  ? 'bg-white/5 border-white/10'
-                  : 'bg-slate-50 border-slate-200'
-                  }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-slate-500'
-                      }`}
-                  >
-                    Online Friends
-                  </span>
-                  <span className="text-xs text-[#00f0ff] font-bold">
-                    {onlineFriends.filter((f) => f.status === 'online').length}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {onlineFriends.slice(0, 3).map((friend) => (
-                    <div
-                      key={friend.id}
-                      className="flex items-center gap-2 text-xs group cursor-pointer"
-                    >
-                      <div className="relative">
-                        <Avatar size={28} className="bg-gradient-to-br from-[#00f0ff] to-[#a855f7]">
-                          {friend.avatar}
-                        </Avatar>
-                        <span
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${friend.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
-                            } ${isDarkMode ? 'border-[#1a0a2e]' : 'border-white'}`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`font-medium truncate transition-colors ${isDarkMode
-                            ? 'text-gray-300 group-hover:text-white'
-                            : 'text-slate-700 group-hover:text-slate-900'
-                            }`}
-                        >
-                          {friend.name}
-                        </p>
-                        {friend.game && (
-                          <p className="text-[#00f0ff] text-[10px] truncate">Playing {friend.game}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  to="/community"
-                  className={`block text-center text-xs mt-3 transition-colors ${isDarkMode
-                    ? 'text-gray-500 hover:text-[#00f0ff]'
-                    : 'text-slate-500 hover:text-[#00f0ff]'
-                    }`}
-                >
-                  View All Friends →
-                </Link>
-              </div>
-            )}
-
 
             {authenticated && (
               <Tooltip title="Logout" placement="right">
@@ -329,26 +284,20 @@ export default function ClientLayout() {
 
 
                 <div className="flex items-center gap-1">
-                  <Tooltip title="Notifications">
-                    <button className="relative flex size-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
-                      <Bell size={20} />
-                      <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-red-500 text-[10px] font-bold text-white">
-                          3
-                        </span>
-                      </span>
-                    </button>
-                  </Tooltip>
                   <Tooltip title="Messages">
                     <Link
                       to="/messages"
                       className="relative flex size-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                     >
                       <MessageSquare size={20} />
-                      <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#00f0ff] text-[10px] font-bold text-white flex items-center justify-center">
-                        5
-                      </span>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f0ff] opacity-75"></span>
+                          <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-[#00f0ff] text-[10px] font-bold text-white">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        </span>
+                      )}
                     </Link>
                   </Tooltip>
                 </div>

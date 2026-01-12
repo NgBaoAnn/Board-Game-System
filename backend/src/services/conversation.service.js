@@ -167,6 +167,30 @@ class ConversationService {
 
     return updatedMessage;
   }
+
+  async markAsRead({ userId, conversationId }) {
+    const conversation = await conversationRepo.findById(conversationId);
+    if (!conversation) {
+      throw new NotFoundError("Conversation not found!");
+    }
+
+    if (
+      conversation.user_a.id !== userId &&
+      conversation.user_b.id !== userId
+    ) {
+      throw new ForbiddenError(
+        "You are not allowed to access this conversation!"
+      );
+    }
+
+    await conversationRepo.markMessagesAsRead({ conversationId, userId });
+    return { success: true };
+  }
+
+  async getUnreadCount(userId) {
+    const result = await conversationRepo.getUnreadCount(userId);
+    return { count: Number(result?.total || 0) };
+  }
 }
 
 module.exports = new ConversationService();

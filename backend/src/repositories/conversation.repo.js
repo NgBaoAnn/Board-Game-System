@@ -2,8 +2,9 @@ const db = require("../databases/knex");
 const MODULE = require("../constants/module");
 
 class ConversationRepo {
-  getConversations({ userId, offset = 0, limit = 10 }) {
-    return db({ c: MODULE.CONVERSATION })
+  async getConversations({ userId, offset = 0, limit = 10 }) {
+    // Get basic conversation data
+    const conversations = await db({ c: MODULE.CONVERSATION })
       .join({ u: MODULE.USER }, function () {
         this.on(
           "u.id",
@@ -32,6 +33,37 @@ class ConversationRepo {
       .orderBy("c.updated_at", "desc")
       .limit(limit)
       .offset(offset);
+
+    // For each conversation, get unread count and last message
+    const enrichedConversations = await Promise.all(
+      conversations.map(async (conv) => {
+        // Get unread count (messages from other user that are unread)
+        const unreadResult = await db(MODULE.MESSAGE)
+          .where("conversation_id", conv.conversation_id)
+          .whereNot("sender_id", userId)
+          .where("is_read", false)
+          .count("* as total")
+          .first();
+
+        // Get last message
+        const lastMessage = await db(MODULE.MESSAGE)
+          .where("conversation_id", conv.conversation_id)
+          .orderBy("created_at", "desc")
+          .select("content", "sender_id", "created_at", "file_name")
+          .first();
+
+        return {
+          ...conv,
+          unread_count: Number(unreadResult?.total || 0),
+          last_message: lastMessage?.content || null,
+          last_message_file: lastMessage?.file_name || null,
+          last_message_sender_id: lastMessage?.sender_id || null,
+          last_message_at: lastMessage?.created_at || conv.updated_at,
+        };
+      })
+    );
+
+    return enrichedConversations;
   }
 
   countConversations(userId) {
@@ -161,6 +193,39 @@ class ConversationRepo {
       .update({ reaction })
       .returning("*")
       .then(([row]) => row);
+  }
+
+  // Mark all messages in a conversation as read (messages from other user)
+  markMessagesAsRead({ conversationId, userId }) {
+    return db(MODULE.MESSAGE)
+      .where("conversation_id", conversationId)
+      .whereNot("sender_id", userId)  // Only mark messages from other user
+      .where("is_read", false)
+      .update({ is_read: true });
+  }
+
+  // Get total unread message count for a user
+  getUnreadCount(userId) {
+    return db(MODULE.MESSAGE)
+      .join(MODULE.CONVERSATION, "messages.conversation_id", "conversations.id")
+      .where(function () {
+        this.where("conversations.user_a", userId)
+          .orWhere("conversations.user_b", userId);
+      })
+      .whereNot("messages.sender_id", userId)  // Messages from others
+      .where("messages.is_read", false)
+      .count("* as total")
+      .first();
+  }
+
+  // Get unread count for a specific conversation
+  getUnreadCountByConversation({ conversationId, userId }) {
+    return db(MODULE.MESSAGE)
+      .where("conversation_id", conversationId)
+      .whereNot("sender_id", userId)
+      .where("is_read", false)
+      .count("* as total")
+      .first();
   }
 }
 

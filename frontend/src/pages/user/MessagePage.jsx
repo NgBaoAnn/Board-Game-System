@@ -183,14 +183,66 @@ export default function MessagePage() {
     navigate('/community')
   }, [navigate])
 
-  // Fetch friends list on mount
+  // Fetch friends list and their conversation data
   const fetchFriends = useCallback(async () => {
     try {
       setFriendsLoading(true)
       setFriendsError(null)
-      const response = await friendApi.getFriends(1, 100) // Get all friends
-      const data = response.data?.data || []
-      const transformed = data.map(transformFriend)
+      
+      // Fetch friends and conversations in parallel
+      const [friendsResponse, convsResponse] = await Promise.all([
+        friendApi.getFriends(1, 100),
+        conversationApi.getConversations(1, 100)
+      ])
+      
+      const friendsData = friendsResponse.data?.data || []
+      const convsData = convsResponse.data?.data || []
+      
+      // Create a map of friend conversations by user_id
+      const convMap = new Map()
+      convsData.forEach((conv) => {
+        convMap.set(conv.user_id, conv)
+      })
+      
+      // Transform friends with conversation data
+      const transformed = friendsData.map((friend) => {
+        const conv = convMap.get(friend.id)
+        
+        // Determine last message preview
+        let lastMessage = ''
+        if (conv) {
+          if (conv.last_message_file) {
+            lastMessage = '📎 Đã gửi tệp đính kèm'
+          } else if (conv.last_message) {
+            // Truncate message
+            lastMessage = conv.last_message.length > 30 
+              ? conv.last_message.substring(0, 30) + '...' 
+              : conv.last_message
+          }
+        }
+        
+        return {
+          id: conv?.conversation_id || null,
+          friendId: friend.id,
+          name: friend.username,
+          initials: getInitials(friend.username),
+          gradient: getGradient(friend.username),
+          avatar: friend.avatar_url,
+          status: 'offline',
+          time: conv?.last_message_at ? formatTime(conv.last_message_at) : '',
+          lastMessage: lastMessage || '', // Empty if no messages
+          unreadCount: conv?.unread_count || 0,
+          isTyping: false,
+        }
+      })
+      
+      // Sort: unread first, then by time
+      transformed.sort((a, b) => {
+        if (a.unreadCount > 0 && b.unreadCount === 0) return -1
+        if (a.unreadCount === 0 && b.unreadCount > 0) return 1
+        return 0
+      })
+      
       setFriends(transformed)
     } catch (error) {
       console.error('Failed to fetch friends:', error)
@@ -232,6 +284,13 @@ export default function MessagePage() {
       const transformed = messagesData.map((msg) => transformMessage(msg, user.id)).reverse()
       setMessages(transformed)
       setTimeout(scrollToBottom, 100)
+
+      // Mark messages as read when conversation is opened
+      try {
+        await conversationApi.markAsRead(conversationData.id)
+      } catch (e) {
+        console.error('Failed to mark as read:', e)
+      }
     } catch (error) {
       console.error('Failed to fetch conversation/messages:', error)
       setMessagesError(error.message || 'Không thể tải tin nhắn')

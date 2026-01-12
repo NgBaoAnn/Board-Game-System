@@ -87,6 +87,23 @@ const conversationApi = {
         });
         return response;
     },
+
+    /**
+     * Mark all messages in a conversation as read
+     * @param {string} conversationId - Conversation ID
+     */
+    markAsRead: async (conversationId) => {
+        const response = await axiosInstance.post(`/conversations/${conversationId}/read`);
+        return response;
+    },
+
+    /**
+     * Get total unread message count for current user
+     */
+    getUnreadCount: async () => {
+        const response = await axiosInstance.get('/conversations/unread-count');
+        return response;
+    },
 };
 
 export default conversationApi;

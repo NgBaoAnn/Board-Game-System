@@ -164,6 +164,42 @@ class ConversationController {
       next(err);
     }
   }
+
+  async markAsRead(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const conversationId = req.params.id;
+
+      const response = await conversationService.markAsRead({
+        userId,
+        conversationId,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Messages marked as read!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getUnreadCount(req, res, next) {
+    try {
+      const userId = req.user.id;
+
+      const response = await conversationService.getUnreadCount(userId);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Unread count retrieved!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ConversationController();
