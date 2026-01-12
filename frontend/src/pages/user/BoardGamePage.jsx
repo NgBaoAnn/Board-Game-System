@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
+import { TimeSelectionModal, ScoreResultModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
 import GameCard from '../../components/BoardGame/GameCard.jsx'
 import GameTopBar from '../../components/BoardGame/GameTopBar.jsx'
 import GamePlayArea from '../../components/BoardGame/GamePlayArea.jsx'
@@ -65,11 +65,17 @@ export default function BoardGamePage() {
     const [showHelpModal, setShowHelpModal] = useState(false)
     const [showAchievementModal, setShowAchievementModal] = useState(false)
     const [newAchievements, setNewAchievements] = useState([])
+    
+    // Score Result Modal state
+    const [showScoreModal, setShowScoreModal] = useState(false)
+    const [endGameReason, setEndGameReason] = useState('time_up') // 'time_up' | 'game_over' | 'win'
+    const [pendingAchievements, setPendingAchievements] = useState([]) // Store achievements to show after score modal
 
     // Game state
     const [gameStarted, setGameStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [isPaused, setIsPaused] = useState(false) // Separate pause state for controls
+    const [hasFinishedSession, setHasFinishedSession] = useState(false) // Track if session is already finished (to avoid double submission)
     const [score, setScore] = useState(0)
     const [timeRemaining, setTimeRemaining] = useState(0)
     const [selectedTime, setSelectedTime] = useState(0) // Duration in seconds
@@ -418,7 +424,9 @@ export default function BoardGamePage() {
     // Confirm exit - finish game
     const handleExitConfirm = async () => {
         setShowExitConfirm(false)
-        if (sessionId) {
+        
+        // If session exists and NOT already finished by game logic (e.g. Time Up / Win / Lose)
+        if (sessionId && !hasFinishedSession) {
             try {
                 const response = await gameApi.finishSession(sessionId, score)
                 message.info('Game kết thúc! Điểm: ' + score)
@@ -432,6 +440,8 @@ export default function BoardGamePage() {
                 console.error('Finish failed:', err)
             }
         }
+        
+        // Always reset to selection (manual exit requested)
         resetToSelection()
     }
 
@@ -452,39 +462,84 @@ export default function BoardGamePage() {
         setGameStarted(false)
         setIsPlaying(false)
         setIsPaused(false)
+        setHasFinishedSession(false) // Reset finish flag
         setScore(0)
         setTimeRemaining(0)
         setSelectedTime(0)
         setSessionId(null)
         setSavedState(null)
         setGameState(null)
+        setPendingAchievements([]) // Clear pending achievements
+        setShowScoreModal(false) // Close score modal
         // End session protection
         endSession()
     }, [endSession])
 
+    // Handle Score Modal close - show achievements if any, then reset
+    const handleScoreModalClose = useCallback(() => {
+        setShowScoreModal(false)
+        
+        // Show achievements if any were earned
+        if (pendingAchievements.length > 0) {
+            setNewAchievements(pendingAchievements)
+            setShowAchievementModal(true)
+            setPendingAchievements([])
+        } else {
+            // No achievements, reset to selection
+            resetToSelection()
+        }
+    }, [pendingAchievements, resetToSelection])
+
+    // Handle New Game from Score Modal - restart with time selection
+    const handleNewGame = useCallback(() => {
+        setShowScoreModal(false)
+        setPendingAchievements([]) // Clear achievements (user chose to play again)
+        
+        // Reset game state but keep on same game
+        setGameStarted(false)
+        setIsPlaying(false)
+        setIsPaused(false)
+        setHasFinishedSession(false)
+        setScore(0)
+        setTimeRemaining(0)
+        setSelectedTime(0)
+        setSessionId(null)
+        setSavedState(null)
+        setGameState(null)
+        endSession()
+        
+        // Open time selection modal for same game
+        setTimeout(() => {
+            if (currentGame?.code === 'free_draw') {
+                handleTimeConfirm(0) // Free draw: unlimited time
+            } else {
+                setShowTimeModal(true)
+            }
+        }, 100)
+    }, [currentGame, endSession, handleTimeConfirm])
+
+
     // Handle time up
     const handleTimeUp = useCallback(async () => {
         setIsPlaying(false)
-
+        setHasFinishedSession(true) // Mark session as finished
+        setEndGameReason('time_up')
+        
         if (sessionId) {
             try {
                 const response = await gameApi.finishSession(sessionId, score)
-                message.info('Hết giờ! Điểm của bạn: ' + score)
 
-                // Check for new achievements
+                // Store achievements to show after score modal
                 if (response?.data?.newAchievements?.length > 0) {
-                    setNewAchievements(response.data.newAchievements)
-                    setShowAchievementModal(true)
+                    setPendingAchievements(response.data.newAchievements)
                 }
             } catch (err) {
                 console.error('Finish failed:', err)
             }
         }
-
-        // Wait a bit then reset
-        setTimeout(() => {
-            resetToSelection()
-        }, 2000)
+        
+        // Show score modal first
+        setShowScoreModal(true)
     }, [sessionId, score])
 
     // Handle timer tick
@@ -504,25 +559,24 @@ export default function BoardGamePage() {
     const handleGameEnd = useCallback(async (result) => {
         if (result === 'lose') {
             setIsPlaying(false)
+            setHasFinishedSession(true) // Mark session as finished
+            setEndGameReason('game_over')
 
             if (sessionId) {
                 try {
                     const response = await gameApi.finishSession(sessionId, score)
-                    message.error('Game Over! Điểm của bạn: ' + score)
 
-                    // Check for new achievements
+                    // Store achievements to show after score modal
                     if (response?.data?.newAchievements?.length > 0) {
-                        setNewAchievements(response.data.newAchievements)
-                        setShowAchievementModal(true)
+                        setPendingAchievements(response.data.newAchievements)
                     }
                 } catch (err) {
                     console.error('Finish failed:', err)
                 }
             }
-
-            setTimeout(() => {
-                resetToSelection()
-            }, 2000)
+            
+            // Show score modal first
+            setShowScoreModal(true)
         }
     }, [sessionId, score])
 
@@ -923,6 +977,16 @@ export default function BoardGamePage() {
                         </div>
                     </div>
                 </Modal>
+
+                {/* Achievement Modal (Persist from game) */}
+                <GameModals
+                    showAchievement={showAchievementModal}
+                    achievements={newAchievements}
+                    onCloseAchievement={() => setShowAchievementModal(false)}
+                    showHelp={false}
+                    showExitConfirm={false}
+                    showSwitchConfirm={false}
+                />
             </div>
         )
     }
@@ -947,6 +1011,8 @@ export default function BoardGamePage() {
                 onNextGame={() => handleSwitchRequest('next')}
                 canGoPrev={games.length > 1}
                 canGoNext={games.length > 1}
+                onTimeUp={handleTimeUp}
+                onTick={handleTick}
             />
 
 
@@ -985,13 +1051,28 @@ export default function BoardGamePage() {
                 showExitConfirm={showExitConfirm}
                 achievements={newAchievements}
                 onCloseHelp={() => setShowHelpModal(false)}
-                onCloseAchievement={() => setShowAchievementModal(false)}
+                onCloseAchievement={() => {
+                    setShowAchievementModal(false)
+                    resetToSelection() // Reset after closing achievements
+                }}
                 onExitConfirm={handleExitConfirm}
                 onExitCancel={handleExitCancel}
                 
                 showSwitchConfirm={showSwitchConfirm}
                 onSwitchConfirm={handleSwitchConfirm}
                 onSwitchCancel={handleSwitchCancel}
+            />
+
+            {/* Score Result Modal */}
+            <ScoreResultModal
+                open={showScoreModal}
+                onClose={handleScoreModalClose}
+                score={score}
+                gameName={currentGame?.name || 'Game'}
+                timeLimit={selectedTime}
+                reason={endGameReason}
+                onNewGame={handleNewGame}
+                onExit={handleScoreModalClose}
             />
         </div>
     )

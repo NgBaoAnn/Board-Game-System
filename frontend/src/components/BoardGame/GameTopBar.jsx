@@ -17,7 +17,9 @@ export default function GameTopBar({
     onPrevGame,
     onNextGame,
     canGoPrev = true,
-    canGoNext = true
+    canGoNext = true,
+    onTimeUp,
+    onTick
 }) {
     // Liquid Glass Button Component
     const GlassButton = ({ onClick, disabled, children, variant = 'default', className = '', title }) => {
@@ -124,8 +126,8 @@ export default function GameTopBar({
                             <GameTimer
                                 timeRemaining={timeRemaining}
                                 isPlaying={isPlaying && (symbolSelected || !['tic_tac_toe', 'caro_4', 'caro_5'].includes(currentGame?.code))}
-                                onTimeUp={() => {}}
-                                onTick={() => {}}
+                                onTimeUp={onTimeUp}
+                                onTick={onTick}
                                 compact={false}
                             />
                             <div className="h-6 w-px bg-white/30 dark:bg-white/20" />
