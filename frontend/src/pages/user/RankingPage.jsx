@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Table, Avatar, Progress, Button } from 'antd'
+import { useState, useEffect, useCallback } from 'react'
+import { Table, Avatar, Progress, Button, Spin, Select as AntSelect } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Swords, CheckCircle, TrendingUp, TrendingDown, Trophy } from 'lucide-react'
@@ -7,28 +7,108 @@ import { PodiumCard } from '@/components/Ranking/PodiumCard'
 import { LeaderboardFilters } from '@/components/Ranking/LeaderboardFilters'
 import { TierBadge } from '@/components/Ranking/TierBadge'
 import { SeasonCountdown } from '@/components/Ranking/SeasonCountdown'
-
-const leaderboardData = [
-  { id: 1, rank: 1, name: 'Sarah Connor', avatar: 'https://i.pravatar.cc/150?img=1', title: 'Grandmaster', rating: 2485, gamesPlayed: 2150, winRate: 72, isChampion: true, rankChange: 0 },
-  { id: 2, rank: 2, name: 'Alex Morgan', avatar: 'https://i.pravatar.cc/150?img=2', title: 'Grandmaster', rating: 2350, gamesPlayed: 1890, winRate: 68, rankChange: 1 },
-  { id: 3, rank: 3, name: 'Michael Jordan', avatar: null, initials: 'MJ', title: 'Diamond', rating: 2310, gamesPlayed: 1654, winRate: 65, rankChange: -1 },
-  { id: 4, rank: 4, name: 'Emily Lin', avatar: 'https://i.pravatar.cc/150?img=4', title: 'Diamond', rating: 2298, gamesPlayed: 1402, winRate: 62, verified: true, rankChange: 2 },
-  { id: 5, rank: 5, name: 'Marcus Reed', avatar: 'https://i.pravatar.cc/150?img=5', title: 'Platinum', rating: 2150, gamesPlayed: 890, winRate: 58, rankChange: 0 },
-  { id: 6, rank: 6, name: 'Sofia Andres', avatar: null, initials: 'SA', title: 'Platinum', rating: 2125, gamesPlayed: 543, winRate: 51, rankChange: -2 },
-  { id: 7, rank: 42, name: 'You (Player One)', avatar: null, initials: 'ME', title: 'Gold', rating: 1850, gamesPlayed: 320, winRate: 55, isCurrentUser: true, rankChange: 5 },
-]
+import { useAuth } from '@/store/useAuth'
+import rankingApi from '@/api/api-ranking'
+import gameApi from '@/api/api-game'
 
 export default function RankingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [searchText, setSearchText] = useState('')
-  const [gameFilter, setGameFilter] = useState('all')
+  const [gameFilter, setGameFilter] = useState(null)
   const [periodFilter, setPeriodFilter] = useState('season')
   const [viewMode, setViewMode] = useState('Global')
+  const [leaderboardData, setLeaderboardData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [games, setGames] = useState([])
+
+  // Fetch available games
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await gameApi.getActiveGames()
+        const gamesData = response.data || []
+        setGames(gamesData)
+        // Set first game as default if available
+        if (gamesData.length > 0 && !gameFilter) {
+          setGameFilter(gamesData[0].id)
+        }
+      } catch (error) {
+        console.error('Failed to fetch games:', error)
+      }
+    }
+    fetchGames()
+  }, [])
+
+  // Fetch leaderboard based on viewMode and gameFilter
+  const fetchLeaderboard = useCallback(async () => {
+    if (!gameFilter) return
+    
+    setLoading(true)
+    try {
+      let response
+      if (viewMode === 'Global') {
+        response = await rankingApi.getSystemRanking(gameFilter)
+      } else {
+        response = await rankingApi.getFriendsRanking(gameFilter)
+      }
+      
+      // Debug log to see response structure
+      console.log('Ranking API response:', response)
+      
+      // Axios interceptor returns response.data, so we receive { success, status, data: { data: [], pagination: {} } }
+      // Backend ResponseHandler wraps: { success, status, data: serviceResponse }
+      // Service returns: { data: [...], pagination: {...} }
+      let data = response?.data?.data || []
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        console.warn('Leaderboard data is not an array:', data)
+        data = []
+      }
+      
+      // Map data to expected format with rank
+      const mappedData = data.map((item, index) => ({
+        id: item.user_id || item.id,
+        rank: index + 1,
+        name: item.username || 'Unknown',
+        avatar: item.avatar_url || null,
+        initials: (item.username || 'U').substring(0, 2).toUpperCase(),
+        title: getTierFromScore(item.best_score || item.final_score || 0),
+        rating: item.best_score || item.final_score || 0,
+        gamesPlayed: item.games_played || 0,
+        winRate: item.win_rate || 0,
+        isCurrentUser: (item.user_id || item.id) === user?.id,
+        rankChange: 0,
+        achievedAt: item.achieved_at || item.ended_at || item.created_at,
+      }))
+      
+      setLeaderboardData(mappedData)
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error)
+      setLeaderboardData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [gameFilter, viewMode, user?.id])
+
+  useEffect(() => {
+    fetchLeaderboard()
+  }, [fetchLeaderboard])
+
+  // Helper function to determine tier based on score
+  const getTierFromScore = (score) => {
+    if (score >= 2000) return 'Grandmaster'
+    if (score >= 1500) return 'Diamond'
+    if (score >= 1000) return 'Platinum'
+    if (score >= 500) return 'Gold'
+    return 'Bronze'
+  }
 
   const top3 = leaderboardData.filter(p => p.rank <= 3).sort((a, b) => a.rank - b.rank)
-  const restPlayers = leaderboardData.filter(p => p.rank > 3)
 
-  const filteredPlayers = restPlayers.filter(p =>
+  // Show ALL players in the table (not just rank > 3)
+  const filteredPlayers = leaderboardData.filter(p =>
     p.name.toLowerCase().includes(searchText.toLowerCase())
   )
 
@@ -99,7 +179,7 @@ export default function RankingPage() {
       ),
     },
     {
-      title: 'Rating (ELO)',
+      title: 'Best Score',
       dataIndex: 'rating',
       key: 'rating',
       render: (rating) => (
@@ -115,56 +195,32 @@ export default function RankingPage() {
       ),
     },
     {
-      title: 'Win Rate',
-      dataIndex: 'winRate',
-      key: 'winRate',
-      render: (winRate) => (
-        <div className="flex items-center gap-3">
-          <Progress
-            percent={winRate}
-            showInfo={false}
-            strokeColor={{
-              '0%': winRate >= 55 ? '#22c55e' : winRate >= 50 ? '#eab308' : '#ef4444',
-              '100%': winRate >= 55 ? '#16a34a' : winRate >= 50 ? '#ca8a04' : '#dc2626',
-            }}
-            trailColor="rgba(148, 163, 184, 0.2)"
-            size="small"
-            style={{ width: 80 }}
-          />
-          <span
-            className={`text-sm font-bold ${
-              winRate >= 55 ? 'text-green-500 dark:text-green-400' : winRate >= 50 ? 'text-yellow-500 dark:text-yellow-400' : 'text-red-500 dark:text-red-400'
-            }`}
-          >
-            {winRate}%
-          </span>
-        </div>
+      title: 'Achieved At',
+      dataIndex: 'achievedAt',
+      key: 'achievedAt',
+      render: (achievedAt) => (
+        <span className="text-sm text-gray-500 dark:text-slate-300">
+          {achievedAt ? new Date(achievedAt).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+          }) : 'N/A'}
+        </span>
       ),
-    },
-    {
-      title: '',
-      key: 'action',
-      align: 'right',
-      render: (_, record) =>
-        record.isCurrentUser ? (
-          <span className="text-xs text-slate-500 italic">This is you</span>
-        ) : (
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              size="small"
-              className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] border-none text-white font-bold text-xs px-3 hover:shadow-lg hover:shadow-[#1d7af2]/20 dark:hover:shadow-[#00f0ff]/20"
-              icon={<Swords size={12} />}
-            >
-              Challenge
-            </Button>
-          </motion.div>
-        ),
     },
   ]
 
+  if (loading && leaderboardData.length === 0) {
+    return (
+      <div className="p-4 md:p-8 min-h-[400px] flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 md:p-8 overflow-y-auto">
-      
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <motion.h2
@@ -173,7 +229,7 @@ export default function RankingPage() {
             className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7] flex items-center gap-3"
           >
             <Trophy className="text-yellow-400" size={36} />
-            Global Leaderboard
+            {viewMode === 'Global' ? 'Global Leaderboard' : 'Friends Leaderboard'}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -181,26 +237,46 @@ export default function RankingPage() {
             transition={{ delay: 0.2 }}
             className="text-gray-500 dark:text-slate-400 mt-2"
           >
-            Compete with the best players across all supported board games.
+            {viewMode === 'Global' 
+              ? 'Compete with the best players across all supported board games.'
+              : 'See how you rank among your friends.'
+            }
           </motion.p>
         </div>
-        <SeasonCountdown daysRemaining={14} hoursRemaining={5} minutesRemaining={22} />
+        <div className="flex items-center gap-4">
+          <AntSelect
+            value={gameFilter}
+            onChange={setGameFilter}
+            placeholder="Select Game"
+            className="min-w-[180px]"
+            size="large"
+          >
+            {games.map(game => (
+              <AntSelect.Option key={game.id} value={game.id}>
+                {game.name}
+              </AntSelect.Option>
+            ))}
+          </AntSelect>
+          <SeasonCountdown daysRemaining={14} hoursRemaining={5} minutesRemaining={22} />
+        </div>
       </div>
 
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
-        <div className="order-2 md:order-1">
-          {top3[1] && <PodiumCard player={top3[1]} position={2} />}
+      {/* Podium - Top 3 */}
+      {top3.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
+          <div className="order-2 md:order-1">
+            {top3[1] && <PodiumCard player={top3[1]} position={2} />}
+          </div>
+          <div className="order-1 md:order-2">
+            {top3[0] && <PodiumCard player={top3[0]} position={1} />}
+          </div>
+          <div className="order-3">
+            {top3[2] && <PodiumCard player={top3[2]} position={3} />}
+          </div>
         </div>
-        <div className="order-1 md:order-2">
-          {top3[0] && <PodiumCard player={top3[0]} position={1} />}
-        </div>
-        <div className="order-3">
-          {top3[2] && <PodiumCard player={top3[2]} position={3} />}
-        </div>
-      </div>
+      )}
 
-      
+      {/* Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -221,9 +297,11 @@ export default function RankingPage() {
           columns={columns}
           dataSource={filteredPlayers}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           rowClassName={(record) => (record.isCurrentUser ? 'current-user-row bg-blue-50/50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-slate-700/30')}
           className="ranking-table"
+          locale={{ emptyText: 'No rankings found' }}
         />
       </motion.div>
     </div>

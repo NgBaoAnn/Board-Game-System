@@ -1,8 +1,9 @@
-import { BookmarkCheck, Gamepad2, Wrench, Pencil } from "lucide-react";
-import { ConfigProvider, Input, theme, InputNumber, Modal, Form, message, Spin } from "antd";
+import { BookmarkCheck, Gamepad2, Wrench, Pencil, Upload as UploadIcon } from "lucide-react";
+import { ConfigProvider, Input, theme, InputNumber, Modal, Form, message, Spin, Upload, Avatar } from "antd";
 import { useTheme } from "@/context/ThemeContext";
 import { useState, useEffect } from "react";
 import { gameApi } from "@/api/game";
+import uploadApi from "@/api/api-upload";
 
 const { TextArea } = Input;
 
@@ -14,6 +15,8 @@ export default function AdminGamesPage() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [form] = Form.useForm();
+    const [imageUrl, setImageUrl] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchGames();
@@ -34,6 +37,7 @@ export default function AdminGamesPage() {
 
     const openModal = (game) => {
         setSelectedGame(game);
+        setImageUrl(game.image_url || null);
         form.setFieldsValue({
             name: game.name,
             description: game.description,
@@ -52,11 +56,13 @@ export default function AdminGamesPage() {
                         description: values.description,
                         board_row: values.board_row,
                         board_col: values.board_col,
+                        image_url: imageUrl,
                     });
                     message.success("Game updated successfully");
                     await fetchGames();
                     setModalVisible(false);
                     form.resetFields();
+                    setImageUrl(null);
                 } catch (error) {
                     message.error("Failed to update game");
                     console.error("Error updating game:", error);
@@ -70,6 +76,39 @@ export default function AdminGamesPage() {
     const handleModalCancel = () => {
         setModalVisible(false);
         form.resetFields();
+        setImageUrl(null);
+    };
+
+    const handleImageUpload = async (file) => {
+        const isImage = file.type.startsWith('image/');
+        if (!isImage) {
+            message.error('You can only upload image files!');
+            return false;
+        }
+        const isLt5M = file.size / 1024 / 1024 < 5;
+        if (!isLt5M) {
+            message.error('Image must be smaller than 5MB!');
+            return false;
+        }
+
+        setUploading(true);
+        try {
+            const response = await uploadApi.uploadGameImage(file);
+            const newImageUrl = response.data?.url || response.data?.image_url || response.url;
+            if (newImageUrl) {
+                setImageUrl(newImageUrl);
+                message.success('Game image uploaded successfully!');
+            } else {
+                setImageUrl(URL.createObjectURL(file));
+                message.success('Image uploaded!');
+            }
+        } catch (error) {
+            console.error('Failed to upload game image:', error);
+            message.error(error.message || 'Failed to upload game image');
+        } finally {
+            setUploading(false);
+        }
+        return false;
     };
 
     const handleToggleActive = async (game) => {
@@ -242,6 +281,32 @@ export default function AdminGamesPage() {
                         </Form.Item>
                         <Form.Item label="Description" name="description" rules={[{ max: 500, message: "Description must not exceed 500 characters" }]}>
                             <TextArea rows={4} placeholder="Enter game description" maxLength={500} showCount />
+                        </Form.Item>
+                        <Form.Item label="Game Image">
+                            <div className="flex items-center gap-4">
+                                <div className="relative h-24 w-24 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                    {imageUrl ? (
+                                        <img src={imageUrl} alt="Game" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <span className="text-gray-400 text-2xl">🎮</span>
+                                    )}
+                                </div>
+                                <Upload
+                                    showUploadList={false}
+                                    beforeUpload={handleImageUpload}
+                                    disabled={uploading}
+                                >
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                        disabled={uploading}
+                                    >
+                                        <UploadIcon size={16} />
+                                        {uploading ? 'Uploading...' : 'Upload Image'}
+                                    </button>
+                                </Upload>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">JPG, PNG or GIF. Max 5MB.</p>
                         </Form.Item>
                         <div className="flex flex-row w-full justify-around">
                             <Form.Item

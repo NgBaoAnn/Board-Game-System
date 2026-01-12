@@ -91,8 +91,9 @@ export default function ClientLayout() {
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-slate-900 flex">
 
+      
       {/* <CustomCursor /> */}
-
+      
       <aside
         className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${isDarkMode
           ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
@@ -398,10 +399,11 @@ export default function ClientLayout() {
                   <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
                     <Avatar
                       size={36}
+                      src={user?.avatar_url}
                       className="ring-2 ring-white dark:ring-slate-700"
-                      style={{ background: 'linear-gradient(135deg, #00f0ff, #a855f7)' }}
+                      style={!user?.avatar_url ? { background: 'linear-gradient(135deg, #00f0ff, #a855f7)' } : {}}
                     >
-                      {user?.username?.[0]?.toUpperCase() || 'U'}
+                      {!user?.avatar_url && (user?.username?.[0]?.toUpperCase() || 'U')}
                     </Avatar>
                     <div className="hidden text-left sm:block">
                       <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight">
