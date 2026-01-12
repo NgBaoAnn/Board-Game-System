@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo ,  memo } from 'react'
 import { Brain, Eye, EyeOff, Sparkles, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 
@@ -25,7 +25,7 @@ const CARD_ICONS = [
     '💎', '❤️', '💜', '💙', '🎃', '🎄', '🎁', '🎈',
 ]
 
-export default function MemoryGame({
+function MemoryGame({
     isPlaying = false,
     score = 0,
     onScoreChange,
@@ -375,3 +375,5 @@ export default function MemoryGame({
         </div>
     )
 }
+
+export default memo(MemoryGame)

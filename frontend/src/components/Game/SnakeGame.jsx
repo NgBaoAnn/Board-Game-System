@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo ,  memo } from 'react'
 import { Skull, Apple, Pause } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 
@@ -11,7 +11,7 @@ import BoardGrid from '../Board/BoardGrid.jsx'
  * - Game over on wall collision or self collision
  * - Uses arrow keys/WASD to control direction
  */
-export default function SnakeGame({
+function SnakeGame({
     isPlaying = false,
     score = 0,
     onScoreChange,
@@ -521,3 +521,5 @@ export default function SnakeGame({
         </div>
     )
 }
+
+export default memo(SnakeGame)

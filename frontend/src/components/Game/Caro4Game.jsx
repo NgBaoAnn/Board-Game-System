@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback ,  memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 
@@ -6,7 +6,7 @@ import BoardGrid from '../Board/BoardGrid.jsx'
  * Caro4Game - Caro game with 4-in-a-row win condition
  * Player can choose X or O before starting
  */
-export default function Caro4Game({
+function Caro4Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
@@ -412,3 +412,5 @@ export default function Caro4Game({
         </div>
     )
 }
+
+export default memo(Caro4Game)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 
@@ -6,7 +6,7 @@ import BoardGrid from '../Board/BoardGrid.jsx'
  * TicTacToeGame - Tic Tac Toe game component with AI opponent
  * Player can choose X or O before starting
  */
-export default function TicTacToeGame({
+function TicTacToeGame({
     isPlaying = false,
     score = 0,
     onScoreChange,
@@ -402,3 +402,5 @@ export default function TicTacToeGame({
         </div>
     )
 }
+
+export default memo(TicTacToeGame)

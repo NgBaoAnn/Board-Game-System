@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo ,  memo } from 'react'
 import { Sparkles, Zap, Star, Move } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 
@@ -27,7 +27,7 @@ const ICON_COLORS = {
     '💎': '#06b6d4', // cyan
 }
 
-export default function Match3Game({
+function Match3Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
@@ -432,3 +432,5 @@ export default function Match3Game({
         </div>
     )
 }
+
+export default memo(Match3Game)
