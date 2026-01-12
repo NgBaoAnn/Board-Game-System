@@ -311,7 +311,7 @@ export default function ClientLayout() {
         </div>
 
 
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-end border-b border-gray-200/10 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 sm:px-6">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-end border-b border-gray-200/10 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 py-2 sm:px-6">
 
           <div className="flex items-center gap-4 lg:hidden mr-auto">
             <button onClick={() => setMobileMenuOpen(true)} className="text-slate-700 dark:text-white">

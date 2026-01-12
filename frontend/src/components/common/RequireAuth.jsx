@@ -19,7 +19,7 @@ export default function RequireAuth({ children }) {
     }
 
     if (!authenticated) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return <Navigate to="/unauthorized" state={{ from: location }} replace />;
     }
 
     return children;

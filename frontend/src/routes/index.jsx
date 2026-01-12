@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import RequireAdmin from '@/components/common/RequireAdmin'
+import RequireAuth from '@/components/common/RequireAuth'
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import('../pages/user/HomePage'))
@@ -20,6 +21,8 @@ const ForgotPasswordPage = lazy(() => import('../pages/common/ForgotPasswordPage
 const VerifyOTPPage = lazy(() => import('../pages/common/VerifyOTPPage'))
 const ResetPasswordPage = lazy(() => import('../pages/common/ResetPasswordPage'))
 const NotFoundPage = lazy(() => import('../pages/common/NotFoundPage'))
+const UnauthorizedPage = lazy(() => import('../pages/common/UnauthorizedPage'))
+const ForbiddenPage = lazy(() => import('../pages/common/ForbiddenPage'))
 
 const AdminPage = lazy(() => import('../pages/admin/AdminPage'))
 const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'))
@@ -45,6 +48,15 @@ const withSuspense = (Component) => (
   </Suspense>
 )
 
+// Wrap element with RequireAuth and Suspense
+const withAuth = (Component) => (
+  <RequireAuth>
+    <Suspense fallback={<PageLoader />}>
+      <Component />
+    </Suspense>
+  </RequireAuth>
+)
+
 export const router = createBrowserRouter([
   {
     element: <ClientLayout />,
@@ -55,31 +67,31 @@ export const router = createBrowserRouter([
       },
       {
         path: '/boardgame',
-        element: withSuspense(BoardGamePage),
+        element: withAuth(BoardGamePage),
       },
       {
         path: '/community',
-        element: withSuspense(CommunityPage),
+        element: withAuth(CommunityPage),
       },
       {
         path: '/profile',
-        element: withSuspense(ProfilePage),
+        element: withAuth(ProfilePage),
       },
       {
         path: '/player/:id',
-        element: withSuspense(FriendProfilePage),
+        element: withAuth(FriendProfilePage),
       },
       {
         path: '/rankings',
-        element: withSuspense(RankingPage),
+        element: withAuth(RankingPage),
       },
       {
         path: '/messages',
-        element: withSuspense(MessagePage),
+        element: withAuth(MessagePage),
       },
       {
         path: '/settings',
-        element: withSuspense(SettingPage),
+        element: withAuth(SettingPage),
       }
     ],
     errorElement: withSuspense(NotFoundPage),
@@ -103,6 +115,14 @@ export const router = createBrowserRouter([
   {
     path: '/reset-password',
     element: withSuspense(ResetPasswordPage),
+  },
+  {
+    path: '/unauthorized',
+    element: withSuspense(UnauthorizedPage),
+  },
+  {
+    path: '/forbidden',
+    element: withSuspense(ForbiddenPage),
   },
   {
     path: '/admin',
