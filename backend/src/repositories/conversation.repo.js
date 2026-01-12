@@ -98,12 +98,16 @@ class ConversationRepo {
       .update({ updated_at: db.fn.now() });
   }
 
-  createMessage({ senderId, conversationId, content }) {
+  createMessage({ senderId, conversationId, content, fileUrl, fileName, fileType, fileSize }) {
     return db(MODULE.MESSAGE)
       .insert({
         sender_id: senderId,
         conversation_id: conversationId,
         content,
+        file_url: fileUrl || null,
+        file_name: fileName || null,
+        file_type: fileType || null,
+        file_size: fileSize || null,
       })
       .returning("*")
       .then(([row]) => row);
@@ -114,6 +118,11 @@ class ConversationRepo {
       .select(
         "messages.id",
         "messages.content",
+        "messages.reaction",
+        "messages.file_url",
+        "messages.file_name",
+        "messages.file_type",
+        "messages.file_size",
         "messages.created_at",
         "messages.sender_id",
         "users.username as sender_username",
@@ -138,6 +147,20 @@ class ConversationRepo {
     await db(MODULE.MESSAGE).where("conversation_id", conversationId).del();
     // Delete the conversation
     return db(MODULE.CONVERSATION).where("id", conversationId).del();
+  }
+
+  findMessageById(messageId) {
+    return db(MODULE.MESSAGE)
+      .where("id", messageId)
+      .first();
+  }
+
+  reactToMessage({ messageId, reaction }) {
+    return db(MODULE.MESSAGE)
+      .where("id", messageId)
+      .update({ reaction })
+      .returning("*")
+      .then(([row]) => row);
   }
 }
 
