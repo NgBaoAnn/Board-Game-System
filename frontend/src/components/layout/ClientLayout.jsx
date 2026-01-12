@@ -24,8 +24,6 @@ import { useAuth } from '@/store/useAuth'
 import { useTheme } from '@/context/ThemeContext'
 import authApi from '@/api/api-auth'
 import GamingParticles from '@/components/common/GamingParticles'
-import FloatingGamePieces from '@/components/common/FloatingGamePieces'
-import CustomCursor from '@/components/common/CustomCursor'
 
 
 const menuItems = [
@@ -95,15 +93,14 @@ export default function ClientLayout() {
       {/* <CustomCursor /> */}
       
       <aside
-        className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${isDarkMode
-          ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
-          : 'bg-white border-r border-gray-200'
-          }`}
+        className={`hidden lg:flex w-64 flex-shrink-0 flex-col fixed h-full z-40 transition-all duration-300 overflow-hidden ${
+          isDarkMode
+            ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
+            : 'bg-white border-r border-gray-200'
+        }`}
       >
+          {/* Removed FloatingGamePieces for performance */}
 
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-          <FloatingGamePieces count={20} isDarkMode={isDarkMode} />
-        </div>
 
         <div className="flex h-full flex-col justify-between p-4 relative z-10">
           <div className="flex flex-col gap-4">
@@ -259,15 +256,13 @@ export default function ClientLayout() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25 }}
-              className={`fixed left-0 top-0 w-64 h-full z-50 lg:hidden overflow-hidden ${isDarkMode
-                ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
-                : 'bg-white'
-                }`}
+              className={`fixed left-0 top-0 w-64 h-full z-50 lg:hidden overflow-hidden ${
+                isDarkMode
+                  ? 'bg-gradient-to-b from-[#1a0a2e] via-[#12121f] to-[#0d1b3e]'
+                  : 'bg-white'
+              }`}
             >
-
-              <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-                <FloatingGamePieces count={8} isDarkMode={isDarkMode} />
-              </div>
+              {/* Removed FloatingGamePieces for performance */}
 
               <div className="p-4 relative z-10 h-full flex flex-col">
                 <button

@@ -1,25 +1,49 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
-import HomePage from '../pages/user/HomePage'
-import LoginPage from '../pages/common/LoginPage'
-import RegisterPage from '../pages/common/RegisterPage'
-import SettingPage from '../pages/common/SettingPage'
-import ForgotPasswordPage from '../pages/common/ForgotPasswordPage'
-import VerifyOTPPage from '../pages/common/VerifyOTPPage'
-import ResetPasswordPage from '../pages/common/ResetPasswordPage'
-import NotFoundPage from '../pages/common/NotFoundPage'
-import BoardGamePage from '../pages/user/BoardGamePage'
-import CommunityPage from '../pages/user/CommunityPage'
-import ProfilePage from '../pages/user/ProfilePage'
-import FriendProfilePage from '../pages/user/FriendProfilePage'
-import RankingPage from '../pages/user/RankingPage'
-import MessagePage from '../pages/user/MessagePage'
-import AdminPage from '../pages/admin/AdminPage'
-import AdminUsersPage from '../pages/admin/AdminUsersPage'
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
-import AdminGamesPage from '@/pages/admin/AdminGamesPage'
 import RequireAdmin from '@/components/common/RequireAdmin'
+
+// Lazy load pages for code splitting
+const HomePage = lazy(() => import('../pages/user/HomePage'))
+const BoardGamePage = lazy(() => import('../pages/user/BoardGamePage'))
+const CommunityPage = lazy(() => import('../pages/user/CommunityPage'))
+const ProfilePage = lazy(() => import('../pages/user/ProfilePage'))
+const FriendProfilePage = lazy(() => import('../pages/user/FriendProfilePage'))
+const RankingPage = lazy(() => import('../pages/user/RankingPage'))
+const MessagePage = lazy(() => import('../pages/user/MessagePage'))
+
+const LoginPage = lazy(() => import('../pages/common/LoginPage'))
+const RegisterPage = lazy(() => import('../pages/common/RegisterPage'))
+const SettingPage = lazy(() => import('../pages/common/SettingPage'))
+const ForgotPasswordPage = lazy(() => import('../pages/common/ForgotPasswordPage'))
+const VerifyOTPPage = lazy(() => import('../pages/common/VerifyOTPPage'))
+const ResetPasswordPage = lazy(() => import('../pages/common/ResetPasswordPage'))
+const NotFoundPage = lazy(() => import('../pages/common/NotFoundPage'))
+
+const AdminPage = lazy(() => import('../pages/admin/AdminPage'))
+const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'))
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
+const AdminGamesPage = lazy(() => import('@/pages/admin/AdminGamesPage'))
+
+// Loading fallback component
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm text-gray-500 dark:text-gray-400">Loading...</span>
+      </div>
+    </div>
+  )
+}
+
+// Wrap element with Suspense
+const withSuspense = (Component) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+)
 
 export const router = createBrowserRouter([
   {
@@ -27,58 +51,58 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <HomePage />,
+        element: withSuspense(HomePage),
       },
       {
         path: '/boardgame',
-        element: <BoardGamePage />,
+        element: withSuspense(BoardGamePage),
       },
       {
         path: '/community',
-        element: <CommunityPage />,
+        element: withSuspense(CommunityPage),
       },
       {
         path: '/profile',
-        element: <ProfilePage />,
+        element: withSuspense(ProfilePage),
       },
       {
         path: '/player/:id',
-        element: <FriendProfilePage />,
+        element: withSuspense(FriendProfilePage),
       },
       {
         path: '/rankings',
-        element: <RankingPage />,
+        element: withSuspense(RankingPage),
       },
       {
         path: '/messages',
-        element: <MessagePage />,
+        element: withSuspense(MessagePage),
       },
       {
         path: '/settings',
-        element: <SettingPage />,
+        element: withSuspense(SettingPage),
       }
     ],
-    errorElement: <NotFoundPage />,
+    errorElement: withSuspense(NotFoundPage),
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: withSuspense(LoginPage),
   },
   {
     path: '/register',
-    element: <RegisterPage />,
+    element: withSuspense(RegisterPage),
   },
   {
     path: '/forgot-password',
-    element: <ForgotPasswordPage />,
+    element: withSuspense(ForgotPasswordPage),
   },
   {
     path: '/verify-otp',
-    element: <VerifyOTPPage />,
+    element: withSuspense(VerifyOTPPage),
   },
   {
     path: '/reset-password',
-    element: <ResetPasswordPage />,
+    element: withSuspense(ResetPasswordPage),
   },
   {
     path: '/admin',
@@ -88,10 +112,10 @@ export const router = createBrowserRouter([
       </RequireAdmin>
     ),
     children: [
-      { index: true, element: <AdminPage /> },
-      { path: '/admin/users', element: <AdminUsersPage /> },
-      { path: '/admin/dashboard', element: <AdminDashboardPage /> },
-      { path: '/admin/games', element: <AdminGamesPage /> },
+      { index: true, element: withSuspense(AdminPage) },
+      { path: '/admin/users', element: withSuspense(AdminUsersPage) },
+      { path: '/admin/dashboard', element: withSuspense(AdminDashboardPage) },
+      { path: '/admin/games', element: withSuspense(AdminGamesPage) },
     ],
   },
 ])

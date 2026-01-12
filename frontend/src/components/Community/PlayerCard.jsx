@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Avatar, Tooltip } from 'antd'
 import { UserPlus, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -93,4 +94,4 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
   )
 }
 
-export default PlayerCard
+export default memo(PlayerCard)
