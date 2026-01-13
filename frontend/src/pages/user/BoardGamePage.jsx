@@ -17,6 +17,7 @@ import GameTopBar from '../../components/BoardGame/GameTopBar.jsx'
 import GamePlayArea from '../../components/BoardGame/GamePlayArea.jsx'
 import MobileDPad from '../../components/BoardGame/MobileDPad.jsx'
 import GameModals from '../../components/BoardGame/GameModals.jsx'
+import GameInstructionsModal from '../../components/BoardGame/GameInstructionsModal.jsx'
 import gameApi from '../../api/api-game.js'
 import { message, Modal } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
@@ -63,9 +64,10 @@ export default function BoardGamePage() {
     // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
     const [showHelpModal, setShowHelpModal] = useState(false)
+    const [helpGameCode, setHelpGameCode] = useState(null) // For game-specific help
     const [showAchievementModal, setShowAchievementModal] = useState(false)
     const [newAchievements, setNewAchievements] = useState([])
-    
+
     // Score Result Modal state
     const [showScoreModal, setShowScoreModal] = useState(false)
     const [endGameReason, setEndGameReason] = useState('time_up') // 'time_up' | 'game_over' | 'win'
@@ -81,7 +83,7 @@ export default function BoardGamePage() {
     const [selectedTime, setSelectedTime] = useState(0) // Duration in seconds
     const [symbolSelected, setSymbolSelected] = useState(false) // Track if player has selected X/O
     const [showExitConfirm, setShowExitConfirm] = useState(false) // Exit confirmation modal
-    
+
     // Switch Game State
     const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
     const [pendingSwitchDirection, setPendingSwitchDirection] = useState(null) // 'prev' or 'next'
@@ -225,7 +227,7 @@ export default function BoardGamePage() {
     // Handle Switch Confirm
     const handleSwitchConfirm = async (shouldSave) => {
         setShowSwitchConfirm(false)
-        
+
         // If user wants to save, try to save first
         if (shouldSave && sessionId) {
             const success = await performSaveSession()
@@ -243,11 +245,11 @@ export default function BoardGamePage() {
 
         // Reset game state
         resetToSelection()
-        
+
         // Manually set new game
         setPreviousGame(activeGame)
         setActiveGame(newIdx)
-        
+
         setPendingSwitchDirection(null)
     }
 
@@ -424,7 +426,7 @@ export default function BoardGamePage() {
     // Confirm exit - finish game
     const handleExitConfirm = async () => {
         setShowExitConfirm(false)
-        
+
         // If session exists and NOT already finished by game logic (e.g. Time Up / Win / Lose)
         if (sessionId && !hasFinishedSession) {
             try {
@@ -440,7 +442,7 @@ export default function BoardGamePage() {
                 console.error('Finish failed:', err)
             }
         }
-        
+
         // Always reset to selection (manual exit requested)
         resetToSelection()
     }
@@ -478,7 +480,7 @@ export default function BoardGamePage() {
     // Handle Score Modal close - show achievements if any, then reset
     const handleScoreModalClose = useCallback(() => {
         setShowScoreModal(false)
-        
+
         // Show achievements if any were earned
         if (pendingAchievements.length > 0) {
             setNewAchievements(pendingAchievements)
@@ -494,7 +496,7 @@ export default function BoardGamePage() {
     const handleNewGame = useCallback(() => {
         setShowScoreModal(false)
         setPendingAchievements([]) // Clear achievements (user chose to play again)
-        
+
         // Reset game state but keep on same game
         setGameStarted(false)
         setIsPlaying(false)
@@ -507,7 +509,7 @@ export default function BoardGamePage() {
         setSavedState(null)
         setGameState(null)
         endSession()
-        
+
         // Open time selection modal for same game
         setTimeout(() => {
             if (currentGame?.code === 'free_draw') {
@@ -524,7 +526,7 @@ export default function BoardGamePage() {
         setIsPlaying(false)
         setHasFinishedSession(true) // Mark session as finished
         setEndGameReason('time_up')
-        
+
         if (sessionId) {
             try {
                 const response = await gameApi.finishSession(sessionId, score)
@@ -537,7 +539,7 @@ export default function BoardGamePage() {
                 console.error('Finish failed:', err)
             }
         }
-        
+
         // Show score modal first
         setShowScoreModal(true)
     }, [sessionId, score])
@@ -574,7 +576,7 @@ export default function BoardGamePage() {
                     console.error('Finish failed:', err)
                 }
             }
-            
+
             // Show score modal first
             setShowScoreModal(true)
         }
@@ -847,7 +849,7 @@ export default function BoardGamePage() {
     }
 
     // ==================== RENDER ====================
-    
+
     // PHASE 1: Game Selection (Gallery View)
     if (!gameStarted) {
         return (
@@ -867,7 +869,7 @@ export default function BoardGamePage() {
                             Choose your game and start playing
                         </p>
                     </div>
-                    
+
                     {/* Stats Badge */}
                     <div className="flex items-center gap-3">
                         {games.filter(g => g.hasSaved).length > 0 && (
@@ -915,6 +917,10 @@ export default function BoardGamePage() {
                                     handleStartClick()
                                 }}
                                 onResume={handleResumeClick}
+                                onHelpClick={(game) => {
+                                    setHelpGameCode(game.code)
+                                    setShowHelpModal(true)
+                                }}
                             />
                         ))}
                     </div>
@@ -987,6 +993,16 @@ export default function BoardGamePage() {
                     showExitConfirm={false}
                     showSwitchConfirm={false}
                 />
+
+                {/* Game Instructions Modal */}
+                <GameInstructionsModal
+                    open={showHelpModal}
+                    onClose={() => {
+                        setShowHelpModal(false)
+                        setHelpGameCode(null)
+                    }}
+                    gameCode={helpGameCode}
+                />
             </div>
         )
     }
@@ -1057,7 +1073,7 @@ export default function BoardGamePage() {
                 }}
                 onExitConfirm={handleExitConfirm}
                 onExitCancel={handleExitCancel}
-                
+
                 showSwitchConfirm={showSwitchConfirm}
                 onSwitchConfirm={handleSwitchConfirm}
                 onSwitchCancel={handleSwitchCancel}
