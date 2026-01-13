@@ -69,13 +69,16 @@ export default function ClientLayout() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
+      message.success('Logged out successfully')
+    } catch (e) {
+      // Ignore error during logout (e.g. 401 if already expired)
+      console.error('Logout error:', e)
+    } finally {
+      // Always cleanup state and redirect
       setUser(null)
       setAuthenticated(false)
       localStorage.removeItem('access_token')
-      message.success('Logged out successfully')
       navigate('/')
-    } catch (e) {
-      message.error(e.message || 'Logout failed')
     }
   }
 

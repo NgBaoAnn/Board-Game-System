@@ -122,13 +122,15 @@ export default function SettingPage() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
+      message.success('Logged out successfully')
+    } catch (error) {
+      // Ignore error during logout
+      console.error('Logout error:', error)
+    } finally {
       setUser(null)
       setAuthenticated(false)
       localStorage.removeItem('access_token')
-      message.success('Logged out successfully')
       navigate('/login')
-    } catch (error) {
-      message.error('Logout failed')
     }
   }
 

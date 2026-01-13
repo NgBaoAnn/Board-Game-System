@@ -29,12 +29,36 @@ class UserValidator {
       body("username")
         .optional()
         .isString()
-        .withMessage("Username must be string"),
+        .isLength({ min: 3, max: 30 })
+        .withMessage("Username must be between 3 and 30 characters"),
+
+      body("email")
+        .optional()
+        .isEmail()
+        .withMessage("Email must be a valid email address"),
 
       body("avatar_url")
         .optional()
         .isURL()
         .withMessage("Avatar url must be a valid URL"),
+
+      body("phone")
+        .optional()
+        .isString()
+        .isLength({ max: 20 })
+        .withMessage("Phone must be less than 20 characters"),
+
+      body("bio")
+        .optional()
+        .isString()
+        .isLength({ max: 500 })
+        .withMessage("Bio must be less than 500 characters"),
+
+      body("location")
+        .optional()
+        .isString()
+        .isLength({ max: 100 })
+        .withMessage("Location must be less than 100 characters"),
 
       body("status")
         .optional()
@@ -43,8 +67,10 @@ class UserValidator {
 
       body("role_id").optional().isInt().withMessage("Role id must be integer"),
 
+      body("active").optional().isBoolean().withMessage("Active must be boolean"),
+
       body().custom((_, { req }) => {
-        const allowed = ["username", "avatar_url", "status", "role_id"];
+        const allowed = ["username", "email", "avatar_url", "phone", "bio", "location", "status", "role_id", "active"];
         const keys = Object.keys(req.body);
 
         const extra = keys.filter((k) => !allowed.includes(k));

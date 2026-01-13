@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Form, Input, Button, Upload, message, Avatar, Modal } from 'antd'
-import { Camera, MapPin, Mail, User, X } from 'lucide-react'
+import { Camera, MapPin, Mail, User, X, Phone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Joi from 'joi'
 import { joiValidator } from '@/utils/validation'
@@ -20,11 +20,15 @@ const profileSchema = Joi.object({
     'string.email': 'Please enter a valid email',
     'string.empty': 'Email is required',
   }),
-  bio: Joi.string().max(200).allow('').messages({
-    'string.max': 'Bio must be less than 200 characters',
+  phone: Joi.string().pattern(/^[0-9+\-\s()]*$/).max(20).allow('').messages({
+    'string.pattern.base': 'Please enter a valid phone number',
+    'string.max': 'Phone must be less than 20 characters',
   }),
-  location: Joi.string().max(50).allow('').messages({
-    'string.max': 'Location must be less than 50 characters',
+  bio: Joi.string().max(500).allow('').messages({
+    'string.max': 'Bio must be less than 500 characters',
+  }),
+  location: Joi.string().max(100).allow('').messages({
+    'string.max': 'Location must be less than 100 characters',
   }),
 })
 
@@ -43,7 +47,7 @@ export function EditProfileTab({ profile, onSave }) {
   const handleSubmit = async (values) => {
     setLoading(true)
     try {
-      await onSave?.({ ...values, avatar: avatarUrl })
+      await onSave?.({ ...values, avatar_url: avatarUrl })
       message.success('Profile updated successfully!')
     } catch (error) {
       message.error('Failed to update profile')
@@ -215,6 +219,7 @@ export function EditProfileTab({ profile, onSave }) {
           initialValues={{
             username: profile?.name || '',
             email: profile?.email || '',
+            phone: profile?.phone || '',
             bio: profile?.bio || '',
             location: profile?.location || '',
           }}
@@ -249,18 +254,33 @@ export function EditProfileTab({ profile, onSave }) {
             </Form.Item>
           </div>
 
-          <Form.Item
-            name="location"
-            label={<span className="font-semibold text-gray-700 dark:text-gray-300">Location</span>}
-            rules={[joiValidator(profileSchema.extract('location'))]}
-          >
-            <Input
-              prefix={<MapPin className="text-gray-400" size={18} />}
-              placeholder="City, Country"
-              size="large"
-              className="rounded-lg"
-            />
-          </Form.Item>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Form.Item
+              name="phone"
+              label={<span className="font-semibold text-gray-700 dark:text-gray-300">Phone</span>}
+              rules={[joiValidator(profileSchema.extract('phone'))]}
+            >
+              <Input
+                prefix={<Phone className="text-gray-400" size={18} />}
+                placeholder="+84 123 456 789"
+                size="large"
+                className="rounded-lg"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="location"
+              label={<span className="font-semibold text-gray-700 dark:text-gray-300">Location</span>}
+              rules={[joiValidator(profileSchema.extract('location'))]}
+            >
+              <Input
+                prefix={<MapPin className="text-gray-400" size={18} />}
+                placeholder="City, Country"
+                size="large"
+                className="rounded-lg"
+              />
+            </Form.Item>
+          </div>
 
           <Form.Item
             name="bio"
@@ -270,7 +290,7 @@ export function EditProfileTab({ profile, onSave }) {
             <TextArea
               placeholder="Tell us about yourself..."
               rows={4}
-              maxLength={200}
+              maxLength={500}
               showCount
               className="rounded-lg"
             />

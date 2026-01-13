@@ -1,56 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Tabs, Select, Spin } from 'antd'
+import { Tabs, Spin } from 'antd'
 import { motion } from 'framer-motion'
-import { Trophy, Brain, Users, Crown, Gamepad2 } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
 import { ProfileCard } from '@/components/Profile/ProfileCard'
-import { AchievementItem } from '@/components/Profile/AchievementItem'
-import { WinRateChart } from '@/components/Profile/WinRateChart'
-import { ActivityCard } from '@/components/Profile/ActivityCard'
-import { FavoriteGameCard } from '@/components/Profile/FavoriteGameCard'
 import { EditProfileTab } from '@/components/Profile/EditProfileTab'
 import { AchievementsTab } from '@/components/Profile/AchievementsTab'
 import { GameHistoryTab } from '@/components/Profile/GameHistoryTab'
-import { FriendsTab } from '@/components/Profile/FriendsTab'
 import { userApi } from '@/api/user'
-
-const achievements = [
-  { id: 1, name: 'Strategist Master', progress: 90, current: 45, total: 50, rarity: 'legendary', icon: Trophy },
-  { id: 2, name: 'Puzzle Solver', progress: 60, current: 12, total: 20, rarity: 'rare', icon: Brain },
-  { id: 3, name: 'Community Pillar', progress: 100, current: null, total: null, rarity: 'epic', icon: Users },
-]
-
-const recentActivities = [
-  {
-    id: 1,
-    title: 'Victory in Catan Championship',
-    subtitle: 'Ranked Match • 4 Players',
-    time: '2h ago',
-    badge: '+25 PTS',
-    badgeType: 'success',
-    detail: 'vs. AlexM, SarahJ, & BoardMaster99',
-  },
-  {
-    id: 2,
-    title: 'Checkmate! New Personal Best',
-    subtitle: 'Chess Arena • Speed Chess',
-    time: 'Yesterday',
-    badge: 'Achievement Unlocked',
-    badgeType: 'info',
-    detail: 'Won in under 5 minutes',
-    icon: '♟️',
-  },
-]
-
-const favoriteGames = [
-  { id: 1, name: 'Settlers of Catan', matches: 425 },
-  { id: 2, name: 'Monopoly Classic', matches: 89 },
-]
 
 export default function ProfilePage() {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('overview')
-  const [activityFilter, setActivityFilter] = useState('all')
+  const [activeTab, setActiveTab] = useState('achievements')
   const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -76,6 +37,7 @@ export default function ProfilePage() {
           tier: userData.tier || 'bronze',
           title: userData.title || 'Player',
           isOnline: true,
+          phone: userData.phone || '',
           bio: userData.bio || '',
           location: userData.location || '',
           joinedDate: userData.created_at 
@@ -101,6 +63,7 @@ export default function ProfilePage() {
           tier: 'bronze',
           title: 'Player',
           isOnline: true,
+          phone: '',
           bio: '',
           location: '',
           joinedDate: '',
@@ -118,10 +81,6 @@ export default function ProfilePage() {
     fetchProfile()
   }, [user])
 
-  const handleClaimReward = (achievement) => {
-    console.log('Claiming reward for:', achievement.name)
-  }
-
   const handleSaveProfile = async (data) => {
     try {
       await userApi.updateUser(user?.id, data)
@@ -133,6 +92,7 @@ export default function ProfilePage() {
         name: userData.username || userData.name,
         email: userData.email,
         avatar: userData.avatar_url || userData.avatar,
+        phone: userData.phone || '',
         bio: userData.bio || '',
         location: userData.location || '',
       }))
@@ -142,11 +102,9 @@ export default function ProfilePage() {
   }
 
   const tabItems = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'edit', label: 'Edit Profile' },
     { key: 'achievements', label: 'Achievements' },
     { key: 'history', label: 'Game History' },
-    { key: 'friends', label: 'Friends' },
+    { key: 'edit', label: 'Edit Profile' },
   ]
 
   if (loading || !profileData) {
@@ -175,97 +133,16 @@ export default function ProfilePage() {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="profile-tabs mb-8" />
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-slate-700"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Trophy size={18} className="text-yellow-500" />
-                  Recent Achievements
-                </h3>
-                <button onClick={() => setActiveTab('achievements')} className="text-sm text-[#00f0ff] hover:underline font-medium">
-                  View All
-                </button>
-              </div>
-              <div className="space-y-4">
-                {achievements.map((achievement, index) => (
-                  <motion.div
-                    key={achievement.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                  >
-                    <AchievementItem
-                      achievement={achievement}
-                      onClaim={achievement.progress >= 100 ? handleClaimReward : undefined}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-            <WinRateChart winRate={profileData?.winRate || 0} wins={profileData?.wins || 0} losses={profileData?.losses || 0} />
-          </div>
-
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-                <Gamepad2 size={20} className="text-[#00f0ff]" />
-                Recent Activity
-              </h3>
-              <Select
-                value={activityFilter}
-                onChange={setActivityFilter}
-                variant="borderless"
-                className="text-sm font-medium"
-                options={[
-                  { value: 'all', label: 'All Activities' },
-                  { value: 'games', label: 'Games Played' },
-                  { value: 'tournaments', label: 'Tournaments' },
-                ]}
-              />
-            </div>
-            {recentActivities.map((activity, index) => (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-              >
-                <ActivityCard activity={activity} />
-              </motion.div>
-            ))}
-            <div className="mt-8">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-4">Favorite Games</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {favoriteGames.map((game) => (
-                  <FavoriteGameCard key={game.id} game={game} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Profile Tab */}
-      {activeTab === 'edit' && (
-        <EditProfileTab profile={profileData} onSave={handleSaveProfile} />
-      )}
-
       {/* Achievements Tab */}
       {activeTab === 'achievements' && <AchievementsTab />}
 
       {/* Game History Tab */}
       {activeTab === 'history' && <GameHistoryTab userId={user?.id} />}
 
-      {/* Friends Tab */}
-      {activeTab === 'friends' && <FriendsTab />}
+      {/* Edit Profile Tab */}
+      {activeTab === 'edit' && (
+        <EditProfileTab profile={profileData} onSave={handleSaveProfile} />
+      )}
     </div>
   )
 }
