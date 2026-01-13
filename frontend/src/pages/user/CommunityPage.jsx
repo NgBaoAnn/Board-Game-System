@@ -14,11 +14,14 @@ export default function CommunityPage() {
   const [requests, setRequests] = useState([])
   const [friends, setFriends] = useState([])
   const [allPlayers, setAllPlayers] = useState([])
+  const [sentRequestIds, setSentRequestIds] = useState(new Set()) // Track sent friend requests
   const [sortBy, setSortBy] = useState('status')
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [requestsLoading, setRequestsLoading] = useState(false)
+  const [playersLoading, setPlayersLoading] = useState(false)
 
   // Fetch friends list
   const fetchFriends = useCallback(async () => {
@@ -47,14 +50,14 @@ export default function CommunityPage() {
       const requestsData = response.data?.data || response.data || []
       setRequests(requestsData.map(r => ({
         id: r.id,
-        name: r.from_user?.username || r.username || 'Unknown',
-        avatar: r.from_user?.avatar_url || r.avatar || 'https://i.pravatar.cc/150',
+        name: r.from_user_username || r.username || 'Unknown',
+        avatar: r.from_user_avatar_url || r.avatar || 'https://i.pravatar.cc/150',
         note: r.message || 'Wants to be friends',
         mutualFriends: 0,
         gamesInCommon: [],
         tier: 'gold',
         isNew: true,
-        fromUserId: r.from,
+        fromUserId: r.from || r.from_user_id,
       })))
     } catch (error) {
       console.error('Failed to fetch requests:', error)
@@ -64,9 +67,10 @@ export default function CommunityPage() {
   }, [])
 
   // Fetch all players (non-friends)
-  const fetchAllPlayers = useCallback(async () => {
+  const fetchAllPlayers = useCallback(async (search = '') => {
+    setPlayersLoading(true)
     try {
-      const response = await friendApi.getNonFriends(1, 50)
+      const response = await friendApi.getNonFriends(1, 50, search)
       const usersData = response.data?.data || response.data || []
       setAllPlayers(usersData.map(u => ({
         id: u.id,
@@ -78,6 +82,20 @@ export default function CommunityPage() {
       })))
     } catch (error) {
       console.error('Failed to fetch players:', error)
+    } finally {
+      setPlayersLoading(false)
+    }
+  }, [])
+
+  // Fetch sent friend requests to mark them in All Players tab
+  const fetchSentRequests = useCallback(async () => {
+    try {
+      const response = await friendApi.getSentRequests(1, 100)
+      const sentData = response.data?.data || response.data || []
+      const sentIds = new Set(sentData.map(r => r.to))
+      setSentRequestIds(sentIds)
+    } catch (error) {
+      console.error('Failed to fetch sent requests:', error)
     }
   }, [])
 
@@ -85,11 +103,26 @@ export default function CommunityPage() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
-      await Promise.all([fetchFriends(), fetchRequests(), fetchAllPlayers()])
+      await Promise.all([fetchFriends(), fetchRequests(), fetchAllPlayers(''), fetchSentRequests()])
       setLoading(false)
     }
     loadData()
-  }, [fetchFriends, fetchRequests, fetchAllPlayers])
+  }, [fetchFriends, fetchRequests, fetchAllPlayers, fetchSentRequests])
+
+  // Debounce search input for All Players tab
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Fetch players when debounced search changes (only for players tab)
+  useEffect(() => {
+    if (activeTab === 'players') {
+      fetchAllPlayers(debouncedSearch)
+    }
+  }, [debouncedSearch, activeTab, fetchAllPlayers])
 
   const onlineCount = useMemo(() => friends.filter((f) => f.status === 'online').length, [friends])
 
@@ -195,6 +228,7 @@ export default function CommunityPage() {
   const handleAddFriend = async (player) => {
     try {
       await friendApi.sendRequest(player.id)
+      setSentRequestIds(prev => new Set([...prev, player.id]))
       message.success(`Friend request sent to ${player.name}!`)
     } catch (error) {
       message.error(error.message || 'Failed to send friend request')
@@ -386,14 +420,21 @@ export default function CommunityPage() {
             </h2>
             {filteredPlayers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {filteredPlayers.map((player, index) => (
-                  <PlayerCard
-                    key={player.id}
-                    player={player}
-                    index={index}
-                    onAddFriend={handleAddFriend}
-                  />
-                ))}
+                {playersLoading ? (
+                  <div className="col-span-full flex justify-center py-8">
+                    <Spin size="large" />
+                  </div>
+                ) : (
+                  filteredPlayers.map((player, index) => (
+                    <PlayerCard
+                      key={player.id}
+                      player={player}
+                      index={index}
+                      onAddFriend={handleAddFriend}
+                      requestSent={sentRequestIds.has(player.id)}
+                    />
+                  ))
+                )}
               </div>
             ) : (
               <EmptyState type="players" onAction={() => setSearchQuery('')} />

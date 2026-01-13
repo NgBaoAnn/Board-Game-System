@@ -33,8 +33,19 @@ class FriendRepo {
 
   getReceivedRequests({ userId, offset = 0, limit = 10 }) {
     return db(MODULE.FRIEND_REQUEST)
-      .where({ to: userId })
-      .orderBy("created_at", "desc")
+      .join(MODULE.USER, `${MODULE.FRIEND_REQUEST}.from`, '=', `${MODULE.USER}.id`)
+      .where({ [`${MODULE.FRIEND_REQUEST}.to`]: userId })
+      .select(
+        `${MODULE.FRIEND_REQUEST}.id`,
+        `${MODULE.FRIEND_REQUEST}.from`,
+        `${MODULE.FRIEND_REQUEST}.to`,
+        `${MODULE.FRIEND_REQUEST}.message`,
+        `${MODULE.FRIEND_REQUEST}.created_at`,
+        `${MODULE.USER}.id as from_user_id`,
+        `${MODULE.USER}.username as from_user_username`,
+        `${MODULE.USER}.avatar_url as from_user_avatar_url`
+      )
+      .orderBy(`${MODULE.FRIEND_REQUEST}.created_at`, "desc")
       .limit(limit)
       .offset(offset);
   }
@@ -117,18 +128,8 @@ class FriendRepo {
     // Get all friend IDs
     const friendIds = await this.getAllFriendIds(userId);
     
-    // Get all pending request user IDs (both sent and received)
-    const pendingRequests = await db(MODULE.FRIEND_REQUEST)
-      .where('from', userId)
-      .orWhere('to', userId)
-      .select('from', 'to');
-    
-    const pendingUserIds = pendingRequests.flatMap(r => 
-      r.from === userId ? [r.to] : [r.from]
-    );
-    
-    // Combine excluded IDs
-    const excludedIds = [...new Set([userId, ...friendIds, ...pendingUserIds])];
+    // Only exclude friends and self (NOT pending requests anymore)
+    const excludedIds = [...new Set([userId, ...friendIds])];
     
     let query = db(MODULE.USER)
       .whereNotIn('id', excludedIds)
@@ -151,16 +152,8 @@ class FriendRepo {
   async countNonFriends({ userId, search = '' }) {
     const friendIds = await this.getAllFriendIds(userId);
     
-    const pendingRequests = await db(MODULE.FRIEND_REQUEST)
-      .where('from', userId)
-      .orWhere('to', userId)
-      .select('from', 'to');
-    
-    const pendingUserIds = pendingRequests.flatMap(r => 
-      r.from === userId ? [r.to] : [r.from]
-    );
-    
-    const excludedIds = [...new Set([userId, ...friendIds, ...pendingUserIds])];
+    // Only exclude friends and self (NOT pending requests anymore)
+    const excludedIds = [...new Set([userId, ...friendIds])];
     
     let query = db(MODULE.USER)
       .whereNotIn('id', excludedIds)
