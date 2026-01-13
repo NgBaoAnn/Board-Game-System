@@ -1,12 +1,33 @@
 import { LayoutDashboard, UserCog, Dice5, LogOut, Settings, Menu } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from '@/store/useAuth'
+import authApi from '@/api/api-auth'
+import { message } from 'antd'
 
 export default function AdminSidebar() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { setUser, setAuthenticated } = useAuth();
     const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
     const [drawerVisible, setDrawerVisible] = useState(false);
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        setDrawerVisible(false);
+        try {
+            await authApi.logout();
+            message.success('Logged out successfully');
+        } catch (error) {
+           console.error('Logout error:', error);
+        } finally {
+            setUser(null);
+            setAuthenticated(false);
+            localStorage.removeItem('access_token');
+            navigate('/login');
+        }
+    };
 
     const navContent = (
         <>
@@ -65,9 +86,8 @@ export default function AdminSidebar() {
 
             <div className="px-4 py-1 border-t border-border-light dark:border-border-dark">
                 <a
-                    className="flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    href="#"
-                    onClick={() => setDrawerVisible(false)}
+                    className="flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer"
+                    onClick={handleLogout}
                 >
                     <LogOut />
                     <span className="font-medium">Logout</span>

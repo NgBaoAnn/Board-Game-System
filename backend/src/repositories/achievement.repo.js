@@ -51,6 +51,29 @@ class AchievementRepo {
       );
   }
 
+  // Get all achievements for a user across all games
+  findAllUserAchievements(userId) {
+    return db(MODULE.USER_ACHIEVEMENT)
+      .join(
+        MODULE.ACHIEVEMENT,
+        `${MODULE.USER_ACHIEVEMENT}.achievement_id`,
+        `${MODULE.ACHIEVEMENT}.id`
+      )
+      .join(
+        MODULE.GAME,
+        `${MODULE.ACHIEVEMENT}.game_id`,
+        `${MODULE.GAME}.id`
+      )
+      .where({ [`${MODULE.USER_ACHIEVEMENT}.user_id`]: userId })
+      .select(
+        `${MODULE.ACHIEVEMENT}.*`,
+        `${MODULE.USER_ACHIEVEMENT}.achieved_at`,
+        `${MODULE.GAME}.name as game_name`,
+        `${MODULE.GAME}.code as game_code`
+      )
+      .orderBy(`${MODULE.USER_ACHIEVEMENT}.achieved_at`, 'desc');
+  }
+
   findUserAchievement(userId, achievementId) {
     return db(MODULE.USER_ACHIEVEMENT)
       .where({
