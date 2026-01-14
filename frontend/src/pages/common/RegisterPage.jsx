@@ -28,9 +28,6 @@ const registerSchema = Joi.object({
     'any.only': 'Passwords do not match',
     'string.empty': 'Please confirm your password',
   }),
-  terms: Joi.boolean().valid(true).required().messages({
-    'any.only': 'You must agree to the terms',
-  }),
 })
 
 const formVariants = {
@@ -42,15 +39,15 @@ const formVariants = {
 
 const buttonVariants = {
   idle: { scale: 1, y: 0 },
-  hover: { 
-    scale: 1.02, 
+  hover: {
+    scale: 1.02,
     y: -2,
-    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)' 
+    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)'
   },
-  tap: { 
-    scale: 0.98, 
+  tap: {
+    scale: 0.98,
     y: 2,
-    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)' 
+    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)'
   },
 }
 
@@ -106,7 +103,7 @@ export default function RegisterPage() {
             Strategy Awaits
           </h2>
           <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-            <TypewriterText 
+            <TypewriterText
               text="Build settlements, trade resources, and pave your way to victory. Join the ultimate community for board game enthusiasts."
               delay={0.8}
               speed={50}
@@ -130,7 +127,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout rightContent={rightContent}>
       <motion.div variants={formVariants} animate={formState} className="space-y-0">
-        
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,7 +150,7 @@ export default function RegisterPage() {
           </div>
         </motion.div>
 
-        
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -165,13 +162,13 @@ export default function RegisterPage() {
           </h1>
         </motion.div>
 
-        
+
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
           requiredMark={false}
-          
+
         >
           <Form.Item
             name="username"
@@ -249,20 +246,7 @@ export default function RegisterPage() {
             />
           </Form.Item>
 
-          <Form.Item
-            name="terms"
-            valuePropName="checked"
-            rules={[
-              {
-                validator: (_, value) =>
-                  value
-                    ? Promise.resolve()
-                    : Promise.reject(new Error('You must agree to the terms')),
-              },
-            ]}
-          >
-            
-          </Form.Item>
+
 
           <Form.Item>
             <motion.button
@@ -299,39 +283,11 @@ export default function RegisterPage() {
           </Form.Item>
         </Form>
 
-        
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 bg-white dark:bg-[#1e293b] text-gray-500 dark:text-gray-400 font-medium">
-              Or continue with
-            </span>
-          </div>
-        </div>
 
-        
-        <SocialLoginButtons
-          onGoogleClick={() => message.info('Google signup clicked')}
-          onFacebookClick={() => message.info('Facebook signup clicked')}
-        />
 
-        
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400"
-        >
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            className="font-semibold text-[#1d7af2] hover:text-blue-600 transition-colors"
-          >
-            Log in
-          </Link>
-        </motion.p>
+
+
+
       </motion.div>
     </AuthLayout>
   )

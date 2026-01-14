@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Users, Clock, Zap, Crown, Gamepad2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GameCard from '@/components/Game/GameCard'
@@ -138,12 +139,13 @@ const liveGames = [
 ]
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const [carouselIndex, setCarouselIndex] = useState(0)
   const itemsPerView = 3
   const maxIndex = Math.max(0, newArrivals.length - itemsPerView)
 
   const handlePlayNow = () => {
-    console.log('Play Now clicked')
+    navigate('/boardgame')
   }
 
   const handleWatchTutorial = () => {
@@ -168,7 +170,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col gap-10 max-w-[1200px] mx-auto">
-      
+
       <HeroSection
         title="Strategy Awaits: Master Catan Today"
         description="Join over 10,000 players in the ultimate classic strategy game. Build settlements, trade resources, and pave your way to victory."
@@ -180,10 +182,10 @@ export default function HomePage() {
         onWatchTutorial={handleWatchTutorial}
       />
 
-      
+
       <div className="flex flex-col gap-5">
-        <SectionHeader 
-          title="Live Games" 
+        <SectionHeader
+          title="Live Games"
           viewAllLink="/lobbies"
           badge={
             <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full">
@@ -192,7 +194,7 @@ export default function HomePage() {
             </span>
           }
         />
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {liveGames.map((game, index) => (
             <motion.div
@@ -202,21 +204,21 @@ export default function HomePage() {
               transition={{ delay: index * 0.1 }}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e]/80 to-[#16213e]/80 border border-white/10 hover:border-[#00f0ff]/50 transition-all duration-300"
             >
-              
+
               <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
-                <img 
-                  src={game.gameImage} 
-                  alt="" 
+                <img
+                  src={game.gameImage}
+                  alt=""
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] via-[#1a1a2e]/80 to-transparent" />
               </div>
-              
+
               <div className="relative p-4 flex items-center gap-4">
-                
+
                 <div className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-white/20">
-                  <img 
-                    src={game.gameImage} 
+                  <img
+                    src={game.gameImage}
                     alt={game.gameName}
                     className="w-full h-full object-cover"
                   />
@@ -226,8 +228,8 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-                
-                
+
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-semibold text-white truncate">{game.gameName}</h4>
@@ -242,25 +244,25 @@ export default function HomePage() {
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-3 text-sm text-gray-400">
-                    
+
                     <div className="flex items-center gap-1.5">
-                      <img 
-                        src={game.hostAvatar} 
+                      <img
+                        src={game.hostAvatar}
                         alt={game.hostName}
                         className="w-5 h-5 rounded-full border border-white/20"
                       />
                       <span className="truncate max-w-[80px]">{game.hostName}</span>
                     </div>
-                    
-                    
+
+
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
                       <span>{game.players}/{game.maxPlayers}</span>
                     </div>
-                    
-                    
+
+
                     {game.timeElapsed && (
                       <div className="flex items-center gap-1 text-orange-400">
                         <Clock className="w-4 h-4" />
@@ -269,16 +271,15 @@ export default function HomePage() {
                     )}
                   </div>
                 </div>
-                
-                
+
+
                 <button
                   onClick={() => handleJoinGame(game.id)}
                   disabled={game.status === 'in-progress'}
-                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
-                    game.status === 'waiting'
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${game.status === 'waiting'
                       ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-black hover:shadow-lg hover:shadow-[#00f0ff]/25 hover:scale-105'
                       : 'bg-white/10 text-gray-400 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   {game.status === 'waiting' ? (
                     <span className="flex items-center gap-1.5">
@@ -290,18 +291,17 @@ export default function HomePage() {
                   )}
                 </button>
               </div>
-              
-              
+
+
               <div className="relative px-4 pb-3">
                 <div className="flex gap-1">
                   {Array.from({ length: game.maxPlayers }, (_, i) => (
                     <div
                       key={i}
-                      className={`h-1 flex-1 rounded-full transition-all ${
-                        i < game.players
+                      className={`h-1 flex-1 rounded-full transition-all ${i < game.players
                           ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7]'
                           : 'bg-white/10'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -311,7 +311,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      
+
       <div className="flex flex-col gap-5">
         <SectionHeader title="Popular Games" viewAllLink="/browse" />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -321,7 +321,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      
+
       <div className="flex flex-col gap-5 pb-10">
         <SectionHeader
           title="New Arrivals"
@@ -329,10 +329,10 @@ export default function HomePage() {
           onPrevious={handlePrevious}
           onNext={handleNext}
         />
-        
-        
+
+
         <div className="relative overflow-hidden">
-          <motion.div 
+          <motion.div
             className="flex gap-6"
             animate={{ x: -carouselIndex * (280 + 24) }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -343,17 +343,16 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        
+
         <div className="flex justify-center gap-2 mt-2">
           {Array.from({ length: maxIndex + 1 }, (_, i) => (
             <button
               key={i}
               onClick={() => setCarouselIndex(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                i === carouselIndex 
-                  ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] w-6' 
+              className={`w-2.5 h-2.5 rounded-full transition-all ${i === carouselIndex
+                  ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] w-6'
                   : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
-              }`}
+                }`}
             />
           ))}
         </div>
