@@ -31,6 +31,11 @@ router.delete(
   gameController.deleteGame
 );
 
+router.get(
+  "/games/:id/players/count",
+  gameController.getUniquePlayerCount
+);
+
 router.post(
   "/games/sessions",
   authMiddleware.authenticate,

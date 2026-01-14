@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Star, Users, MessageSquare, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Star, Users, MessageSquare } from 'lucide-react'
 import { Spin, Progress, Empty, Pagination, theme, ConfigProvider } from 'antd'
 import { ReviewCard, ReviewForm } from '@/components/GameReview'
 import StarRating from '@/components/common/StarRating'
 import reviewApi from '@/api/api-review'
 import gameApi from '@/api/api-game'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/store/useAuth'
+import { message, Modal } from 'antd'
 
 // Game logo mapping
 const GAME_LOGOS = {
@@ -27,6 +29,7 @@ export default function GameReviewPage() {
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
     const { isDarkMode } = useTheme()
+    const { user } = useAuth()
     
     // Get game code from URL params
     const gameCode = searchParams.get('code') || 'tic_tac_toe'
@@ -38,6 +41,7 @@ export default function GameReviewPage() {
     const [loading, setLoading] = useState(true)
     const [reviewsLoading, setReviewsLoading] = useState(false)
     const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 })
+    const [playerCount, setPlayerCount] = useState(0)
 
     // Fetch game details
     useEffect(() => {
@@ -52,6 +56,20 @@ export default function GameReviewPage() {
             }
         }
         fetchGame()
+    }, [gameId])
+
+    useEffect(() => {
+        const fetchPlayerCount = async () => {
+            if (gameId) {
+                try {
+                    const response = await gameApi.getUniquePlayerCount(gameId)
+                    setPlayerCount(response.data?.count || 0)
+                } catch (error) {
+                    console.error('Failed to fetch player count:', error)
+                }
+            }
+        }
+        fetchPlayerCount()
     }, [gameId])
 
     // Fetch reviews for current page
@@ -111,6 +129,18 @@ export default function GameReviewPage() {
         await Promise.all([fetchReviews(1), fetchSummary()])
     }
 
+    const handleDeleteReview = async (review) => {
+        try {
+            await reviewApi.deleteReview(gameId, review.id)
+            message.success('Đã xóa đánh giá thành công')
+            // Reload reviews and summary
+            await Promise.all([fetchReviews(pagination.page), fetchSummary()])
+        } catch (error) {
+            console.error('Failed to delete review:', error)
+            message.error(error.message || 'Không thể xóa đánh giá')
+        }
+    }
+
     // Build rating distribution from summary
     const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
         stars,
@@ -168,15 +198,11 @@ export default function GameReviewPage() {
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
                             <Users size={16} className="text-primary dark:text-text-neon-cyan" />
-                            <span>1,234 người chơi</span>
+                            <span>{playerCount} người đã chơi</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
                             <MessageSquare size={16} className="text-primary dark:text-text-neon-cyan" />
                             <span>{summary.total} bình luận</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
-                            <TrendingUp size={16} className="text-green-500" />
-                            <span>Top 10 phổ biến</span>
                         </div>
                     </div>
                 </div>
@@ -231,7 +257,13 @@ export default function GameReviewPage() {
                         ) : reviews.length > 0 ? (
                             <div className="space-y-4">
                                 {reviews.map((review, index) => (
-                                    <ReviewCard key={review.id} review={review} index={index} />
+                                    <ReviewCard 
+                                        key={review.id} 
+                                        review={review} 
+                                        index={index} 
+                                        currentUser={user}
+                                        onDelete={handleDeleteReview}
+                                    />
                                 ))}
 
                                 {/* Pagination */}

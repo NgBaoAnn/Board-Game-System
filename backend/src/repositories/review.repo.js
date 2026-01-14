@@ -57,7 +57,7 @@ class ReviewRepo {
             )
             .leftJoin("users", "game_reviews.user_id", "users.id")
             .where("game_reviews.game_id", gameId)
-            .orderBy("game_reviews.created_at", "desc")
+            .orderBy("game_reviews.updated_at", "desc")
             .limit(limit)
             .offset(offset);
     }

@@ -1,14 +1,17 @@
 import { motion } from 'framer-motion'
-import { Clock } from 'lucide-react'
-import { Avatar } from 'antd'
+import { Clock, Trash2 } from 'lucide-react'
+import { Avatar, Popconfirm, Tooltip } from 'antd'
 import StarRating from '../common/StarRating'
 
 /**
  * ReviewCard component - Display individual review
  * @param {Object} review - Review object
  * @param {number} index - Animation index
+ * @param {Object} currentUser - Current user object
+ * @param {Function} onDelete - Delete callback
  */
-export default function ReviewCard({ review, index = 0 }) {
+export default function ReviewCard({ review, index = 0, currentUser, onDelete }) {
+    const isOwner = currentUser?.id === review.user_id;
     const formatDate = (dateString) => {
         const date = new Date(dateString)
         const now = new Date()
@@ -56,14 +59,19 @@ export default function ReviewCard({ review, index = 0 }) {
                     </div>
                 )}
                 <div>
-                    <h4 className="font-bold text-gray-900 dark:text-white">
+                    <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         {review.username}
+                        {isOwner && (
+                            <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                (me)
+                            </span>
+                        )}
                     </h4>
                     <div className="flex items-center gap-2">
                         <StarRating rating={review.rating} size="sm" />
                         <span className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1">
                             <Clock size={12} />
-                            {formatDate(review.created_at)}
+                            {formatDate(review.updated_at)}
                         </span>
                     </div>
                 </div>
@@ -73,6 +81,25 @@ export default function ReviewCard({ review, index = 0 }) {
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
                 {review.comment}
             </p>
+            {/* Delete Button for Owner */}
+            {isOwner && (
+                <div className="absolute top-5 right-5">
+                    <Popconfirm
+                        title="Xóa đánh giá?"
+                        description="Bạn có chắc chắn muốn xóa đánh giá này không?"
+                        onConfirm={() => onDelete(review)}
+                        okText="Xóa"
+                        cancelText="Hủy"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Tooltip title="Xóa đánh giá">
+                            <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                <Trash2 size={18} />
+                            </button>
+                        </Tooltip>
+                    </Popconfirm>
+                </div>
+            )}
         </motion.div>
     )
 }

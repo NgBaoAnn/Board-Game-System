@@ -339,8 +339,7 @@ export default function AchievementsPage() {
                                 current={pagination.page}
                                 pageSize={pagination.limit}
                                 total={pagination.total}
-                                onChange={handlePageChange}     
-                                pageSizeOptions={['12', '24', '48']}
+                                onChange={handlePageChange}
                             />
                         </ConfigProvider>
                     </div>

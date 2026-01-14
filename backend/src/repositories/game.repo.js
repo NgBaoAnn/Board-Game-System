@@ -353,6 +353,15 @@ class GameRepo {
       .first();
     return parseInt(result.total) || 0;
   }
+
+  async countUniquePlayers(gameId) {
+    const result = await db(MODULE.GAME_SESSION)
+      .where("game_id", gameId)
+      .countDistinct("user_id as total")
+      .first();
+
+    return parseInt(result.total) || 0;
+  }
 }
 
 module.exports = new GameRepo();
