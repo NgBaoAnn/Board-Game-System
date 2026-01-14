@@ -3,23 +3,46 @@ import Particles, { initParticlesEngine } from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
 
 /**
- * GamingParticles - Dynamic particle background for main app layout
- * Features: Stars/polygons, constellation links, repulse on hover, gaming colors
- * Different from NeonParticles (used in Auth) - more dynamic and "breakthrough"
- * 
- * @param {Object} props
- * @param {boolean} props.isDarkMode - Theme mode
+ * Hook to detect prefers-reduced-motion preference
+ */
+function useReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  })
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handleChange = (e) => setReducedMotion(e.matches)
+    
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  return reducedMotion
+}
+
+/**
+ * GamingParticles - Optimized particle background for main app layout
+ * - Reduced particle count (25 instead of 60)
+ * - Lower FPS (30 instead of 60)
+ * - Disabled triangle links (heavy GPU)
+ * - Respects prefers-reduced-motion
  */
 export default function GamingParticles({ isDarkMode = true }) {
   const [init, setInit] = useState(false)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
+    // Skip initialization if user prefers reduced motion
+    if (reducedMotion) return
+
     initParticlesEngine(async (engine) => {
       await loadSlim(engine)
     }).then(() => {
       setInit(true)
     })
-  }, [])
+  }, [reducedMotion])
 
   const options = useMemo(
     () => ({
@@ -29,12 +52,12 @@ export default function GamingParticles({ isDarkMode = true }) {
           value: isDarkMode ? '#0f172a' : '#f8fafc',
         },
       },
-      fpsLimit: 60,
+      fpsLimit: 30, // Optimized: reduced from 60
       interactivity: {
         events: {
           onHover: {
             enable: true,
-            mode: 'repulse', // Particles repel from cursor - more dynamic!
+            mode: 'repulse',
           },
           onClick: {
             enable: true,
@@ -44,12 +67,12 @@ export default function GamingParticles({ isDarkMode = true }) {
         },
         modes: {
           repulse: {
-            distance: 120,
+            distance: 100,
             duration: 0.4,
-            speed: 1,
+            speed: 0.8,
           },
           push: {
-            quantity: 4,
+            quantity: 2, // Reduced from 4
           },
         },
       },
@@ -57,19 +80,18 @@ export default function GamingParticles({ isDarkMode = true }) {
         color: {
           value: isDarkMode
             ? ['#00f0ff', '#a855f7', '#22c55e', '#f59e0b', '#ec4899']
-            : ['#4f46e5', '#7c3aed', '#0891b2', '#059669', '#e11d48'], // Brighter saturated colors for light mode
+            : ['#4f46e5', '#7c3aed', '#0891b2', '#059669', '#e11d48'],
         },
         links: {
           color: {
-            value: isDarkMode ? '#00f0ff' : '#0891b2', // Cyan for dark, Dark Cyan for light
+            value: isDarkMode ? '#00f0ff' : '#0891b2',
           },
-          distance: 180,
+          distance: 150,
           enable: true,
-          opacity: isDarkMode ? 0.25 : 0.35, // Higher opacity for light mode
-          width: isDarkMode ? 1 : 1.5, // Thicker lines for light mode
+          opacity: isDarkMode ? 0.2 : 0.3,
+          width: isDarkMode ? 1 : 1.2,
           triangles: {
-            enable: true,
-            opacity: isDarkMode ? 0.04 : 0.06, // More visible triangles
+            enable: false, // Optimized: disabled triangles (heavy GPU)
           },
         },
         move: {
@@ -79,55 +101,37 @@ export default function GamingParticles({ isDarkMode = true }) {
             default: 'out',
           },
           random: true,
-          speed: { min: 0.5, max: 2 },
+          speed: { min: 0.3, max: 1.2 }, // Slower movement
           straight: false,
           attract: {
-            enable: true,
-            rotateX: 600,
-            rotateY: 1200,
+            enable: false, // Optimized: disabled attract (CPU heavy)
           },
         },
         number: {
           density: {
             enable: true,
-            area: 900,
+            area: 1200, // Increased area = fewer particles
           },
-          value: 60,
+          value: 25, // Optimized: reduced from 60
         },
         opacity: {
-          value: isDarkMode ? { min: 0.2, max: 0.7 } : { min: 0.5, max: 1 }, // Higher opacity for light mode
+          value: isDarkMode ? { min: 0.2, max: 0.6 } : { min: 0.4, max: 0.9 },
           animation: {
-            enable: true,
-            speed: 0.5,
-            minimumValue: isDarkMode ? 0.1 : 0.3,
-            sync: false,
+            enable: false, // Optimized: disabled animation
           },
         },
         shape: {
-          type: ['circle', 'triangle', 'polygon'], // Mixed shapes - more gaming!
-          options: {
-            polygon: {
-              sides: 6, // Hexagons
-            },
-          },
+          type: 'circle', // Optimized: only circles (simpler rendering)
         },
         size: {
-          value: isDarkMode ? { min: 1, max: 5 } : { min: 2, max: 6 }, // Larger particles for light mode
+          value: isDarkMode ? { min: 1, max: 4 } : { min: 2, max: 5 },
           animation: {
-            enable: true,
-            speed: 3,
-            minimumValue: isDarkMode ? 1 : 2,
-            sync: false,
+            enable: false, // Optimized: disabled animation
           },
         },
         twinkle: {
           particles: {
-            enable: true,
-            frequency: 0.03,
-            opacity: 1,
-            color: {
-              value: isDarkMode ? '#ffffff' : '#6366f1',
-            },
+            enable: false, // Optimized: disabled twinkle
           },
         },
       },
@@ -136,7 +140,8 @@ export default function GamingParticles({ isDarkMode = true }) {
     [isDarkMode]
   )
 
-  if (!init) {
+  // If reduced motion or not initialized, show static gradient background
+  if (reducedMotion || !init) {
     return (
       <div
         className="absolute inset-0"

@@ -261,16 +261,7 @@ export default function RegisterPage() {
               },
             ]}
           >
-            <Checkbox className="text-gray-700 dark:text-gray-300">
-              I agree to the{' '}
-              <a href="#" className="text-[#1d7af2] hover:underline">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-[#1d7af2] hover:underline">
-                Privacy Policy
-              </a>
-            </Checkbox>
+            
           </Form.Item>
 
           <Form.Item>

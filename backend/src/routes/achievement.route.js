@@ -52,6 +52,12 @@ router.get(
   achievementController.getAchievementsByGameId
 );
 
+// lấy tất cả thành tựu của user (không phân biệt game) - PHẢI đặt trước route :game_id/:user_id
+router.get(
+  "/achievements/user/:user_id",
+  achievementController.getAllUserAchievements
+);
+
 // lấy tất cả thành tựu của game của user
 router.get(
   "/achievements/:game_id/:user_id",

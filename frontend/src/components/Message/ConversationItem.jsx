@@ -58,7 +58,7 @@ export function ConversationItem({ conversation, isActive, onClick }) {
       
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-1">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+          <h3 className={`truncate ${hasUnread ? 'font-bold text-gray-900 dark:text-white' : 'font-semibold text-gray-900 dark:text-white'}`}>
             {conversation.name}
           </h3>
           <span className={`text-xs font-medium ${isActive ? 'text-[#1d7af2] dark:text-[#00f0ff]' : 'text-gray-500 dark:text-slate-400'}`}>
@@ -77,11 +77,11 @@ export function ConversationItem({ conversation, isActive, onClick }) {
               {gameIcon && <span>{gameIcon}</span>}
               {conversation.activity}
             </p>
-          ) : (
-            <p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-500 dark:text-slate-400'}`}>
+          ) : conversation.lastMessage ? (
+            <p className={`text-sm truncate ${hasUnread ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-slate-400'}`}>
               {conversation.lastMessage}
             </p>
-          )}
+          ) : null}
         </div>
       </div>
 

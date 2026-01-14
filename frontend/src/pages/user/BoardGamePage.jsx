@@ -1,43 +1,48 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import {
     Grid3x3,
-    Circle,
     Joystick,
-    Puzzle,
-    Brain,
-    Target,
-    ChevronLeft,
-    ChevronRight,
-    ChevronUp,
-    ChevronDown,
-    Play,
-    Pause,
-    HelpCircle,
-    Undo2,
     Loader2,
     Save,
-    LogOut,
-    RotateCcw,
-    CornerDownLeft,
+    HelpCircle,
     Pencil,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
-import { GameTimer, GameScore, TimeSelectionModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
+import { TimeSelectionModal, ScoreResultModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
+import GameCard from '../../components/BoardGame/GameCard.jsx'
+import GameTopBar from '../../components/BoardGame/GameTopBar.jsx'
+import GamePlayArea from '../../components/BoardGame/GamePlayArea.jsx'
+import MobileDPad from '../../components/BoardGame/MobileDPad.jsx'
+import GameModals from '../../components/BoardGame/GameModals.jsx'
+import GameInstructionsModal from '../../components/BoardGame/GameInstructionsModal.jsx'
 import gameApi from '../../api/api-game.js'
-import { message } from 'antd'
+import { message, Modal } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
 
 
-// Icon mapping for game codes from database
+// Icon mapping for game codes from database (GameCard has its own icons)
 const GAME_ICONS = {
     'tic_tac_toe': Grid3x3,
-    'caro_4': Target,
-    'caro_5': Circle,
+    'caro_4': Grid3x3,
+    'caro_5': Grid3x3,
     'snake': Joystick,
-    'match_3': Puzzle,
-    'memory': Brain,
+    'match_3': Grid3x3,
+    'memory': Grid3x3,
     'free_draw': Pencil,
+}
+
+// Logo mapping for game images from public folder
+const GAME_LOGOS = {
+    'tic_tac_toe': '/tic-tac-toe.png',
+    'caro_4': '/caro-4.png',
+    'caro_5': '/caro-5.png',
+    'snake': '/snake-game.png',
+    'match_3': '/match-3.png',
+    'memory': '/memory.png',
+    'free_draw': '/draw free.png',
 }
 
 export default function BoardGamePage() {
@@ -59,14 +64,29 @@ export default function BoardGamePage() {
     // Modal state
     const [showTimeModal, setShowTimeModal] = useState(false)
     const [showHelpModal, setShowHelpModal] = useState(false)
+    const [helpGameCode, setHelpGameCode] = useState(null) // For game-specific help
+    const [showAchievementModal, setShowAchievementModal] = useState(false)
+    const [newAchievements, setNewAchievements] = useState([])
+
+    // Score Result Modal state
+    const [showScoreModal, setShowScoreModal] = useState(false)
+    const [endGameReason, setEndGameReason] = useState('time_up') // 'time_up' | 'game_over' | 'win'
+    const [pendingAchievements, setPendingAchievements] = useState([]) // Store achievements to show after score modal
 
     // Game state
     const [gameStarted, setGameStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [isPaused, setIsPaused] = useState(false) // Separate pause state for controls
+    const [hasFinishedSession, setHasFinishedSession] = useState(false) // Track if session is already finished (to avoid double submission)
     const [score, setScore] = useState(0)
     const [timeRemaining, setTimeRemaining] = useState(0)
-    const [selectedTime, setSelectedTime] = useState(0)
+    const [selectedTime, setSelectedTime] = useState(0) // Duration in seconds
+    const [symbolSelected, setSymbolSelected] = useState(false) // Track if player has selected X/O
+    const [showExitConfirm, setShowExitConfirm] = useState(false) // Exit confirmation modal
+
+    // Switch Game State
+    const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
+    const [pendingSwitchDirection, setPendingSwitchDirection] = useState(null) // 'prev' or 'next'
 
     // Game-specific state (for saving)
     const [gameState, setGameState] = useState(null)
@@ -161,6 +181,82 @@ export default function BoardGamePage() {
 
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
+
+    // Handle Game Switch Request (from GameTopBar)
+    const handleSwitchRequest = (direction) => {
+        if (!gameStarted) {
+            // Should not happen if buttons are only shown during game, but safe guard
+            if (direction === 'prev') handleLeft()
+            else handleRight()
+            return
+        }
+
+        // Pause game if playing
+        if (isPlaying) {
+            handlePauseClick()
+        }
+
+        setPendingSwitchDirection(direction)
+        setShowSwitchConfirm(true)
+    }
+
+    // Helper to perform save (returns true if successful)
+    const performSaveSession = async () => {
+        if (!sessionId) return false
+
+        try {
+            message.loading({ content: 'Đang lưu...', key: 'save' })
+
+            const saveState = {
+                score,
+                time_limit: selectedTime,
+                time_remain: timeRemaining,
+                ...gameStateRef.current,
+            }
+
+            await gameApi.saveSession(sessionId, saveState)
+            message.success({ content: 'Đã lưu game!', key: 'save' })
+            return true
+        } catch (err) {
+            console.error('Save failed:', err)
+            message.error({ content: 'Không thể lưu game', key: 'save' })
+            return false
+        }
+    }
+
+    // Handle Switch Confirm
+    const handleSwitchConfirm = async (shouldSave) => {
+        setShowSwitchConfirm(false)
+
+        // If user wants to save, try to save first
+        if (shouldSave && sessionId) {
+            const success = await performSaveSession()
+            // If save failed, abort switch to protect data
+            if (!success) return
+        }
+
+        // Calculate new index
+        let newIdx = activeGame
+        if (pendingSwitchDirection === 'prev') {
+            newIdx = (activeGame - 1 + games.length) % games.length
+        } else if (pendingSwitchDirection === 'next') {
+            newIdx = (activeGame + 1) % games.length
+        }
+
+        // Reset game state
+        resetToSelection()
+
+        // Manually set new game
+        setPreviousGame(activeGame)
+        setActiveGame(newIdx)
+
+        setPendingSwitchDirection(null)
+    }
+
+    const handleSwitchCancel = () => {
+        setShowSwitchConfirm(false)
+        setPendingSwitchDirection(null)
+    }
 
     // Handle START button click
     const handleStartClick = () => {
@@ -313,42 +409,47 @@ export default function BoardGamePage() {
     }
 
     // Handle SAVE button click
+    // Handle SAVE button click
     const handleSave = async () => {
-        if (!sessionId) return
-
-        try {
-            message.loading({ content: 'Đang lưu...', key: 'save' })
-
-            const saveState = {
-                score,
-                time_limit: selectedTime,
-                time_remain: timeRemaining,
-                ...gameStateRef.current,
-            }
-
-            await gameApi.saveSession(sessionId, saveState)
-
-            message.success({ content: 'Đã lưu game!', key: 'save' })
-
-            // Reset to game selection
+        const success = await performSaveSession()
+        if (success) {
+            // Reset to game selection only on success
             resetToSelection()
-        } catch (err) {
-            console.error('Save failed:', err)
-            message.error({ content: 'Không thể lưu game', key: 'save' })
         }
     }
 
-    // Handle EXIT button - finish game immediately
-    const handleExit = async () => {
-        if (sessionId) {
+    // Handle EXIT button - show confirmation first
+    const handleExitClick = () => {
+        setShowExitConfirm(true)
+    }
+
+    // Confirm exit - finish game
+    const handleExitConfirm = async () => {
+        setShowExitConfirm(false)
+
+        // If session exists and NOT already finished by game logic (e.g. Time Up / Win / Lose)
+        if (sessionId && !hasFinishedSession) {
             try {
-                await gameApi.finishSession(sessionId, score)
+                const response = await gameApi.finishSession(sessionId, score)
                 message.info('Game kết thúc! Điểm: ' + score)
+
+                // Check for new achievements
+                if (response?.data?.newAchievements?.length > 0) {
+                    setNewAchievements(response.data.newAchievements)
+                    setShowAchievementModal(true)
+                }
             } catch (err) {
                 console.error('Finish failed:', err)
             }
         }
+
+        // Always reset to selection (manual exit requested)
         resetToSelection()
+    }
+
+    // Cancel exit
+    const handleExitCancel = () => {
+        setShowExitConfirm(false)
     }
 
     // Handle BACK button - return to previous game selection (before game starts)
@@ -363,33 +464,84 @@ export default function BoardGamePage() {
         setGameStarted(false)
         setIsPlaying(false)
         setIsPaused(false)
+        setHasFinishedSession(false) // Reset finish flag
         setScore(0)
         setTimeRemaining(0)
         setSelectedTime(0)
         setSessionId(null)
         setSavedState(null)
         setGameState(null)
+        setPendingAchievements([]) // Clear pending achievements
+        setShowScoreModal(false) // Close score modal
         // End session protection
         endSession()
     }, [endSession])
 
+    // Handle Score Modal close - show achievements if any, then reset
+    const handleScoreModalClose = useCallback(() => {
+        setShowScoreModal(false)
+
+        // Show achievements if any were earned
+        if (pendingAchievements.length > 0) {
+            setNewAchievements(pendingAchievements)
+            setShowAchievementModal(true)
+            setPendingAchievements([])
+        } else {
+            // No achievements, reset to selection
+            resetToSelection()
+        }
+    }, [pendingAchievements, resetToSelection])
+
+    // Handle New Game from Score Modal - restart with time selection
+    const handleNewGame = useCallback(() => {
+        setShowScoreModal(false)
+        setPendingAchievements([]) // Clear achievements (user chose to play again)
+
+        // Reset game state but keep on same game
+        setGameStarted(false)
+        setIsPlaying(false)
+        setIsPaused(false)
+        setHasFinishedSession(false)
+        setScore(0)
+        setTimeRemaining(0)
+        setSelectedTime(0)
+        setSessionId(null)
+        setSavedState(null)
+        setGameState(null)
+        endSession()
+
+        // Open time selection modal for same game
+        setTimeout(() => {
+            if (currentGame?.code === 'free_draw') {
+                handleTimeConfirm(0) // Free draw: unlimited time
+            } else {
+                setShowTimeModal(true)
+            }
+        }, 100)
+    }, [currentGame, endSession, handleTimeConfirm])
+
+
     // Handle time up
     const handleTimeUp = useCallback(async () => {
         setIsPlaying(false)
+        setHasFinishedSession(true) // Mark session as finished
+        setEndGameReason('time_up')
 
         if (sessionId) {
             try {
-                await gameApi.finishSession(sessionId, score)
-                message.info('Hết giờ! Điểm của bạn: ' + score)
+                const response = await gameApi.finishSession(sessionId, score)
+
+                // Store achievements to show after score modal
+                if (response?.data?.newAchievements?.length > 0) {
+                    setPendingAchievements(response.data.newAchievements)
+                }
             } catch (err) {
                 console.error('Finish failed:', err)
             }
         }
 
-        // Wait a bit then reset
-        setTimeout(() => {
-            resetToSelection()
-        }, 2000)
+        // Show score modal first
+        setShowScoreModal(true)
     }, [sessionId, score])
 
     // Handle timer tick
@@ -409,25 +561,34 @@ export default function BoardGamePage() {
     const handleGameEnd = useCallback(async (result) => {
         if (result === 'lose') {
             setIsPlaying(false)
+            setHasFinishedSession(true) // Mark session as finished
+            setEndGameReason('game_over')
 
             if (sessionId) {
                 try {
-                    await gameApi.finishSession(sessionId, score)
-                    message.error('Game Over! Điểm của bạn: ' + score)
+                    const response = await gameApi.finishSession(sessionId, score)
+
+                    // Store achievements to show after score modal
+                    if (response?.data?.newAchievements?.length > 0) {
+                        setPendingAchievements(response.data.newAchievements)
+                    }
                 } catch (err) {
                     console.error('Finish failed:', err)
                 }
             }
 
-            setTimeout(() => {
-                resetToSelection()
-            }, 2000)
+            // Show score modal first
+            setShowScoreModal(true)
         }
     }, [sessionId, score])
 
     // Handle game state change (for saving)
     const handleStateChange = useCallback((state) => {
         setGameState(state)
+        // Track symbol selection for timer
+        if (state?.has_selected !== undefined) {
+            setSymbolSelected(state.has_selected)
+        }
     }, [])
 
     // Cursor navigation handlers
@@ -687,509 +848,248 @@ export default function BoardGamePage() {
         )
     }
 
-    return (
-        <div className="flex flex-col lg:flex-row h-full gap-4">
-            {/* LEFT SIDE - Board Display Area */}
-            <section className="flex-1 relative flex flex-col items-center justify-center p-4 lg:p-6 bg-slate-50 rounded-xl overflow-hidden">
-                {/* Background pattern */}
-                <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+    // ==================== RENDER ====================
 
-                {/* Game container */}
-                <div className="relative z-10 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-200 ring-1 ring-slate-100">
-                    {/* Label */}
-                    <div className="absolute top-2 left-4 text-[9px] font-bold text-indigo-400 tracking-widest z-20">
-                        {currentGame ? currentGame.name.toUpperCase() : 'MATRIX DISPLAY'}
+    // PHASE 1: Game Selection (Gallery View)
+    if (!gameStarted) {
+        return (
+            <div className="min-h-full">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#F43F5E] flex items-center justify-center text-white shadow-lg">
+                                <Joystick size={24} />
+                            </div>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7]">
+                                Game Arcade
+                            </span>
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">
+                            Choose your game and start playing
+                        </p>
                     </div>
 
-                    {/* Game content */}
-                    <div className="relative z-10 mt-4">
-                        {gameStarted ? (
-                            renderGame()
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-8 px-12">
-                                <div className="text-6xl mb-4">
-                                    {currentGame && GAME_ICONS[currentGame.code] ? (
-                                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white">
-                                            {(() => {
-                                                const Icon = GAME_ICONS[currentGame.code]
-                                                return <Icon size={48} />
-                                            })()}
-                                        </div>
-                                    ) : (
-                                        '🎮'
-                                    )}
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-800 mb-2">
-                                    {currentGame?.name || 'Select a game'}
-                                </h3>
-                                <p className="text-slate-500 text-sm mb-6 text-center max-w-xs">
-                                    {currentGame?.description || 'Choose a game from the menu to start playing'}
-                                </p>
-
-                                {/* Start/Resume buttons */}
-                                {currentGame && (
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={handleStartClick}
-                                            disabled={checkingSession}
-                                            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                                        >
-                                            <Play size={20} />
-                                            START
-                                        </button>
-
-                                        {hasSavedSession && (
-                                            <button
-                                                onClick={handleResumeClick}
-                                                disabled={checkingSession}
-                                                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                                            >
-                                                <RotateCcw size={20} />
-                                                RESUME
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-
-                                {checkingSession && (
-                                    <div className="mt-4 text-slate-400 text-sm flex items-center gap-2">
-                                        <Loader2 className="animate-spin" size={16} />
-                                        Checking saved game...
-                                    </div>
-                                )}
+                    {/* Stats Badge */}
+                    <div className="flex items-center gap-3">
+                        {games.filter(g => g.hasSaved).length > 0 && (
+                            <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-semibold flex items-center gap-2">
+                                <Save size={16} />
+                                {games.filter(g => g.hasSaved).length} Saved
                             </div>
                         )}
+                        <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-sm font-semibold">
+                            {games.length} Games
+                        </div>
                     </div>
                 </div>
-            </section>
 
-            {/* RIGHT SIDE - Game Selector & Controls */}
-            <aside className="w-full lg:w-80 xl:w-96 flex flex-col gap-3">
-                {/* Timer & Score - Compact in sidebar (hidden for Free Draw) */}
-                {currentGame?.code !== 'free_draw' && (
-                    <section className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm">
-                        <div className="flex items-center justify-between gap-3">
-                            <GameTimer
-                                timeRemaining={timeRemaining}
-                                isPlaying={isPlaying}
-                                onTimeUp={handleTimeUp}
-                                onTick={handleTick}
-                                compact={true}
-                            />
-                            <GameScore
-                                score={score}
-                                label="Score"
-                                compact={true}
-                            />
-                        </div>
-                    </section>
-                )}
-
-                {/* Free Draw mode indicator */}
-                {currentGame?.code === 'free_draw' && gameStarted && (
-                    <section className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-3 rounded-xl shadow-sm">
-                        <div className="flex items-center justify-center gap-2">
-                            <Pencil size={18} />
-                            <span className="font-bold">Chế độ vẽ tự do - Không giới hạn thời gian</span>
-                        </div>
-                    </section>
-                )}
-
-                {/* Game Selector */}
-                <section className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex-1">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-500 flex items-center gap-2 mb-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                        Select Cartridge
-                    </h2>
-
-                    {/* Loading state */}
-                    {loading && (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="animate-spin text-indigo-500" size={32} />
-                            <span className="ml-2 text-slate-500">Đang tải games...</span>
-                        </div>
-                    )}
-
-                    {/* Error state */}
-                    {error && !loading && (
-                        <div className="flex items-center justify-center py-8 text-rose-500">
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    {/* Games list */}
-                    {!loading && !error && games.length > 0 && (
-                        <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
-                            {games.map((game, idx) => {
-                                const isActive = idx === activeGame
-                                const IconComponent = GAME_ICONS[game.code] || Grid3x3
-                                const isDisabled = gameStarted && !isActive
-                                return (
-                                    <button
-                                        key={game.id}
-                                        onClick={() => selectGame(idx)}
-                                        disabled={isDisabled}
-                                        className={`group flex items-center gap-3 p-3 rounded-xl text-left transition-all relative overflow-hidden ${isActive
-                                            ? 'bg-indigo-50 border-2 border-indigo-500'
-                                            : isDisabled
-                                                ? 'border border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
-                                                : 'border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-300'
-                                            }`}
-                                    >
-                                        <div
-                                            className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors ${isActive
-                                                ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm'
-                                                : 'bg-slate-100 group-hover:bg-indigo-100 text-slate-400 group-hover:text-indigo-500'
-                                                }`}
-                                        >
-                                            <IconComponent size={18} />
-                                        </div>
-                                        <div className="z-10 flex-1 min-w-0">
-                                            <h3
-                                                className={`font-bold text-sm leading-tight truncate ${isActive ? 'text-slate-800' : 'text-slate-600 group-hover:text-slate-800'
-                                                    }`}
-                                            >
-                                                {game.name}
-                                            </h3>
-                                            <p
-                                                className={`text-[10px] font-semibold ${isActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-500'
-                                                    }`}
-                                            >
-                                                {isActive ? 'Currently Selected' : `${game.board_row}×${game.board_col}`}
-                                            </p>
-                                        </div>
-                                        {isActive && (
-                                            <ChevronRight size={18} className="text-indigo-500" />
-                                        )}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    )}
-
-                    {/* Empty state */}
-                    {!loading && !error && games.length === 0 && (
-                        <div className="flex items-center justify-center py-8 text-slate-500">
-                            <span>Không có game nào.</span>
-                        </div>
-                    )}
-                </section>
-
-                {/* Controls Section */}
-                <section className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 text-center">
-                        Controller
-                    </h2>
-
-                    <div className="flex flex-col items-center gap-4">
-                        {/* Before game starts: Navigation controls */}
-                        {!gameStarted && (
-                            <>
-                                {/* Help & Back buttons */}
-                                <div className="flex items-center justify-between w-full">
-                                    <button
-                                        onClick={() => setShowHelpModal(true)}
-                                        aria-label="Help"
-                                        className="arcade-btn px-4 py-2 rounded-xl bg-slate-100 text-slate-500 shadow-[0_3px_0_#cbd5e1] hover:bg-slate-200 text-xs font-bold flex items-center gap-2 transition-colors"
-                                    >
-                                        <HelpCircle size={16} />
-                                    </button>
-                                    <button
-                                        onClick={handleBack}
-                                        aria-label="Back"
-                                        className="arcade-btn px-4 py-2 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors tracking-wide"
-                                    >
-                                        BACK
-                                    </button>
-                                </div>
-
-                                {/* Navigation: LEFT + START + RIGHT */}
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={handleLeft}
-                                        disabled={loading || games.length === 0}
-                                        aria-label="Left"
-                                        className={`arcade-btn w-12 h-12 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${loading || games.length === 0
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : 'hover:bg-slate-50 hover:text-indigo-500'
-                                            }`}
-                                    >
-                                        <ChevronLeft size={24} />
-                                    </button>
-
-                                    <button
-                                        onClick={handleStartClick}
-                                        disabled={loading || games.length === 0 || !currentGame}
-                                        aria-label="Start"
-                                        className={`arcade-btn w-16 h-16 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 ${loading || games.length === 0 || !currentGame
-                                            ? 'bg-slate-400 shadow-[0_6px_0_#94a3b8] border-slate-200 cursor-not-allowed'
-                                            : 'bg-gradient-to-b from-indigo-500 to-indigo-600 shadow-[0_6px_0_#3730a3] border-indigo-100'
-                                            }`}
-                                    >
-                                        <span className="text-[8px] mb-0.5 font-bold opacity-90 tracking-wide">START</span>
-                                        <Play size={22} />
-                                    </button>
-
-                                    <button
-                                        onClick={handleRight}
-                                        disabled={loading || games.length === 0}
-                                        aria-label="Right"
-                                        className={`arcade-btn w-12 h-12 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] transition-colors flex items-center justify-center ${loading || games.length === 0
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : 'hover:bg-slate-50 hover:text-indigo-500'
-                                            }`}
-                                    >
-                                        <ChevronRight size={24} />
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Game started and PLAYING: Direction buttons + ENTER + PAUSE */}
-                        {gameStarted && isPlaying && !isPaused && (
-                            <>
-                                {/* Top row: PAUSE button */}
-                                <div className="flex items-center justify-between w-full mb-2">
-                                    <div className="text-[10px] text-slate-400">
-                                        <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">WASD</span> / <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">↑↓←→</span>
-                                    </div>
-                                    <button
-                                        onClick={handlePauseClick}
-                                        aria-label="Pause"
-                                        className="arcade-btn px-3 py-1.5 rounded-lg bg-amber-500 text-white shadow-[0_2px_0_#c2410c] hover:bg-amber-600 text-[10px] font-bold flex items-center gap-1.5 transition-colors"
-                                    >
-                                        <Pause size={12} /> ESC
-                                    </button>
-                                </div>
-
-                                {/* D-pad: UP */}
-                                <div className="flex items-center justify-center">
-                                    <button
-                                        onClick={handleUp}
-                                        aria-label="Up"
-                                        className="arcade-btn w-12 h-12 rounded-xl bg-slate-100 text-slate-600 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    >
-                                        <ChevronUp size={24} />
-                                    </button>
-                                </div>
-
-                                {/* D-pad: LEFT + ENTER + RIGHT */}
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={handleLeftNav}
-                                        aria-label="Left"
-                                        className="arcade-btn w-12 h-12 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
-                                    >
-                                        <ChevronLeft size={24} />
-                                    </button>
-
-                                    <button
-                                        onClick={handleEnter}
-                                        aria-label="Enter"
-                                        className="arcade-btn w-14 h-14 rounded-full text-white shadow-[0_5px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 bg-gradient-to-b from-emerald-500 to-green-600 shadow-[0_5px_0_#15803d] border-emerald-100"
-                                    >
-                                        <CornerDownLeft size={20} />
-                                    </button>
-
-                                    <button
-                                        onClick={handleRightNav}
-                                        aria-label="Right"
-                                        className="arcade-btn w-12 h-12 rounded-full bg-white text-slate-600 border border-slate-200 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-50 hover:text-indigo-500 transition-colors flex items-center justify-center"
-                                    >
-                                        <ChevronRight size={24} />
-                                    </button>
-                                </div>
-
-                                {/* D-pad: DOWN */}
-                                <div className="flex items-center justify-center">
-                                    <button
-                                        onClick={handleDown}
-                                        aria-label="Down"
-                                        className="arcade-btn w-12 h-12 rounded-xl bg-slate-100 text-slate-600 shadow-[0_4px_0_#cbd5e1] hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    >
-                                        <ChevronDown size={24} />
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Game started and PAUSED: SAVE + RESUME + EXIT */}
-                        {gameStarted && isPaused && (
-                            <>
-                                <div className="flex items-center justify-between w-full">
-                                    <button
-                                        onClick={handleSave}
-                                        aria-label="Save"
-                                        className="arcade-btn px-4 py-2 rounded-xl bg-emerald-500 text-white shadow-[0_3px_0_#059669] hover:bg-emerald-600 text-xs font-bold flex items-center gap-2 transition-colors"
-                                    >
-                                        <Save size={16} /> SAVE
-                                    </button>
-                                    <button
-                                        onClick={handleExit}
-                                        aria-label="Exit"
-                                        className="arcade-btn px-4 py-2 rounded-xl bg-rose-500 text-white shadow-[0_3px_0_#be123c] hover:bg-rose-600 text-xs font-bold flex items-center gap-2 transition-colors"
-                                    >
-                                        EXIT <LogOut size={16} />
-                                    </button>
-                                </div>
-
-                                <button
-                                    onClick={handleResumeGameClick}
-                                    aria-label="Resume"
-                                    className="arcade-btn w-16 h-16 rounded-full text-white shadow-[0_6px_0] hover:brightness-110 transition-all flex flex-col items-center justify-center relative border-4 bg-gradient-to-b from-emerald-500 to-green-600 shadow-[0_6px_0_#15803d] border-emerald-100"
-                                >
-                                    <span className="text-[8px] mb-0.5 font-bold opacity-90 tracking-wide">RESUME</span>
-                                    <Play size={22} />
-                                </button>
-                            </>
-                        )}
+                {/* Loading State */}
+                {loading && (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <Loader2 size={48} className="animate-spin text-[#7C3AED] mb-4" />
+                        <p className="text-slate-500 dark:text-slate-400">Loading games...</p>
                     </div>
-                </section>
-            </aside>
+                )}
 
-            {/* Time Selection Modal */}
-            <TimeSelectionModal
-                open={showTimeModal}
-                onClose={() => setShowTimeModal(false)}
-                onConfirm={handleTimeConfirm}
-                gameName={currentGame?.name || 'Game'}
+                {/* Error State */}
+                {error && !loading && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
+                            <HelpCircle size={40} className="text-rose-500" />
+                        </div>
+                        <p className="text-rose-600 dark:text-rose-400 font-medium">{error}</p>
+                    </div>
+                )}
+
+                {/* Game Grid */}
+                {!loading && !error && games.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                        {games.map((game, idx) => (
+                            <GameCard
+                                key={game.id}
+                                game={game}
+                                isSelected={idx === activeGame}
+                                hasSavedSession={hasSavedSession && idx === activeGame}
+                                onSelect={() => selectGame(idx)}
+                                onPlay={() => {
+                                    selectGame(idx)
+                                    handleStartClick()
+                                }}
+                                onResume={handleResumeClick}
+                                onHelpClick={(game) => {
+                                    setHelpGameCode(game.code)
+                                    setShowHelpModal(true)
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && !error && games.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                            <Joystick size={40} className="text-slate-400" />
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400">No games available</p>
+                    </div>
+                )}
+
+                {/* Time Selection Modal */}
+                <TimeSelectionModal
+                    open={showTimeModal}
+                    onClose={() => setShowTimeModal(false)}
+                    onConfirm={handleTimeConfirm}
+                    gameCode={currentGame?.code}
+                />
+
+                {/* Help Modal */}
+                <Modal
+                    open={showHelpModal}
+                    onCancel={() => setShowHelpModal(false)}
+                    footer={null}
+                    centered
+                    width={400}
+                    styles={{
+                        content: { borderRadius: 20, padding: 0, overflow: 'hidden' }
+                    }}
+                >
+                    <div className="bg-gradient-to-r from-[#7C3AED] to-[#F43F5E] text-white p-6">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            <HelpCircle size={24} />
+                            How to Play
+                        </h2>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                                <ChevronLeft size={20} className="text-slate-600" />
+                                <ChevronRight size={20} className="text-slate-600" />
+                            </div>
+                            <span className="text-slate-600 dark:text-slate-300">Arrow keys or WASD to move</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                                ENTER
+                            </div>
+                            <span className="text-slate-600 dark:text-slate-300">Confirm selection</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                                ESC
+                            </div>
+                            <span className="text-slate-600 dark:text-slate-300">Pause game</span>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Achievement Modal (Persist from game) */}
+                <GameModals
+                    showAchievement={showAchievementModal}
+                    achievements={newAchievements}
+                    onCloseAchievement={() => setShowAchievementModal(false)}
+                    showHelp={false}
+                    showExitConfirm={false}
+                    showSwitchConfirm={false}
+                />
+
+                {/* Game Instructions Modal */}
+                <GameInstructionsModal
+                    open={showHelpModal}
+                    onClose={() => {
+                        setShowHelpModal(false)
+                        setHelpGameCode(null)
+                    }}
+                    gameCode={helpGameCode}
+                />
+            </div>
+        )
+    }
+
+    // PHASE 2: Game Playing (Immersive Mode)
+    return (
+        <div className="min-h-full flex flex-col">
+            {/* Top Bar */}
+            <GameTopBar
+                currentGame={currentGame}
+                timeRemaining={timeRemaining}
+                score={score}
+                isPlaying={isPlaying}
+                isPaused={isPaused}
+                symbolSelected={symbolSelected}
+                onExit={handleExitClick}
+                onPause={handlePauseClick}
+                onResume={handleResumeGameClick}
+                onSave={handleSave}
+                onHelp={() => setShowHelpModal(true)}
+                onPrevGame={() => handleSwitchRequest('prev')}
+                onNextGame={() => handleSwitchRequest('next')}
+                canGoPrev={games.length > 1}
+                canGoNext={games.length > 1}
+                onTimeUp={handleTimeUp}
+                onTick={handleTick}
             />
 
-            {/* Help Modal - Game Instructions */}
-            {showHelpModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 flex items-center justify-between">
-                            <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                                <HelpCircle size={20} />
-                                Hướng Dẫn Chơi Game
-                            </h2>
-                            <button
-                                onClick={() => setShowHelpModal(false)}
-                                className="text-white/80 hover:text-white transition-colors"
-                            >
-                                ✕
-                            </button>
-                        </div>
 
-                        {/* Content */}
-                        <div className="p-6 overflow-y-auto max-h-[60vh] space-y-6">
-                            {/* Controls */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    🎮 Điều Khiển Chung
-                                </h3>
-                                <div className="bg-slate-50 rounded-lg p-3 text-sm space-y-1">
-                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">↑↓←→</span> hoặc <span className="font-mono bg-slate-200 px-1.5 rounded">WASD</span>: Di chuyển</p>
-                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">Enter</span> hoặc <span className="font-mono bg-slate-200 px-1.5 rounded">Space</span>: Chọn/Xác nhận</p>
-                                    <p><span className="font-mono bg-slate-200 px-1.5 rounded">ESC</span>: Tạm dừng / Quay lại</p>
-                                </div>
-                            </div>
+            {/* Game Area */}
+            <GamePlayArea
+                currentGame={currentGame}
+                isPaused={isPaused}
+                isPlaying={isPlaying}
+            >
+                {renderGame()}
+            </GamePlayArea>
 
-                            {/* Tic Tac Toe */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Grid3x3 size={18} className="text-indigo-500" /> Tic Tac Toe
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Đánh 3 quân liên tiếp theo hàng, cột hoặc đường chéo để thắng.
-                                    Bạn là X, máy là O. Di chuyển con trỏ và nhấn Enter để đặt quân.
-                                </p>
-                            </div>
-
-                            {/* Caro 4 */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Target size={18} className="text-emerald-500" /> Caro 4
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Tương tự Tic Tac Toe nhưng cần 4 quân liên tiếp trên bàn 10x10.
-                                    Chiến thuật quan trọng hơn!
-                                </p>
-                            </div>
-
-                            {/* Caro 5 */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Circle size={18} className="text-blue-500" /> Caro 5 (Gomoku)
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Cần 5 quân liên tiếp để thắng trên bàn 15x15.
-                                    Game cờ caro cổ điển, đòi hỏi tư duy chiến thuật cao.
-                                </p>
-                            </div>
-
-                            {/* Snake */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Joystick size={18} className="text-amber-500" /> Snake
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Điều khiển rắn ăn mồi để dài ra. Tránh đâm vào tường và thân mình.
-                                    Dùng phím mũi tên hoặc WASD để điều khiển hướng đi.
-                                </p>
-                            </div>
-
-                            {/* Match 3 */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Puzzle size={18} className="text-pink-500" /> Match 3
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Ghép 3+ icon giống nhau theo hàng/cột để ghi điểm.
-                                    Nhấn Enter để chọn ô, di chuyển đến ô kề bên và nhấn Enter để đổi chỗ.
-                                    Nhấn Enter lần nữa vào ô đã chọn để bỏ chọn. Combo sẽ được cộng thêm điểm!
-                                </p>
-                            </div>
-
-                            {/* Memory */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Brain size={18} className="text-purple-500" /> Memory
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Lật 2 thẻ để tìm cặp giống nhau. Ghi nhớ vị trí các thẻ đã lật!
-                                    Đầu game sẽ hiện tất cả thẻ trong 2 giây. Tìm hết các cặp để hoàn thành.
-                                </p>
-                            </div>
-
-                            {/* Free Draw */}
-                            <div>
-                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                    <Pencil size={18} className="text-cyan-500" /> Free Draw
-                                </h3>
-                                <p className="text-sm text-slate-600">
-                                    Vẽ pixel art trên canvas trắng. Chọn màu từ bảng màu, click hoặc nhấn Enter để vẽ.
-                                    Phím <span className="font-mono bg-slate-200 px-1 rounded">E</span>: Bật/tắt tẩy •
-                                    <span className="font-mono bg-slate-200 px-1 rounded">C</span>: Xóa canvas •
-                                    <span className="font-mono bg-slate-200 px-1 rounded">P</span> hoặc click phải: Lấy màu từ ô.
-                                </p>
-                            </div>
-
-                            {/* Tips */}
-                            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-                                <h3 className="font-bold text-amber-800 mb-2">💡 Mẹo</h3>
-                                <ul className="text-sm text-amber-700 space-y-1 list-disc list-inside">
-                                    <li>Bạn có thể lưu game và tiếp tục sau</li>
-                                    <li>Điểm cao sẽ được lưu vào bảng xếp hạng</li>
-                                    <li>Chọn thời gian chơi phù hợp với bạn</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="px-6 py-4 bg-slate-50 border-t">
-                            <button
-                                onClick={() => setShowHelpModal(false)}
-                                className="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:brightness-110 transition-all"
-                            >
-                                Đã hiểu, bắt đầu chơi!
-                            </button>
-                        </div>
-                    </div>
+            {/* Free Draw Mode Indicator */}
+            {currentGame?.code === 'free_draw' && (
+                <div className="mt-6 text-center">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full text-sm font-medium">
+                        <Pencil size={16} />
+                        Free Draw Mode - No Time Limit
+                    </span>
                 </div>
             )}
+
+            {/* Mobile D-Pad */}
+            <MobileDPad
+                onUp={handleUp}
+                onDown={handleDown}
+                onLeft={handleLeftNav}
+                onRight={handleRightNav}
+                onEnter={handleEnter}
+            />
+
+            {/* Modals */}
+            <GameModals
+                showHelp={showHelpModal}
+                showAchievement={showAchievementModal}
+                showExitConfirm={showExitConfirm}
+                achievements={newAchievements}
+                onCloseHelp={() => setShowHelpModal(false)}
+                onCloseAchievement={() => {
+                    setShowAchievementModal(false)
+                    resetToSelection() // Reset after closing achievements
+                }}
+                onExitConfirm={handleExitConfirm}
+                onExitCancel={handleExitCancel}
+
+                showSwitchConfirm={showSwitchConfirm}
+                onSwitchConfirm={handleSwitchConfirm}
+                onSwitchCancel={handleSwitchCancel}
+            />
+
+            {/* Score Result Modal */}
+            <ScoreResultModal
+                open={showScoreModal}
+                onClose={handleScoreModalClose}
+                score={score}
+                gameName={currentGame?.name || 'Game'}
+                timeLimit={selectedTime}
+                reason={endGameReason}
+                onNewGame={handleNewGame}
+                onExit={handleScoreModalClose}
+            />
         </div>
     )
 }

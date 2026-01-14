@@ -63,6 +63,20 @@ class AchievementController {
     }
   }
 
+  async getAllUserAchievements(req, res, next) {
+    try {
+      const { user_id } = req.params;
+      const achievements = await achievementService.getAllUserAchievements(user_id);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "User achievements retrieved successfully",
+        data: achievements,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async updateAchievement(req, res, next) {
     try {
       const { id } = req.params;

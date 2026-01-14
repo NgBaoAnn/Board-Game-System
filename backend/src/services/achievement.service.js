@@ -69,6 +69,16 @@ class AchievementService {
     return achievementRepo.findUserAchievementsByGameId(userId, gameId);
   }
 
+  async getAllUserAchievements(userId) {
+    // Validate user exists
+    const user = await userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    return achievementRepo.findAllUserAchievements(userId);
+  }
+
   async updateAchievement(id, data) {
     const achievement = await achievementRepo.findById(id);
     if (!achievement) {

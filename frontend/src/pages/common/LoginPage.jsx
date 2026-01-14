@@ -27,15 +27,15 @@ const formVariants = {
 
 const buttonVariants = {
   idle: { scale: 1, y: 0 },
-  hover: { 
-    scale: 1.02, 
+  hover: {
+    scale: 1.02,
     y: -2,
-    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)' 
+    boxShadow: '0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(168, 85, 247, 0.3)'
   },
-  tap: { 
-    scale: 0.98, 
+  tap: {
+    scale: 0.98,
     y: 2,
-    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)' 
+    boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)'
   },
 }
 
@@ -73,12 +73,12 @@ export default function LoginPage() {
 
   const rightContent = (
     <AnimatedHeroBackground>
-      
+
       <FloatingGamePieces count={20} />
 
-      
+
       <div className="relative h-full flex flex-col justify-between p-12 text-white z-10">
-        
+
         <div className="flex justify-end">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -90,9 +90,9 @@ export default function LoginPage() {
           </motion.div>
         </div>
 
-        
+
         <div className="space-y-6">
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -114,7 +114,7 @@ export default function LoginPage() {
               </div>
             </div>
             <p className="text-gray-300 text-sm italic leading-relaxed">
-              &quot;<TypewriterText 
+              &quot;<TypewriterText
                 text="BoardGameHub has completely transformed how I practice. The matchmaking is instant and the community is incredibly welcoming."
                 delay={1}
                 speed={40}
@@ -122,7 +122,7 @@ export default function LoginPage() {
             </p>
           </motion.div>
 
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -132,7 +132,7 @@ export default function LoginPage() {
               Join the Community
             </h2>
             <p className="text-gray-400 text-sm max-w-sm">
-              Connect with over <span className="text-[#00f0ff] font-semibold">10,000+</span> players worldwide. 
+              Connect with over <span className="text-[#00f0ff] font-semibold">10,000+</span> players worldwide.
               Challenge friends, join tournaments, and master your favorite games.
             </p>
           </motion.div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
         animate={formState}
         className="space-y-0"
       >
-        
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -171,7 +171,7 @@ export default function LoginPage() {
           </div>
         </motion.div>
 
-        
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -186,7 +186,7 @@ export default function LoginPage() {
           </p>
         </motion.div>
 
-        
+
         <Form
           form={form}
           layout="vertical"
@@ -230,9 +230,10 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between text-sm mb-6">
             <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox className="text-slate-500 dark:text-gray-400">Remember me</Checkbox>
+              <Checkbox className="text-slate-500 dark:text-gray-400 " tabIndex={-1}>Remember me</Checkbox>
             </Form.Item>
             <Link
+              tabIndex={-1}
               to="/forgot-password"
               className="font-medium text-[#1d7af2] hover:text-blue-700 transition-colors"
             >
@@ -275,25 +276,7 @@ export default function LoginPage() {
           </Form.Item>
         </Form>
 
-        
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 bg-white dark:bg-[#1e293b] text-slate-500 dark:text-gray-400 font-medium">
-              Or continue with
-            </span>
-          </div>
-        </div>
 
-        
-        <SocialLoginButtons
-          onGoogleClick={() => message.info('Google login clicked')}
-          onFacebookClick={() => message.info('Facebook login clicked')}
-        />
-
-        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

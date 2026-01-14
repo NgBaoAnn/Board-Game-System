@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo ,  memo } from 'react'
 import { Palette, Eraser, RotateCcw, Download, Pipette } from 'lucide-react'
 
 /**
@@ -44,7 +44,7 @@ const COLOR_PALETTE = [
 const PALETTE_COLS = 8 // 8 colors per row
 const PALETTE_ROWS = Math.ceil(COLOR_PALETTE.length / PALETTE_COLS)
 
-export default function FreeDrawGame({
+function FreeDrawGame({
     isPlaying = false,
     savedState = null,
     onStateChange,
@@ -448,3 +448,5 @@ export default function FreeDrawGame({
         </div>
     )
 }
+
+export default memo(FreeDrawGame)

@@ -1,5 +1,6 @@
+import { memo } from 'react'
 import { Avatar, Tooltip } from 'antd'
-import { UserPlus, User } from 'lucide-react'
+import { UserPlus, User, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -16,8 +17,9 @@ const tierConfig = {
  * PlayerCard - Card for non-friend players (for "All Players" tab)
  * Shows avatar, name, tier, and Add Friend / View Profile buttons
  * Supports dark/light mode
+ * @param {boolean} requestSent - Whether a friend request has been sent to this player
  */
-export function PlayerCard({ player, onAddFriend, index = 0 }) {
+export function PlayerCard({ player, onAddFriend, index = 0, requestSent = false }) {
   const navigate = useNavigate()
   const isOnline = player.status === 'online'
   const tier = tierConfig[player.tier] || tierConfig.gold
@@ -70,15 +72,25 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
 
       
       <div className="grid grid-cols-2 gap-2 w-full mt-auto pt-2">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onAddFriend?.(player)}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-[#1d7af2]/20 dark:hover:shadow-[#00f0ff]/20 transition-shadow"
-        >
-          <UserPlus size={12} />
-          Add Friend
-        </motion.button>
+        {requestSent ? (
+          <motion.button
+            disabled
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-200 dark:bg-slate-600/50 text-gray-500 dark:text-slate-400 text-xs font-bold rounded-lg cursor-not-allowed"
+          >
+            <Check size={12} />
+            Request Sent
+          </motion.button>
+        ) : (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onAddFriend?.(player)}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-[#1d7af2]/20 dark:hover:shadow-[#00f0ff]/20 transition-shadow"
+          >
+            <UserPlus size={12} />
+            Add Friend
+          </motion.button>
+        )}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -93,4 +105,4 @@ export function PlayerCard({ player, onAddFriend, index = 0 }) {
   )
 }
 
-export default PlayerCard
+export default memo(PlayerCard)

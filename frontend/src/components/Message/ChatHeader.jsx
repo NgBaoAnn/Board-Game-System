@@ -64,29 +64,6 @@ export function ChatHeader({ conversation, onInvite, onSpectate }) {
         
         <div>
           <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{conversation.name}</h3>
-          <div className="flex items-center gap-2">
-            
-            <div
-              className={`flex items-center text-xs font-medium ${
-                isPlaying ? 'text-amber-600 dark:text-amber-400' : isOnline ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                  isPlaying ? 'bg-amber-500' : isOnline ? 'bg-green-500' : 'bg-gray-400 dark:bg-slate-500'
-                }`}
-              />
-              {isPlaying ? (
-                <span className="flex items-center gap-1">
-                  {gameIcon} {conversation.gameStatus}
-                </span>
-              ) : isOnline ? (
-                'Online'
-              ) : (
-                'Offline'
-              )}
-            </div>
-          </div>
         </div>
       </div>
 

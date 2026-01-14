@@ -5,6 +5,7 @@ class UploadService {
   constructor() {
     this.avatarBucket = "avatars";
     this.gameBucket = "game-images";
+    this.messageBucket = "message-attachments";
   }
 
   async uploadAvatar(file) {
@@ -68,6 +69,41 @@ class UploadService {
 
     return {
       url: publicUrl,
+    };
+  }
+
+  async uploadMessageAttachment(file) {
+    if (!supabase) {
+      throw new BadRequestError("Storage is not configured");
+    }
+
+    if (!file) {
+      throw new BadRequestError("No file uploaded");
+    }
+
+    const fileExt = file.originalname.split(".").pop();
+    const fileName = `msg_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from(this.messageBucket)
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (error) {
+      throw new BadRequestError(`Upload failed: ${error.message}`);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(this.messageBucket).getPublicUrl(fileName);
+
+    return {
+      url: publicUrl,
+      fileName: file.originalname,
+      fileType: file.mimetype,
+      fileSize: file.size,
     };
   }
 }

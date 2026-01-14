@@ -1,6 +1,7 @@
 const HTTP_STATUS = require("../constants/http-status");
 const ResponseHandler = require("../utils/response-handler");
 const conversationService = require("../services/conversation.service");
+const uploadService = require("../services/upload.service");
 
 class ConversationController {
   async getConversationUser(req, res, next) {
@@ -70,10 +71,23 @@ class ConversationController {
       const conversationId = req.params.id;
       const { content } = req.body;
 
+      // Handle file upload if present
+      let fileData = {};
+      if (req.file) {
+        const uploadResult = await uploadService.uploadMessageAttachment(req.file);
+        fileData = {
+          fileUrl: uploadResult.url,
+          fileName: uploadResult.fileName,
+          fileType: uploadResult.fileType,
+          fileSize: uploadResult.fileSize,
+        };
+      }
+
       const response = await conversationService.sendMessage({
         userId,
         conversationId,
-        content,
+        content: content || '',
+        ...fileData,
       });
 
       return ResponseHandler.success(res, {
@@ -123,6 +137,64 @@ class ConversationController {
         status: HTTP_STATUS.OK,
         message: "Delete conversation successfully!",
         data: null,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async reactToMessage(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const messageId = req.params.messageId;
+      const { reaction } = req.body;
+
+      const response = await conversationService.reactToMessage({
+        userId,
+        messageId,
+        reaction,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Reaction updated successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async markAsRead(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const conversationId = req.params.id;
+
+      const response = await conversationService.markAsRead({
+        userId,
+        conversationId,
+      });
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Messages marked as read!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getUnreadCount(req, res, next) {
+    try {
+      const userId = req.user.id;
+
+      const response = await conversationService.getUnreadCount(userId);
+
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Unread count retrieved!",
+        data: response,
       });
     } catch (err) {
       next(err);

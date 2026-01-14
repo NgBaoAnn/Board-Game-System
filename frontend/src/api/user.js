@@ -55,12 +55,12 @@ export const userApi = {
     },
 
     /**
-     * Get user achievements
+     * Get user achievements (all games)
      * @param {string} userId - User ID
      * @returns {Promise<Array>} List of achievements
      */
     getAchievements: async (userId) => {
-        const response = await axiosInstance.get(`/users/${userId}/achievements`)
+        const response = await axiosInstance.get(`/achievements/user/${userId}`)
         return {
             success: response.success || true,
             achievements: response.data,

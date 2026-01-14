@@ -56,7 +56,7 @@ class ConversationService {
     return conversationRepo.findById(conversation.id);
   }
 
-  async sendMessage({ userId, conversationId, content }) {
+  async sendMessage({ userId, conversationId, content, fileUrl, fileName, fileType, fileSize }) {
     const conversation = await conversationRepo.findById(conversationId);
     if (!conversation) {
       throw new NotFoundError("Conversation not found!");
@@ -75,6 +75,10 @@ class ConversationService {
       senderId: userId,
       conversationId,
       content,
+      fileUrl,
+      fileName,
+      fileType,
+      fileSize,
     });
 
     await conversationRepo.updateTimestamp(conversationId);
@@ -131,6 +135,61 @@ class ConversationService {
 
     await conversationRepo.delete(conversationId);
     return true;
+  }
+
+  async reactToMessage({ userId, messageId, reaction }) {
+    // Find the message
+    const message = await conversationRepo.findMessageById(messageId);
+    if (!message) {
+      throw new NotFoundError("Message not found!");
+    }
+
+    // Verify user belongs to this conversation
+    const conversation = await conversationRepo.findById(message.conversation_id);
+    if (!conversation) {
+      throw new NotFoundError("Conversation not found!");
+    }
+
+    if (
+      conversation.user_a.id !== userId &&
+      conversation.user_b.id !== userId
+    ) {
+      throw new ForbiddenError(
+        "You are not allowed to react to this message!"
+      );
+    }
+
+    // Update the reaction (null to remove, emoji to add)
+    const updatedMessage = await conversationRepo.reactToMessage({
+      messageId,
+      reaction: reaction || null,
+    });
+
+    return updatedMessage;
+  }
+
+  async markAsRead({ userId, conversationId }) {
+    const conversation = await conversationRepo.findById(conversationId);
+    if (!conversation) {
+      throw new NotFoundError("Conversation not found!");
+    }
+
+    if (
+      conversation.user_a.id !== userId &&
+      conversation.user_b.id !== userId
+    ) {
+      throw new ForbiddenError(
+        "You are not allowed to access this conversation!"
+      );
+    }
+
+    await conversationRepo.markMessagesAsRead({ conversationId, userId });
+    return { success: true };
+  }
+
+  async getUnreadCount(userId) {
+    const result = await conversationRepo.getUnreadCount(userId);
+    return { count: Number(result?.total || 0) };
   }
 }
 
