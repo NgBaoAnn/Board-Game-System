@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Star, Users, MessageSquare, TrendingUp } from 'lucide-react'
-import { Spin, Progress, Empty, Pagination } from 'antd'
+import { Spin, Progress, Empty, Pagination, theme, ConfigProvider } from 'antd'
 import { ReviewCard, ReviewForm } from '@/components/GameReview'
 import StarRating from '@/components/common/StarRating'
 import reviewApi from '@/api/api-review'
 import gameApi from '@/api/api-game'
+import { useTheme } from '@/context/ThemeContext'
 
 // Game logo mapping
 const GAME_LOGOS = {
@@ -25,6 +26,7 @@ export default function GameReviewPage() {
     const { gameId } = useParams()
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
+    const { isDarkMode } = useTheme()
     
     // Get game code from URL params
     const gameCode = searchParams.get('code') || 'tic_tac_toe'
@@ -117,10 +119,10 @@ export default function GameReviewPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-100">
                 <Spin size="large" />
             </div>
-        )
+        );
     }
 
     return (
@@ -130,7 +132,7 @@ export default function GameReviewPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 mb-4 text-gray-600 dark:text-slate-400 hover:text-[#1d7af2] dark:hover:text-[#00f0ff] transition-colors font-medium"
+                className="flex items-center gap-2 mb-4 text-gray-600 dark:text-slate-400 hover:text-primary dark:hover:text-text-neon-cyan transition-colors font-medium"
             >
                 <ArrowLeft size={20} />
                 <span>Quay lại</span>
@@ -143,43 +145,33 @@ export default function GameReviewPage() {
                 className="flex flex-col md:flex-row gap-6 p-6 mb-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50"
             >
                 {/* Game Image */}
-                <div className="flex-shrink-0">
-                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600">
+                <div className="shrink-0">
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-xl bg-linear-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600">
                         {GAME_LOGOS[gameCode] ? (
-                            <img
-                                src={GAME_LOGOS[gameCode]}
-                                alt={gameName}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={GAME_LOGOS[gameCode]} alt={gameName} className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-4xl">
-                                🎮
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center text-4xl">🎮</div>
                         )}
                     </div>
                 </div>
 
                 {/* Game Info */}
                 <div className="flex-1">
-                    <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">
-                        {gameName}
-                    </h1>
-                    
+                    <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">{gameName}</h1>
+
                     <div className="flex items-center gap-3 mb-4">
                         <StarRating rating={summary.average} showValue size="lg" />
-                        <span className="text-gray-500 dark:text-slate-400">
-                            ({summary.total} đánh giá)
-                        </span>
+                        <span className="text-gray-500 dark:text-slate-400">({summary.total} đánh giá)</span>
                     </div>
 
                     {/* Stats */}
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
-                            <Users size={16} className="text-[#1d7af2] dark:text-[#00f0ff]" />
+                            <Users size={16} className="text-primary dark:text-text-neon-cyan" />
                             <span>1,234 người chơi</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
-                            <MessageSquare size={16} className="text-[#1d7af2] dark:text-[#00f0ff]" />
+                            <MessageSquare size={16} className="text-primary dark:text-text-neon-cyan" />
                             <span>{summary.total} bình luận</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
@@ -191,89 +183,84 @@ export default function GameReviewPage() {
 
                 {/* Rating Distribution */}
                 <div className="w-full md:w-48 space-y-2">
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">
-                        Phân bố đánh giá
-                    </h4>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Phân bố đánh giá</h4>
                     {ratingDistribution.map(({ stars, percentage }) => (
                         <div key={stars} className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500 dark:text-slate-400 w-3">
-                                {stars}
-                            </span>
+                            <span className="text-xs text-gray-500 dark:text-slate-400 w-3">{stars}</span>
                             <Star size={12} className="text-yellow-400 fill-yellow-400" />
                             <Progress
                                 percent={percentage}
                                 showInfo={false}
                                 strokeColor={{
-                                    '0%': '#00f0ff',
-                                    '100%': '#a855f7',
+                                    "0%": "#00f0ff",
+                                    "100%": "#a855f7",
                                 }}
                                 trailColor="rgba(148, 163, 184, 0.2)"
                                 size="small"
                                 className="flex-1"
                             />
-                            <span className="text-xs text-gray-500 dark:text-slate-400 w-8">
-                                {percentage}%
-                            </span>
+                            <span className="text-xs text-gray-500 dark:text-slate-400 w-8">{percentage}%</span>
                         </div>
                     ))}
                 </div>
             </motion.div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Reviews List */}
-                <div className="lg:col-span-2 space-y-4">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <MessageSquare size={20} className="text-[#1d7af2] dark:text-[#00f0ff]" />
-                        Đánh giá ({pagination.total})
-                    </h2>
+            <ConfigProvider
+                theme={{
+                    token: {
+                        colorPrimary: "#1d7af2",
+                        colorBgContainer: isDarkMode ? "#212f4d" : "#f8f8f8",
+                        colorText: isDarkMode ? "#fff" : "#000",
+                    },
+                    algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                }}
+            >
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Reviews List */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <MessageSquare size={20} className="text-primary dark:text-text-neon-cyan" />
+                            Đánh giá ({pagination.total})
+                        </h2>
 
-                    {reviewsLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Spin size="large" />
+                        {reviewsLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <Spin size="large" />
+                            </div>
+                        ) : reviews.length > 0 ? (
+                            <div className="space-y-4">
+                                {reviews.map((review, index) => (
+                                    <ReviewCard key={review.id} review={review} index={index} />
+                                ))}
+
+                                {/* Pagination */}
+                                {pagination.totalPages > 1 && (
+                                    <div className="flex justify-center pt-4">
+                                        <Pagination
+                                            current={pagination.page}
+                                            total={pagination.total}
+                                            pageSize={PAGE_SIZE}
+                                            onChange={handlePageChange}
+                                            showSizeChanger={false}
+                                            showQuickJumper={pagination.totalPages > 5}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Empty description="Chưa có đánh giá nào. Hãy là người đầu tiên!" className="py-12" />
+                        )}
+                    </div>
+
+                    {/* Review Form */}
+                    <div className="lg:col-span-1 lg:mt-11">
+                        <div className="sticky top-4">
+                            <ReviewForm gameId={gameId} onSubmitSuccess={handleReviewSubmit} />
                         </div>
-                    ) : reviews.length > 0 ? (
-                        <div className="space-y-4">
-                            {reviews.map((review, index) => (
-                                <ReviewCard
-                                    key={review.id}
-                                    review={review}
-                                    index={index}
-                                />
-                            ))}
-
-                            {/* Pagination */}
-                            {pagination.totalPages > 1 && (
-                                <div className="flex justify-center pt-4">
-                                    <Pagination
-                                        current={pagination.page}
-                                        total={pagination.total}
-                                        pageSize={PAGE_SIZE}
-                                        onChange={handlePageChange}
-                                        showSizeChanger={false}
-                                        showQuickJumper={pagination.totalPages > 5}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <Empty
-                            description="Chưa có đánh giá nào. Hãy là người đầu tiên!"
-                            className="py-12"
-                        />
-                    )}
-                </div>
-
-                {/* Review Form */}
-                <div className="lg:col-span-1 lg:mt-11">
-                    <div className="sticky top-4">
-                        <ReviewForm
-                            gameId={gameId}
-                            onSubmitSuccess={handleReviewSubmit}
-                        />
                     </div>
                 </div>
-            </div>
+            </ConfigProvider>
         </div>
-    )
+    );
 }
