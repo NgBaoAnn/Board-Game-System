@@ -11,18 +11,7 @@ export default function AdminSidebar() {
     const navContent = (
         <>
             <div className="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
-                <div className="w-8 h-8 mr-3 grid grid-cols-3 gap-0.5">
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-orange-400 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-pink-400 rounded-full"></div>
-                    <div className="bg-blue-400 rounded-full"></div>
-                    <div className="bg-pink-400 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-purple-500 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Page</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Page</span>
             </div>
 
             <nav className="flex-1 p-4 space-y-1">

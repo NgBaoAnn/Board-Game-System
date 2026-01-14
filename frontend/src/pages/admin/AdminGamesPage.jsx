@@ -142,7 +142,7 @@ export default function AdminGamesPage() {
                                 </th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Game Details</th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Description</th>
-                                <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 w-30 text-center truncate">Board Config</th>
+                                <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 w-35 text-center truncate">Board Config</th>
                                 <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 w-30 text-center">Status</th>
                             </tr>
                         </thead>
@@ -164,8 +164,8 @@ export default function AdminGamesPage() {
                                     <tr key={game.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors group">
                                         <td className="py-4 px-6">
                                             <div className="relative h-12 w-12 rounded-xl overflow-hidden shadow-sm bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-indigo-600 font-bold text-lg">
-                                                {game.avatar ? (
-                                                    <img alt={game.name} className="h-full w-full object-cover" src={game.avatar} />
+                                                {game.image_url ? (
+                                                    <img alt={game.name} className="h-full w-full object-cover" src={game.image_url} />
                                                 ) : (
                                                     <span>
                                                         {game.name
@@ -188,9 +188,9 @@ export default function AdminGamesPage() {
                                                 {game.description || "No description"}
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 text-center w-30">
+                                        <td className="py-4 px-6 text-center w-35">
                                             <div className="flex items-center justify-center gap-3">
-                                                <div className="text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg">
+                                                <div className="text-sm font-medium truncate text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg">
                                                     {game.board_row} × {game.board_col}
                                                 </div>
                                                 <button

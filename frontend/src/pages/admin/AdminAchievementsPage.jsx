@@ -225,7 +225,6 @@ export default function AchievementsPage() {
                     <ConfigProvider
                         theme={{
                             token: {
-                                colorPrimary: "#ec4899",
                                 colorBgContainer: isDarkMode ? "#212f4d" : "#fbfbfb",
                                 colorText: isDarkMode ? "#fff" : "#000",
                             },
@@ -326,7 +325,6 @@ export default function AchievementsPage() {
             <ConfigProvider
                 theme={{
                     token: {
-                        colorPrimary: "#ec4899",
                         colorBgContainer: isDarkMode ? "#20252e" : "#fbfbfb",
                         colorText: isDarkMode ? "#fff" : "#000",
                     },
