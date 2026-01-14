@@ -1,4 +1,4 @@
-import { Select, ConfigProvider, theme } from "antd";
+import { Select, ConfigProvider, theme, Spin, message } from "antd";
 import { Column, Pie, Line, Area } from "@ant-design/plots";
 import { UserPlus, TrendingUp, TrendingDown, Users, CheckCircle, Activity, Trophy, BarChart3, PieChart } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -11,15 +11,24 @@ export default function AdminDashboardPage() {
     const [range, setRange] = useState("30d");
     const [activityData, setActivityData] = useState([]);
 
+    // Global loading counter for spinner overlay
+    const [loadingCount, setLoadingCount] = useState(0);
+    const isLoading = loadingCount > 0;
+    const startLoading = () => setLoadingCount((c) => c + 1);
+    const stopLoading = () => setLoadingCount((c) => Math.max(0, c - 1));
+
     useEffect(() => {
         const fetchActivityChart = async () => {
+            startLoading();
             try {
                 const res = await dashboardApi.getActivityChart(range);
                 if (res.success) {
                     setActivityData(res.data);
                 }
             } catch (error) {
-                console.error("Failed to fetch activity chart", error);
+                message.error(error.message || "Failed to fetch activity chart");
+            } finally {
+                stopLoading();
             }
         };
         fetchActivityChart();
@@ -34,13 +43,16 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         const fetchDashboardStats = async () => {
+            startLoading();
             try {
                 const res = await dashboardApi.getStats(range);
                 if (res.success) {
                     setDashboardStats(res.data);
                 }
             } catch (error) {
-                console.error("Failed to fetch dashboard stats", error);
+                message.error(error.message || "Failed to fetch dashboard stats");
+            } finally {
+                stopLoading();
             }
         };
         fetchDashboardStats();
@@ -53,35 +65,44 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         const fetchRegistrationStats = async () => {
+            startLoading();
             try {
                 const res = await dashboardApi.getRegistrationChart(range);
                 if (res.success) {
                     setRegistrationStats(res.data);
                 }
             } catch (error) {
-                console.error("Failed to fetch registration stats", error);
+                message.error(error.message || "Failed to fetch registration stats");
+            } finally {
+                stopLoading();
             }
         };
 
         const fetchPopularityChart = async () => {
+            startLoading();
             try {
                 const res = await dashboardApi.getPopularityChart(range);
                 if (res.success) {
                     setPopularityData(res.data);
                 }
             } catch (error) {
-                console.error("Failed to fetch popularity chart", error);
+                message.error(error.message || "Failed to fetch popularity chart");
+            } finally {
+                stopLoading();
             }
         };
 
         const fetchAchievementChart = async () => {
+            startLoading();
             try {
                 const res = await dashboardApi.getAchievementChart(range);
                 if (res.success) {
                     setAchievementData(res.data);
                 }
             } catch (error) {
-                console.error("Failed to fetch achievement chart", error);
+                message.error(error.message || "Failed to fetch achievement chart");
+            } finally {
+                stopLoading();
             }
         };
 
@@ -191,6 +212,11 @@ export default function AdminDashboardPage() {
 
     return (
         <div className="flex-1 pt-20 xl:pt-6 p-6 overflow-y-auto">
+            {isLoading && (
+                <div className="fixed inset-0 z-50 xl:ml-50 flex items-center justify-center">
+                    <Spin size="large" />
+                </div>
+            )}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>

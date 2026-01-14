@@ -43,29 +43,21 @@ export default function ReviewCard({ review, index = 0, currentUser, onDelete })
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group relative p-5 rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 hover:border-[#1d7af2]/30 dark:hover:border-[#00f0ff]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#1d7af2]/5 dark:hover:shadow-[#00f0ff]/5"
+            className="group relative p-5 rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 hover:border-primary/30 dark:hover:border-neon-cyan/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 dark:hover:shadow-neon-cyan/5"
         >
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
                 {review.avatar_url ? (
-                    <Avatar
-                        src={review.avatar_url}
-                        size={48}
-                        className="border-2 border-gray-200 dark:border-slate-600"
-                    />
+                    <Avatar src={review.avatar_url} size={48} className="border-2 border-gray-200 dark:border-slate-600" />
                 ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] flex items-center justify-center text-white font-bold text-lg">
-                        {(review.username || 'U').charAt(0).toUpperCase()}
+                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-[#6366f1] dark:from-neon-cyan dark:to-electric-purple flex items-center justify-center text-white font-bold text-lg">
+                        {(review.username || "U").charAt(0).toUpperCase()}
                     </div>
                 )}
                 <div>
                     <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         {review.username}
-                        {isOwner && (
-                            <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                                (me)
-                            </span>
-                        )}
+                        {isOwner && <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full">(me)</span>}
                     </h4>
                     <div className="flex items-center gap-2">
                         <StarRating rating={review.rating} size="sm" />
@@ -78,9 +70,7 @@ export default function ReviewCard({ review, index = 0, currentUser, onDelete })
             </div>
 
             {/* Comment */}
-            <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
-                {review.comment}
-            </p>
+            <p className="text-gray-700 dark:text-slate-300 leading-relaxed">{review.comment}</p>
             {/* Delete Button for Owner */}
             {isOwner && (
                 <div className="absolute top-5 right-5">
@@ -101,5 +91,5 @@ export default function ReviewCard({ review, index = 0, currentUser, onDelete })
                 </div>
             )}
         </motion.div>
-    )
+    );
 }
