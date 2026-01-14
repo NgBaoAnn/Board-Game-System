@@ -28,6 +28,7 @@ const AdminPage = lazy(() => import('../pages/admin/AdminPage'))
 const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const AdminGamesPage = lazy(() => import('@/pages/admin/AdminGamesPage'))
+const AdminAchievementsPage = lazy(() => import('@/pages/admin/AdminAchievementsPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -136,6 +137,7 @@ export const router = createBrowserRouter([
       { path: '/admin/users', element: withSuspense(AdminUsersPage) },
       { path: '/admin/dashboard', element: withSuspense(AdminDashboardPage) },
       { path: '/admin/games', element: withSuspense(AdminGamesPage) },
+      { path: '/admin/achievements', element: withSuspense(AdminAchievementsPage) },
     ],
   },
 ])

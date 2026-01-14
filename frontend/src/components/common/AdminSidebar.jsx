@@ -1,5 +1,5 @@
 import { LayoutDashboard, UserCog, Dice5, LogOut, Menu, Award } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from '@/store/useAuth'
 import authApi from '@/api/api-auth'
