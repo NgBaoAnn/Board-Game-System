@@ -33,6 +33,52 @@ class AchievementRepo {
     return db(MODULE.ACHIEVEMENT).where("id", id).del();
   }
 
+  // Admin: Get all achievements with pagination, search, and filter
+  async findAll({ page = 1, limit = 10, search = "", game_id, condition_type }) {
+    const offset = (page - 1) * limit;
+
+    let query = db(MODULE.ACHIEVEMENT)
+      .join(MODULE.GAME, `${MODULE.ACHIEVEMENT}.game_id`, `${MODULE.GAME}.id`);
+
+    if (search) {
+      query = query.where((builder) => {
+        builder
+          .where(`${MODULE.ACHIEVEMENT}.name`, "ilike", `%${search}%`)
+          .orWhere(`${MODULE.ACHIEVEMENT}.description`, "ilike", `%${search}%`);
+      });
+    }
+
+    if (game_id) {
+      query = query.where(`${MODULE.ACHIEVEMENT}.game_id`, game_id);
+    }
+
+    if (condition_type) {
+      query = query.where(`${MODULE.ACHIEVEMENT}.condition_type`, condition_type);
+    }
+
+    const [totalResult, data] = await Promise.all([
+      query.clone().count(`${MODULE.ACHIEVEMENT}.id as total`).first(),
+      query
+        .clone()
+        .select(
+          `${MODULE.ACHIEVEMENT}.*`,
+          `${MODULE.GAME}.name as game_name`,
+          `${MODULE.GAME}.code as game_code`
+        )
+        .orderBy(`${MODULE.ACHIEVEMENT}.created_at`, "desc")
+        .limit(limit)
+        .offset(offset),
+    ]);
+
+    return {
+      data,
+      total: parseInt(totalResult.total) || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((parseInt(totalResult.total) || 0) / limit),
+    };
+  }
+
   // User achievements
   findUserAchievementsByGameId(userId, gameId) {
     return db(MODULE.USER_ACHIEVEMENT)
