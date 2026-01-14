@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Star, Users, MessageSquare, TrendingUp, Loader2 } from 'lucide-react'
-import { Spin, Progress, Empty } from 'antd'
+import { ArrowLeft, Star, Users, MessageSquare, TrendingUp } from 'lucide-react'
+import { Spin, Progress, Empty, Pagination } from 'antd'
 import { ReviewCard, ReviewForm } from '@/components/GameReview'
 import StarRating from '@/components/common/StarRating'
 import reviewApi from '@/api/api-review'
@@ -19,6 +19,8 @@ const GAME_LOGOS = {
     'free_draw': '/draw free.png',
 }
 
+const PAGE_SIZE = 5
+
 export default function GameReviewPage() {
     const { gameId } = useParams()
     const [searchParams] = useSearchParams()
@@ -30,11 +32,10 @@ export default function GameReviewPage() {
 
     const [game, setGame] = useState(null)
     const [reviews, setReviews] = useState([])
-    const [averageRating, setAverageRating] = useState({ average: 0, total: 0 })
+    const [summary, setSummary] = useState({ average: 0, total: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } })
     const [loading, setLoading] = useState(true)
     const [reviewsLoading, setReviewsLoading] = useState(false)
-    const [page, setPage] = useState(1)
-    const [hasMore, setHasMore] = useState(true)
+    const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 })
 
     // Fetch game details
     useEffect(() => {
@@ -51,63 +52,68 @@ export default function GameReviewPage() {
         fetchGame()
     }, [gameId])
 
-    // Fetch initial data
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true)
-            try {
-                const [reviewsRes, ratingRes] = await Promise.all([
-                    reviewApi.getGameReviews(gameCode, 1, 10),
-                    reviewApi.getAverageRating(gameCode),
-                ])
-                
-                setReviews(reviewsRes.data.data)
-                setAverageRating(ratingRes.data)
-                setHasMore(reviewsRes.data.pagination.page < reviewsRes.data.pagination.totalPages)
-            } catch (error) {
-                console.error('Failed to fetch reviews:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchData()
-    }, [gameCode])
-
-    // Load more reviews
-    const loadMore = async () => {
-        if (reviewsLoading || !hasMore) return
-        
+    // Fetch reviews for current page
+    const fetchReviews = useCallback(async (page = 1) => {
+        if (!gameId) return
         setReviewsLoading(true)
         try {
-            const response = await reviewApi.getGameReviews(gameCode, page + 1, 10)
-            setReviews(prev => [...prev, ...response.data.data])
-            setPage(prev => prev + 1)
-            setHasMore(response.data.pagination.page < response.data.pagination.totalPages)
+            const response = await reviewApi.getGameReviews(gameId, page, PAGE_SIZE)
+            setReviews(response.data?.data || [])
+            const paginationData = response.data?.pagination
+            if (paginationData) {
+                setPagination({
+                    page: paginationData.page,
+                    total: paginationData.total,
+                    totalPages: paginationData.totalPages,
+                })
+            }
         } catch (error) {
-            console.error('Failed to load more reviews:', error)
+            console.error('Failed to fetch reviews:', error)
         } finally {
             setReviewsLoading(false)
         }
+    }, [gameId])
+
+    // Fetch summary
+    const fetchSummary = useCallback(async () => {
+        if (!gameId) return
+        try {
+            const response = await reviewApi.getReviewSummary(gameId)
+            if (response.data) {
+                setSummary(response.data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch summary:', error)
+        }
+    }, [gameId])
+
+    // Fetch initial data
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!gameId) return
+            setLoading(true)
+            await Promise.all([fetchReviews(1), fetchSummary()])
+            setLoading(false)
+        }
+        fetchData()
+    }, [gameId, fetchReviews, fetchSummary])
+
+    // Handle page change
+    const handlePageChange = (newPage) => {
+        fetchReviews(newPage)
     }
 
-    // Handle new review submission
-    const handleReviewSubmit = (newReview) => {
-        setReviews(prev => [newReview, ...prev])
-        // Update average rating (simplified)
-        setAverageRating(prev => ({
-            average: ((prev.average * prev.total) + newReview.rating) / (prev.total + 1),
-            total: prev.total + 1,
-        }))
+    // Handle new review submission - reload from API
+    const handleReviewSubmit = async () => {
+        // Reload both reviews and summary from API
+        await Promise.all([fetchReviews(1), fetchSummary()])
     }
 
-    // Calculate rating distribution (mock)
-    const ratingDistribution = [
-        { stars: 5, percentage: 65 },
-        { stars: 4, percentage: 22 },
-        { stars: 3, percentage: 8 },
-        { stars: 2, percentage: 3 },
-        { stars: 1, percentage: 2 },
-    ]
+    // Build rating distribution from summary
+    const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
+        stars,
+        percentage: summary.distribution?.[stars] || 0,
+    }))
 
     if (loading) {
         return (
@@ -160,9 +166,9 @@ export default function GameReviewPage() {
                     </h1>
                     
                     <div className="flex items-center gap-3 mb-4">
-                        <StarRating rating={averageRating.average} showValue size="lg" />
+                        <StarRating rating={summary.average} showValue size="lg" />
                         <span className="text-gray-500 dark:text-slate-400">
-                            ({averageRating.total} đánh giá)
+                            ({summary.total} đánh giá)
                         </span>
                     </div>
 
@@ -174,7 +180,7 @@ export default function GameReviewPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
                             <MessageSquare size={16} className="text-[#1d7af2] dark:text-[#00f0ff]" />
-                            <span>{averageRating.total} bình luận</span>
+                            <span>{summary.total} bình luận</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
                             <TrendingUp size={16} className="text-green-500" />
@@ -219,10 +225,14 @@ export default function GameReviewPage() {
                 <div className="lg:col-span-2 space-y-4">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <MessageSquare size={20} className="text-[#1d7af2] dark:text-[#00f0ff]" />
-                        Đánh giá ({reviews.length})
+                        Đánh giá ({pagination.total})
                     </h2>
 
-                    {reviews.length > 0 ? (
+                    {reviewsLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Spin size="large" />
+                        </div>
+                    ) : reviews.length > 0 ? (
                         <div className="space-y-4">
                             {reviews.map((review, index) => (
                                 <ReviewCard
@@ -232,22 +242,18 @@ export default function GameReviewPage() {
                                 />
                             ))}
 
-                            {/* Load more button */}
-                            {hasMore && (
-                                <button
-                                    onClick={loadMore}
-                                    disabled={reviewsLoading}
-                                    className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-[#1d7af2] dark:hover:border-[#00f0ff] hover:text-[#1d7af2] dark:hover:text-[#00f0ff] transition-all font-medium flex items-center justify-center gap-2"
-                                >
-                                    {reviewsLoading ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Đang tải...
-                                        </>
-                                    ) : (
-                                        'Xem thêm đánh giá'
-                                    )}
-                                </button>
+                            {/* Pagination */}
+                            {pagination.totalPages > 1 && (
+                                <div className="flex justify-center pt-4">
+                                    <Pagination
+                                        current={pagination.page}
+                                        total={pagination.total}
+                                        pageSize={PAGE_SIZE}
+                                        onChange={handlePageChange}
+                                        showSizeChanger={false}
+                                        showQuickJumper={pagination.totalPages > 5}
+                                    />
+                                </div>
                             )}
                         </div>
                     ) : (
@@ -259,10 +265,10 @@ export default function GameReviewPage() {
                 </div>
 
                 {/* Review Form */}
-                <div className="lg:col-span-1 mt-11">
+                <div className="lg:col-span-1 lg:mt-11">
                     <div className="sticky top-4">
                         <ReviewForm
-                            gameCode={gameCode}
+                            gameId={gameId}
                             onSubmitSuccess={handleReviewSubmit}
                         />
                     </div>

@@ -9,10 +9,10 @@ const { TextArea } = Input
 
 /**
  * ReviewForm component - Form to submit a review
- * @param {string} gameCode - Game code to review
+ * @param {number} gameId - Game ID to review
  * @param {Function} onSubmitSuccess - Callback after successful submission
  */
-export default function ReviewForm({ gameCode, onSubmitSuccess }) {
+export default function ReviewForm({ gameId, onSubmitSuccess }) {
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState('')
     const [submitting, setSubmitting] = useState(false)
@@ -32,13 +32,14 @@ export default function ReviewForm({ gameCode, onSubmitSuccess }) {
 
         setSubmitting(true)
         try {
-            const response = await reviewApi.submitReview(gameCode, rating, comment.trim())
+            const response = await reviewApi.submitReview(gameId, rating, comment.trim())
             message.success('Đã gửi đánh giá thành công!')
             setRating(0)
             setComment('')
             onSubmitSuccess?.(response.data)
         } catch (error) {
-            message.error('Không thể gửi đánh giá. Vui lòng thử lại.')
+            const errorMsg = error.message || 'Không thể gửi đánh giá. Vui lòng thử lại.'
+            message.error(errorMsg)
         } finally {
             setSubmitting(false)
         }
@@ -95,7 +96,7 @@ export default function ReviewForm({ gameCode, onSubmitSuccess }) {
                 <button
                     type="submit"
                     disabled={submitting || rating === 0 || !comment.trim()}
-                    className={`w-full py-3 px-6 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all duration-300 ${
+                    className={`w-full py-3 px-6 mt-8 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all duration-300 ${
                         submitting || rating === 0 || !comment.trim()
                             ? 'bg-gray-300 dark:bg-slate-700 cursor-not-allowed'
                             : 'bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] hover:shadow-lg hover:shadow-[#1d7af2]/25 dark:hover:shadow-[#00f0ff]/25 hover:-translate-y-0.5'

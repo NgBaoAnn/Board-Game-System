@@ -34,14 +34,18 @@ function GameCard({ game, isSelected, hasSavedSession, onSelect, onPlay, onResum
     useEffect(() => {
         const fetchRating = async () => {
             try {
-                const response = await reviewApi.getAverageRating(game.code)
-                setRating(response.data)
+                const response = await reviewApi.getAverageRating(game.id)
+                if (response.data) {
+                    setRating(response.data)
+                }
             } catch (error) {
                 console.error('Failed to fetch rating:', error)
             }
         }
-        fetchRating()
-    }, [game.code])
+        if (game.id) {
+            fetchRating()
+        }
+    }, [game.id])
 
     // Handle rating badge click
     const handleRatingClick = (e) => {
@@ -87,7 +91,7 @@ function GameCard({ game, isSelected, hasSavedSession, onSelect, onPlay, onResum
                 {/* Rating Badge - Top Right */}
                 <button
                     onClick={handleRatingClick}
-                    className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 dark:from-yellow-500 dark:to-orange-500 shadow-md hover:shadow-lg hover:shadow-yellow-400/30 backdrop-blur-sm transition-all duration-200 hover:scale-105 group/rating"
+                    className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 dark:from-yellow-500 dark:to-orange-500 shadow-md hover:shadow-lg hover:shadow-yellow-400/30 backdrop-blur-sm transition-all duration-200 hover:scale-105 group/rating"
                     title="Xem đánh giá"
                 >
                     <Star
@@ -95,7 +99,7 @@ function GameCard({ game, isSelected, hasSavedSession, onSelect, onPlay, onResum
                         className="text-white fill-white drop-shadow-sm"
                     />
                     <span className="text-xs font-bold text-white drop-shadow-sm">
-                        {rating.average > 0 ? rating.average.toFixed(1) : '—'}
+                        {rating.average && parseFloat(rating.average) > 0 ? rating.average : '—'}
                     </span>
                 </button>
 

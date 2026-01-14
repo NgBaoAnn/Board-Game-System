@@ -276,6 +276,20 @@ class GameRepo {
       total_sessions: parseInt(row.total_sessions) || 0,
     }));
   }
+
+  /**
+   * Check if user has played a game at least once (finished session)
+   */
+  async hasUserPlayedGame(userId, gameId) {
+    const result = await db(MODULE.GAME_SESSION)
+      .where("user_id", userId)
+      .andWhere("game_id", gameId)
+      .andWhere("status", "finished")
+      .count("id as total")
+      .first();
+
+    return parseInt(result.total) > 0;
+  }
 }
 
 module.exports = new GameRepo();
