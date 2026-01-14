@@ -1,4 +1,4 @@
-import { LayoutDashboard, UserCog, Dice5, LogOut, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, UserCog, Dice5, LogOut, Menu, Award } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from '@/store/useAuth'
@@ -32,18 +32,7 @@ export default function AdminSidebar() {
     const navContent = (
         <>
             <div className="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
-                <div className="w-8 h-8 mr-3 grid grid-cols-3 gap-0.5">
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-orange-400 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-pink-400 rounded-full"></div>
-                    <div className="bg-blue-400 rounded-full"></div>
-                    <div className="bg-pink-400 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                    <div className="bg-purple-500 rounded-full"></div>
-                    <div className="bg-primary rounded-full"></div>
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Page</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Page</span>
             </div>
 
             <nav className="flex-1 p-4 space-y-1">
@@ -81,6 +70,18 @@ export default function AdminSidebar() {
                 >
                     <Dice5 className={"w-5 h-5 " + (isActive("/admin/games") ? "text-primary" : "text-gray-400")} />
                     <span className="font-medium">Games</span>
+                </Link>
+
+                <Link
+                    to="/admin/achievements"
+                    className={
+                        "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors " +
+                        (isActive("/admin/achievements") ? "bg-primary/10 text-primary dark:text-primary" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700")
+                    }
+                    onClick={() => setDrawerVisible(false)}
+                >
+                    <Award className={"w-5 h-5 " + (isActive("/admin/achievements") ? "text-primary" : "text-gray-400")} />
+                    <span className="font-medium">Achievements</span>
                 </Link>
             </nav>
 

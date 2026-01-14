@@ -1783,6 +1783,232 @@ paths:
               schema:
                 $ref: "#/components/schemas/BackendErrorResponse"
 
+  # ===== REVIEW APIs =====
+  /api/games/{gameId}/reviews/average:
+    get:
+      tags:
+        - Review
+      summary: Get average rating
+      description: Get average rating and total reviews count for a game
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+      responses:
+        "200":
+          description: Get average rating successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AverageRating"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/{gameId}/reviews/summary:
+    get:
+      tags:
+        - Review
+      summary: Get review summary
+      description: Get average rating, total reviews, and rating distribution for a game
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+      responses:
+        "200":
+          description: Get review summary successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ReviewSummary"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/{gameId}/reviews:
+    get:
+      tags:
+        - Review
+      summary: Get reviews list
+      description: Get paginated list of reviews for a game with user information
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number (default 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Items per page (default 10)
+      responses:
+        "200":
+          description: Get reviews successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Review"
+                          pagination:
+                            $ref: "#/components/schemas/PaginationWithTotalPages"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+    post:
+      tags:
+        - Review
+      summary: Submit a review
+      description: Submit a new review or update existing one. User must have played at least one finished game session.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitReviewRequest"
+      responses:
+        "201":
+          description: Review submitted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ReviewCreated"
+        "400":
+          description: Validation error or user has not played the game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
+  /api/games/{gameId}/reviews/{reviewId}:
+    delete:
+      tags:
+        - Review
+      summary: Delete a review
+      description: Delete a review (only the owner can delete)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Game ID
+        - in: path
+          name: reviewId
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Review ID
+      responses:
+        "200":
+          description: Review deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BackendResponse"
+                  - type: object
+                    properties:
+                      data:
+                        nullable: true
+                        example: null
+        "400":
+          description: Cannot delete other user's review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+        "404":
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackendErrorResponse"
+
 components:
   schemas:
     BackendResponse:
@@ -2187,6 +2413,139 @@ components:
         total:
           type: integer
           example: 42
+
+    PaginationWithTotalPages:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 5
+
+    # ===== REVIEW SCHEMAS =====
+    AverageRating:
+      type: object
+      properties:
+        average:
+          type: string
+          example: "4.5"
+          description: Average rating (string formatted to 1 decimal)
+        total:
+          type: integer
+          example: 23
+          description: Total number of reviews
+
+    ReviewSummary:
+      type: object
+      properties:
+        average:
+          type: number
+          format: float
+          example: 4.5
+          description: Average rating
+        total:
+          type: integer
+          example: 23
+          description: Total number of reviews
+        distribution:
+          type: object
+          description: Rating distribution percentages (1-5 stars)
+          properties:
+            "5":
+              type: integer
+              example: 65
+            "4":
+              type: integer
+              example: 22
+            "3":
+              type: integer
+              example: 8
+            "2":
+              type: integer
+              example: 3
+            "1":
+              type: integer
+              example: 2
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        rating:
+          type: integer
+          example: 5
+        comment:
+          type: string
+          example: "Trò chơi tuyệt vời! Rất hay và dễ chơi."
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+          example: "9758f5e4-3dab-4677-8049-3f08ea282144"
+        username:
+          type: string
+          example: "Bingsu"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://example.com/avatar.png"
+
+    ReviewCreated:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: string
+          example: "9758f5e4-3dab-4677-8049-3f08ea282144"
+        game_id:
+          type: integer
+          example: 1
+        rating:
+          type: integer
+          example: 5
+        comment:
+          type: string
+          example: "Trò chơi tuyệt vời!"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SubmitReviewRequest:
+      type: object
+      required:
+        - rating
+        - comment
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+          description: Rating from 1 to 5 stars
+        comment:
+          type: string
+          maxLength: 500
+          example: "Trò chơi tuyệt vời! Rất hay và dễ chơi."
+          description: Review comment (max 500 characters)
 
   securitySchemes:
     BearerAuth:

@@ -13,6 +13,7 @@ const ProfilePage = lazy(() => import('../pages/user/ProfilePage'))
 const FriendProfilePage = lazy(() => import('../pages/user/FriendProfilePage'))
 const RankingPage = lazy(() => import('../pages/user/RankingPage'))
 const MessagePage = lazy(() => import('../pages/user/MessagePage'))
+const GameReviewPage = lazy(() => import('../pages/user/GameReviewPage'))
 
 const LoginPage = lazy(() => import('../pages/common/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/common/RegisterPage'))
@@ -28,6 +29,7 @@ const AdminPage = lazy(() => import('../pages/admin/AdminPage'))
 const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const AdminGamesPage = lazy(() => import('@/pages/admin/AdminGamesPage'))
+const AdminAchievementsPage = lazy(() => import('@/pages/admin/AdminAchievementsPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -92,6 +94,10 @@ export const router = createBrowserRouter([
       {
         path: '/settings',
         element: withAuth(SettingPage),
+      },
+      {
+        path: '/game/:gameId/reviews',
+        element: withAuth(GameReviewPage),
       }
     ],
     errorElement: withSuspense(NotFoundPage),
@@ -136,6 +142,7 @@ export const router = createBrowserRouter([
       { path: '/admin/users', element: withSuspense(AdminUsersPage) },
       { path: '/admin/dashboard', element: withSuspense(AdminDashboardPage) },
       { path: '/admin/games', element: withSuspense(AdminGamesPage) },
+      { path: '/admin/achievements', element: withSuspense(AdminAchievementsPage) },
     ],
   },
 ])

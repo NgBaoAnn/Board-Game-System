@@ -8,11 +8,13 @@ const uploadRoute = require("./upload.route");
 const authMiddleware = require("../middlewares/auth.middleware");
 const rankingRoute = require("../routes/ranking.route");
 const achievementRoute = require("../routes/achievement.route");
+const reviewRoute = require("../routes/review.route");
 
 const initRoute = (app) => {
   app.use("/docs", swaggerRoute);
   app.use("/api/auth", authRoute);
   app.use("/api", gameRoute);
+  app.use("/api", reviewRoute);
   app.use("/api/upload", uploadRoute);
   app.use("/api", achievementRoute);
 
