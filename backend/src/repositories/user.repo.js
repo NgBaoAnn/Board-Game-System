@@ -196,26 +196,52 @@ class UserRepo {
       reset_token_expires_at: null,
     });
   }
-  async getUserCounts() {
+  
+  async getUserCounts(startDate, endDate) {
+    let usersCreatedQuery;
+    let bindings = [];
+
+    if (startDate && endDate) {
+      usersCreatedQuery = `
+      SUM(
+        CASE
+          WHEN u.created_at >= ?
+          AND u.created_at < ?
+          THEN 1 ELSE 0
+        END
+      ) as total_users_created_today
+    `;
+      bindings = [startDate, endDate];
+    } else {
+      usersCreatedQuery = `
+      SUM(
+        CASE
+          WHEN u.created_at >= CURRENT_DATE
+          AND u.created_at < CURRENT_DATE + INTERVAL '1 day'
+          THEN 1 ELSE 0
+        END
+      ) as total_users_created_today
+    `;
+    }
+
     const result = await db({ u: MODULE.USER })
       .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
       .select(
-        db.raw("COUNT(*) as total_users"),
-        db.raw("COUNT(CASE WHEN r.name = 'user' THEN 1 END) as total_players"),
-        db.raw(
-          "COUNT(CASE WHEN DATE(u.created_at) = CURRENT_DATE THEN 1 END) as total_users_created_today"
-        ),
-        db.raw("COUNT(CASE WHEN u.active = false THEN 1 END) as total_banned")
+        db.raw("COUNT(DISTINCT u.id) as total_users"),
+        db.raw("SUM(CASE WHEN r.name = 'user' THEN 1 ELSE 0 END) as total_players"),
+        db.raw(usersCreatedQuery, bindings),
+        db.raw("SUM(CASE WHEN u.active = false THEN 1 ELSE 0 END) as total_banned")
       )
       .first();
 
     return {
-      totalUsers: parseInt(result.total_users) || 0,
-      totalPlayers: parseInt(result.total_players) || 0,
-      totalUsersCreatedToday: parseInt(result.total_users_created_today) || 0,
-      totalBanned: parseInt(result.total_banned) || 0,
+      totalUsers: Number(result?.total_users ?? 0),
+      totalPlayers: Number(result?.total_players ?? 0),
+      totalUsersCreatedToday: Number(result?.total_users_created_today ?? 0),
+      totalBanned: Number(result?.total_banned ?? 0),
     };
   }
+
 
   async getUserRegistrations() {
     // Get user registrations for the last 6 months

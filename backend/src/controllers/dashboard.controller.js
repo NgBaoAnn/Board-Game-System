@@ -44,6 +44,34 @@ class DashboardController {
             next(err);
         }
     }
+
+    async getPopularityChart(req, res, next) {
+        try {
+            const { filter } = req.query;
+            const data = await dashboardService.getPopularityChart(filter);
+            return ResponseHandler.success(res, {
+                status: HTTP_STATUS.OK,
+                message: "Get popularity chart successfully!",
+                data,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getAchievementChart(req, res, next) {
+        try {
+            const { filter } = req.query;
+            const data = await dashboardService.getAchievementChart(filter);
+            return ResponseHandler.success(res, {
+                status: HTTP_STATUS.OK,
+                message: "Get achievement chart successfully!",
+                data,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 module.exports = new DashboardController();

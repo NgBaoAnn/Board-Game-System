@@ -144,6 +144,86 @@ class AchievementRepo {
       })
       .del();
   }
+
+  async getAchievementStats(filter) {
+    const now = new Date();
+    let startDate;
+    let stats = {};
+
+    if (filter === "7d" || !filter) {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize 7 days
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER_ACHIEVEMENT)
+        .select(db.raw("EXTRACT(DAY FROM achieved_at)::integer as period"))
+        .count("id as count")
+        .where("achieved_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM achieved_at)")
+        .orderByRaw("EXTRACT(DAY FROM achieved_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "30d") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize 30 days
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER_ACHIEVEMENT)
+        .select(db.raw("EXTRACT(DAY FROM achieved_at)::integer as period"))
+        .count("id as count")
+        .where("achieved_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM achieved_at)")
+        .orderByRaw("EXTRACT(DAY FROM achieved_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "6m") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize 6 months
+      for (let i = 0; i < 6; i++) {
+        const date = new Date(startDate);
+        date.setMonth(startDate.getMonth() + i);
+        const month = date.getMonth() + 1;
+        stats[month.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER_ACHIEVEMENT)
+        .select(db.raw("EXTRACT(MONTH FROM achieved_at)::integer as period"))
+        .count("id as count")
+        .where("achieved_at", ">=", startDate)
+        .groupByRaw("EXTRACT(MONTH FROM achieved_at)")
+        .orderByRaw("EXTRACT(MONTH FROM achieved_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    }
+
+    return stats;
+  }
 }
 
 module.exports = new AchievementRepo();

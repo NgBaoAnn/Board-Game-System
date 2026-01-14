@@ -278,6 +278,11 @@ class GameRepo {
       startDate.setMonth(startDate.getMonth() - 11);
       startDate.setDate(1);
       startDate.setHours(0, 0, 0, 0);
+    } else if (filter === "6m") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
     } else {
       // Default to all time
       startDate = new Date(0);

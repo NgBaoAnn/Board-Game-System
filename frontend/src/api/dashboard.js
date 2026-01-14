@@ -28,5 +28,21 @@ export const dashboardApi = {
             success: response.success || true,
             data: response.data,
         }
+    },
+
+    async getPopularityChart(filter = "7d") {
+        const response = await axiosInstance.get(`/dashboard/popularity-chart?filter=${filter}`);
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
+    },
+
+    async getAchievementChart(filter = "7d") {
+        const response = await axiosInstance.get(`/dashboard/achievement-chart?filter=${filter}`);
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
     }
 };

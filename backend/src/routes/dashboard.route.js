@@ -22,4 +22,16 @@ router.get(
     dashboardController.getRegistrationChart
 );
 
+router.get(
+    "/popularity-chart",
+    authMiddleware.authorize([ROLE.ADMIN]),
+    dashboardController.getPopularityChart
+);
+
+router.get(
+    "/achievement-chart",
+    authMiddleware.authorize([ROLE.ADMIN]),
+    dashboardController.getAchievementChart
+);
+
 module.exports = router;

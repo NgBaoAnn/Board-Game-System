@@ -14,6 +14,7 @@ export default function AdminGamesPage() {
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
+    const [totalSessions, setTotalSessions] = useState(0);
     const [form] = Form.useForm();
     const [imageUrl, setImageUrl] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -27,6 +28,9 @@ export default function AdminGamesPage() {
             setLoading(true);
             const response = await gameApi.getGames();
             setGames(response.games || []);
+            
+            const statsResponse = await gameApi.getTotalSessions();
+            setTotalSessions(statsResponse.total || 0);
         } catch (error) {
             message.error("Failed to fetch games");
             console.error("Error fetching games:", error);
@@ -160,8 +164,8 @@ export default function AdminGamesPage() {
                 <div className="bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-800 flex items-center justify-between group hover:border-primary/30 transition-colors">
                     <div>
                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sessions</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">1,208</p>
-                        <p className="text-xs text-gray-400 mt-1">Across all games today</p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{totalSessions.toLocaleString()}</p>
+                        <p className="text-xs text-gray-400 mt-1">Across all games and all time</p>
                     </div>
                     <div className="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <span className="material-icons-outlined text-2xl">

@@ -75,4 +75,11 @@ router.get(
   gameController.getGameActivity
 );
 
+router.get(
+  "/games/sessions/total",
+  authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
+  gameController.getTotalSessions
+);
+
 module.exports = router;

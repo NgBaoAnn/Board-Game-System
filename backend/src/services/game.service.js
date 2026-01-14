@@ -314,6 +314,9 @@ class GameService {
       },
     };
   }
+  async getTotalSessions() {
+    return await gameRepo.countTotalGameSessions();
+  }
 }
 
 module.exports = new GameService();
