@@ -80,6 +80,16 @@ const gameApi = {
         });
         return response;
     },
+
+    /**
+     * Get unique player count for a game
+     * @param {number} gameId - Game ID
+     * @returns {Promise<Object>} Object containing count
+     */
+    getUniquePlayerCount: async (gameId) => {
+        const response = await axiosInstance.get(`/games/${gameId}/players/count`);
+        return response;
+    },
 };
 
 export default gameApi;

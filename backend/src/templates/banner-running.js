@@ -19,7 +19,7 @@ const banner = `
 ║ 🖥️  Server      : http://localhost:${
   process.env.PORT || 8080
 }                           ║
-║ 📖 API Docs    : http://localhost:${
+║ 📖  API Docs    : http://localhost:${
   process.env.PORT || 8080
 }/docs                      ║
 ╚══════════════════════════════════════════════════════════════════╝

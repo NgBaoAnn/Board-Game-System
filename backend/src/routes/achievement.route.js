@@ -36,6 +36,14 @@ router.delete(
   achievementController.deleteAchievement
 );
 
+// Admin: lấy danh sách thành tựu (phân trang, search)
+router.get(
+  "/achievements",
+  authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
+  achievementController.getAllAchievements
+);
+
 // lấy thông tin chi tiết của thành tựu
 router.get(
   "/achievement/:id",

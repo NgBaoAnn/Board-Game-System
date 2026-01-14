@@ -196,26 +196,52 @@ class UserRepo {
       reset_token_expires_at: null,
     });
   }
-  async getUserCounts() {
+  
+  async getUserCounts(startDate, endDate) {
+    let usersCreatedQuery;
+    let bindings = [];
+
+    if (startDate && endDate) {
+      usersCreatedQuery = `
+      SUM(
+        CASE
+          WHEN u.created_at >= ?
+          AND u.created_at < ?
+          THEN 1 ELSE 0
+        END
+      ) as total_users_created_today
+    `;
+      bindings = [startDate, endDate];
+    } else {
+      usersCreatedQuery = `
+      SUM(
+        CASE
+          WHEN u.created_at >= CURRENT_DATE
+          AND u.created_at < CURRENT_DATE + INTERVAL '1 day'
+          THEN 1 ELSE 0
+        END
+      ) as total_users_created_today
+    `;
+    }
+
     const result = await db({ u: MODULE.USER })
       .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
       .select(
-        db.raw("COUNT(*) as total_users"),
-        db.raw("COUNT(CASE WHEN r.name = 'user' THEN 1 END) as total_players"),
-        db.raw(
-          "COUNT(CASE WHEN DATE(u.created_at) = CURRENT_DATE THEN 1 END) as total_users_created_today"
-        ),
-        db.raw("COUNT(CASE WHEN u.active = false THEN 1 END) as total_banned")
+        db.raw("COUNT(DISTINCT u.id) as total_users"),
+        db.raw("SUM(CASE WHEN r.name = 'user' THEN 1 ELSE 0 END) as total_players"),
+        db.raw(usersCreatedQuery, bindings),
+        db.raw("SUM(CASE WHEN u.active = false THEN 1 ELSE 0 END) as total_banned")
       )
       .first();
 
     return {
-      totalUsers: parseInt(result.total_users) || 0,
-      totalPlayers: parseInt(result.total_players) || 0,
-      totalUsersCreatedToday: parseInt(result.total_users_created_today) || 0,
-      totalBanned: parseInt(result.total_banned) || 0,
+      totalUsers: Number(result?.total_users ?? 0),
+      totalPlayers: Number(result?.total_players ?? 0),
+      totalUsersCreatedToday: Number(result?.total_users_created_today ?? 0),
+      totalBanned: Number(result?.total_banned ?? 0),
     };
   }
+
 
   async getUserRegistrations() {
     // Get user registrations for the last 6 months
@@ -238,6 +264,113 @@ class UserRepo {
       stats[row.month.toString()] = parseInt(row.count);
     });
 
+    return stats;
+  }
+
+  async countTotalPlayers(beforeDate) {
+    let query = db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .where("r.name", "user");
+
+    if (beforeDate) {
+      query = query.where("u.created_at", "<", beforeDate);
+    }
+
+    const result = await query.count("u.id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async countNewUsers(startDate, endDate) {
+    let query = db(MODULE.USER);
+
+    if (startDate) {
+      query = query.where("created_at", ">=", startDate);
+    }
+    if (endDate) {
+      query = query.where("created_at", "<", endDate);
+    }
+
+    const result = await query.count("id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async getUserRegistrationStats(filter) {
+    const now = new Date();
+    let startDate;
+    let stats = {};
+
+    if (filter === "7d" || !filter) {
+      // Last 7 days
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "30d") {
+      // Last 30 days
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "6m") {
+      // Last 6 months
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 6; i++) {
+        const date = new Date(startDate);
+        date.setMonth(startDate.getMonth() + i);
+        const month = date.getMonth() + 1;
+        stats[month.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(MONTH FROM created_at)")
+        .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    }
     return stats;
   }
 }

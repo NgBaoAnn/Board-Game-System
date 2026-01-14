@@ -125,6 +125,17 @@ class AchievementService {
     return achievementRepo.delete(id);
   }
 
+  async getAllAchievements(query) {
+    const { page, limit, search, game_id, condition_type } = query;
+    return achievementRepo.findAll({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+      search,
+      game_id: game_id ? parseInt(game_id) : undefined,
+      condition_type,
+    });
+  }
+
   /**
    * Check and grant achievements for a user based on their best score
    * This is a fallback/verification method to ensure achievements are granted

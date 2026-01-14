@@ -206,6 +206,32 @@ class GameController {
       next(err);
     }
   }
+  async getTotalSessions(req, res, next) {
+    try {
+      const total = await gameService.getTotalSessions();
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Total sessions retrieved successfully",
+        data: { total },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getUniquePlayerCount(req, res, next) {
+    try {
+      const { id } = req.params;
+      const count = await gameService.getUniquePlayerCount(parseInt(id));
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Unique player count retrieved successfully",
+        data: { count },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new GameController();

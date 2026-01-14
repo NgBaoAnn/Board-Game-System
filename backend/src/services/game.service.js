@@ -314,6 +314,17 @@ class GameService {
       },
     };
   }
+  async getTotalSessions() {
+    return await gameRepo.countTotalGameSessions();
+  }
+
+  async getUniquePlayerCount(gameId) {
+    const game = await gameRepo.findById(gameId);
+    if (!game) {
+      throw new NotFoundError("Game not found");
+    }
+    return await gameRepo.countUniquePlayers(gameId);
+  }
 }
 
 module.exports = new GameService();

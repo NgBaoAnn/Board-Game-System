@@ -356,7 +356,6 @@ export default function AdminUsersPage() {
                     <ConfigProvider
                         theme={{
                             token: {
-                                colorPrimary: "#ec4899",
                                 colorBgContainer: isDarkMode ? "#212f4d" : "#f8f8f8",
                                 colorText: isDarkMode ? "#fff" : "#000",
                             },
@@ -371,7 +370,6 @@ export default function AdminUsersPage() {
             <ConfigProvider
                 theme={{
                     token: {
-                        colorPrimary: "#ec4899",
                         colorBgContainer: isDarkMode ? "#212f4d" : "#ffffff",
                         colorText: isDarkMode ? "#fff" : "#000",
                     },

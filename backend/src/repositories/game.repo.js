@@ -231,6 +231,31 @@ class GameRepo {
       results.forEach((row) => {
         stats[row.period.toString()] = parseInt(row.count);
       });
+    } else if (filter === "6m") {
+      // Last 6 months - group by month
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize last 6 months with 0
+      for (let i = 0; i < 6; i++) {
+        const date = new Date(startDate);
+        date.setMonth(startDate.getMonth() + i);
+        const month = date.getMonth() + 1;
+        stats[month.toString()] = 0;
+      }
+
+      const results = await db(MODULE.GAME_SESSION)
+        .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(MONTH FROM created_at)")
+        .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
     }
 
     return stats;
@@ -251,6 +276,11 @@ class GameRepo {
     } else if (filter === "12m") {
       startDate = new Date(now);
       startDate.setMonth(startDate.getMonth() - 11);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (filter === "6m") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
       startDate.setDate(1);
       startDate.setHours(0, 0, 0, 0);
     } else {
@@ -289,6 +319,48 @@ class GameRepo {
       .first();
 
     return parseInt(result.total) > 0;
+  }
+
+  async countFinishedSessions({ startDate, endDate } = {}) {
+    let query = db(MODULE.GAME_SESSION).where("status", "finished");
+
+    if (startDate) {
+      query = query.where("ended_at", ">=", startDate);
+    }
+    if (endDate) {
+      query = query.where("ended_at", "<", endDate);
+    }
+
+    const result = await query.count("id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async countTotalGameSessions(beforeDate) {
+    let query = db(MODULE.GAME_SESSION).where("status", "finished");
+
+    if (beforeDate) {
+      query = query.where("ended_at", "<", beforeDate);
+    }
+
+    const result = await query.count("id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async countActiveSessions() {
+    const result = await db(MODULE.GAME_SESSION)
+      .where("status", "playing")
+      .count("id as total")
+      .first();
+    return parseInt(result.total) || 0;
+  }
+
+  async countUniquePlayers(gameId) {
+    const result = await db(MODULE.GAME_SESSION)
+      .where("game_id", gameId)
+      .countDistinct("user_id as total")
+      .first();
+
+    return parseInt(result.total) || 0;
   }
 }
 

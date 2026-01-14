@@ -31,6 +31,11 @@ router.delete(
   gameController.deleteGame
 );
 
+router.get(
+  "/games/:id/players/count",
+  gameController.getUniquePlayerCount
+);
+
 router.post(
   "/games/sessions",
   authMiddleware.authenticate,
@@ -73,6 +78,13 @@ router.get(
   authMiddleware.authenticate,
   authMiddleware.authorize([ROLE.ADMIN]),
   gameController.getGameActivity
+);
+
+router.get(
+  "/games/sessions/total",
+  authMiddleware.authenticate,
+  authMiddleware.authorize([ROLE.ADMIN]),
+  gameController.getTotalSessions
 );
 
 module.exports = router;

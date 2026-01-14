@@ -106,6 +106,19 @@ class AchievementController {
       next(err);
     }
   }
+
+  async getAllAchievements(req, res, next) {
+    try {
+      const result = await achievementService.getAllAchievements(req.query);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Achievements retrieved successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AchievementController();

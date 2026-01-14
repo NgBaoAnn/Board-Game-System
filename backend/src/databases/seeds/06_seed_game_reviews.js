@@ -5,7 +5,7 @@
  */
 exports.seed = async function (knex) {
     // Get existing users and games
-    const users = await knex("users").select("id", "username").limit(5);
+    const users = await knex("users").select("id", "username"); // Fetch all users (removed limit 5)
     const games = await knex("games").select("id", "code");
 
     if (users.length === 0 || games.length === 0) {
@@ -48,12 +48,12 @@ exports.seed = async function (knex) {
     for (const game of games) {
         // Each game gets reviews from random users
         const shuffledUsers = [...users].sort(() => Math.random() - 0.5);
-        const numReviews = Math.min(shuffledUsers.length, Math.floor(Math.random() * 4) + 2);
+        const numReviews = Math.min(shuffledUsers.length, Math.floor(Math.random() * 11) + 7); // 7 to 17
 
         for (let i = 0; i < numReviews; i++) {
             const user = shuffledUsers[i];
-            // Weight towards higher ratings (more realistic)
-            const ratingWeights = [1, 2, 3, 4, 4, 4, 5, 5, 5, 5];
+            // Weight towards higher ratings
+            const ratingWeights = [1,2,3,4,4,5,5,5,5,5,5,5,5,5];
             const rating = ratingWeights[Math.floor(Math.random() * ratingWeights.length)];
             const comments = reviewComments[rating];
             const comment = comments[Math.floor(Math.random() * comments.length)];

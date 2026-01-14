@@ -80,4 +80,16 @@ export const gameApi = {
             data: response.data,
         }
     },
+
+    /**
+     * Get total game sessions count (Admin)
+     * @returns {Promise<Object>} Total sessions count
+     */
+    getTotalSessions: async () => {
+        const response = await axiosInstance.get('/games/sessions/total')
+        return {
+            success: response.success || true,
+            total: response.data?.total || 0,
+        }
+    },
 }
