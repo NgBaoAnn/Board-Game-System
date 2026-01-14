@@ -267,7 +267,7 @@ export default function AdminGamesPage() {
                     algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 }}
             >
-                <Modal title={`Edit Game: ${selectedGame?.name}`} open={modalVisible} onOk={handleModalOk} onCancel={handleModalCancel} okText="Save" cancelText="Cancel" width={600}>
+                <Modal title={`Edit Game: ${selectedGame?.name}`} open={modalVisible} onOk={handleModalOk} onCancel={handleModalCancel} okText="Save" cancelText="Cancel" width={600} style={{ top: 40 }}>
                     <Form form={form} layout="vertical">
                         <Form.Item
                             label="Game Name"

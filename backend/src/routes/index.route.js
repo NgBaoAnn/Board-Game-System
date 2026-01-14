@@ -9,6 +9,7 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const rankingRoute = require("../routes/ranking.route");
 const achievementRoute = require("../routes/achievement.route");
 const reviewRoute = require("../routes/review.route");
+const dashboardRoute = require("./dashboard.route");
 
 const initRoute = (app) => {
   app.use("/docs", swaggerRoute);
@@ -26,6 +27,7 @@ const initRoute = (app) => {
   app.use("/api", userRoute);
   app.use("/api", friendRoute);
   app.use("/api", conversationRoute);
+  app.use("/api/dashboard", dashboardRoute);
 };
 
 module.exports = initRoute;

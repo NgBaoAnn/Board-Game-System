@@ -240,6 +240,113 @@ class UserRepo {
 
     return stats;
   }
+
+  async countTotalPlayers(beforeDate) {
+    let query = db({ u: MODULE.USER })
+      .leftJoin({ r: MODULE.ROLE }, "u.role_id", "r.id")
+      .where("r.name", "user");
+
+    if (beforeDate) {
+      query = query.where("u.created_at", "<", beforeDate);
+    }
+
+    const result = await query.count("u.id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async countNewUsers(startDate, endDate) {
+    let query = db(MODULE.USER);
+
+    if (startDate) {
+      query = query.where("created_at", ">=", startDate);
+    }
+    if (endDate) {
+      query = query.where("created_at", "<", endDate);
+    }
+
+    const result = await query.count("id as total").first();
+    return parseInt(result.total) || 0;
+  }
+
+  async getUserRegistrationStats(filter) {
+    const now = new Date();
+    let startDate;
+    let stats = {};
+
+    if (filter === "7d" || !filter) {
+      // Last 7 days
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Initialize
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "30d") {
+      // Last 30 days
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const day = date.getDate();
+        stats[day.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(DAY FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(DAY FROM created_at)")
+        .orderByRaw("EXTRACT(DAY FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    } else if (filter === "6m") {
+      // Last 6 months
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 5);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 6; i++) {
+        const date = new Date(startDate);
+        date.setMonth(startDate.getMonth() + i);
+        const month = date.getMonth() + 1;
+        stats[month.toString()] = 0;
+      }
+
+      const results = await db(MODULE.USER)
+        .select(db.raw("EXTRACT(MONTH FROM created_at)::integer as period"))
+        .count("id as count")
+        .where("created_at", ">=", startDate)
+        .groupByRaw("EXTRACT(MONTH FROM created_at)")
+        .orderByRaw("EXTRACT(MONTH FROM created_at)");
+
+      results.forEach((row) => {
+        stats[row.period.toString()] = parseInt(row.count);
+      });
+    }
+    return stats;
+  }
 }
 
 module.exports = new UserRepo();

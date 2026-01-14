@@ -1,8 +1,11 @@
 import { Select, ConfigProvider, theme } from "antd";
-import { Column, Pie } from "@ant-design/plots";
-import { Gamepad2, HardDrive, Timer, UserPlus, TrendingUp, TrendingDown } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Column, Pie, Line } from "@ant-design/plots";
+import { Gamepad2, HardDrive, Timer, UserPlus, TrendingUp, TrendingDown, Users, CheckCircle, Activity } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
+import { userApi } from "../../api/user";
+import { dashboardApi } from "../../api/dashboard";
+import { li, style } from "framer-motion/client";
 
 export const sampleAdminDashboardData = {
     stats: {
@@ -41,51 +44,81 @@ export const sampleAdminDashboardData = {
 export default function AdminDashboardPage({ data } = {}) {
     const { isDarkMode } = useTheme();
 
-    console.log("AdminDashboardPage render with isDarkMode =", isDarkMode);
-
     const dashboard = data ?? sampleAdminDashboardData;
-    const [range, setRange] = useState("7");
+    const [range, setRange] = useState("7d");
 
-    const computedChartData = useMemo(() => {
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const liveBase = [8200, 11500, 9300, 13200, 16500, 14100, 12400, 17800, 15600, 18900, 16000, 19500];
-        const multiplier = range === "7" ? 0.3 : range === "30" ? 0.6 : range === "90" ? 0.85 : range === "ytd" ? 1 : 1.1;
-        const data = [];
-        for (let i = 0; i < months.length; i++) {
-            const liveVal = Math.round(liveBase[i] * multiplier);
-            const completedVal = Math.round(liveVal * 0.6);
-            data.push({ month: months[i], type: "Live", value: liveVal });
-            data.push({ month: months[i], type: "Completed", value: completedVal });
-        }
-        return data;
+    const [activityData, setActivityData] = useState([]);
+
+    useEffect(() => {
+        const fetchActivityChart = async () => {
+            try {
+                const res = await dashboardApi.getActivityChart(range);
+                if (res.success) {
+                    setActivityData(res.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch activity chart", error);
+            }
+        };
+        fetchActivityChart();
     }, [range]);
 
-    const chartData = dashboard.chartData ?? computedChartData;
+    const [dashboardStats, setDashboardStats] = useState({
+        totalPlayers: { value: 0, change: 0 },
+        newUsers: { value: 0, change: 0 },
+        finishedGames: { value: 0, change: 0 },
+        activeGames: { value: 0 },
+    });
+
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                const res = await dashboardApi.getStats(range);
+                if (res.success) {
+                    setDashboardStats(res.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            }
+        };
+        fetchDashboardStats();
+    }, [range]);
+
+
+    const [registrationStats, setRegistrationStats] = useState([]);
+
+    useEffect(() => {
+        const fetchRegistrationStats = async () => {
+            try {
+                const res = await dashboardApi.getRegistrationChart(range);
+                if (res.success) {
+                    setRegistrationStats(res.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch registration stats", error);
+            }
+        };
+        fetchRegistrationStats();
+    }, [range]);
+
+
 
     const columnConfig = {
         theme: isDarkMode ? { type: "dark" } : { type: "light" },
-        data: chartData,
-        xField: "month",
+        data: activityData,
+        xField: "label",
         yField: "value",
-        seriesField: "type",
-        isGroup: true,
         height: 280,
-        colorField: "type",
-        scale: {
-            color: {
-                range: ["#ec4899", "#51a2ff"],
-            },
-        },
+        color: "#3B82F6",
+        radius: 4,
         style: {
             radius: 3,
         },
         tooltip: {
-            title: "name",
+            title: "label",
             items: ["value"],
         },
-        legend: { position: "top-left" },
         xAxis: { label: { autoHide: true, autoRotate: false } },
-        yAxis: { label: { formatter: (v) => (v >= 1000 ? v / 1000 + "k" : v) } },
     };
 
     const pieData =
@@ -118,6 +151,41 @@ export default function AdminDashboardPage({ data } = {}) {
         },
     };
 
+    const lineConfig = {
+        theme: isDarkMode ? { type: "dark" } : { type: "light" },
+        data: registrationStats.length > 0 ? registrationStats : dashboard.userRegistrations,
+        xField: "label",
+        yField: "value",
+        smooth: true,
+        point: {
+            size: 5,
+            shape: "circle",
+            style: {
+                fill: "white",
+                stroke: "#3B82F6",
+                lineWidth: 2,
+            }
+        },
+        color: "#3B82F6",
+        scale: {
+             value: { min: 0 }
+        },
+        height: 320,
+        yAxis: {
+            label: {
+                formatter: (v) => v,
+            },
+        },
+         tooltip: {
+            showMarkers: true,
+            title: "label",
+            items: ["value"],
+        },
+        style: {
+            lineWidth: 3,
+        },
+    };
+
     return (
         <div className="flex-1 pt-20 xl:pt-6 p-6 overflow-y-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -141,11 +209,9 @@ export default function AdminDashboardPage({ data } = {}) {
                                 value={range}
                                 onChange={setRange}
                                 options={[
-                                    { label: "Last 7 Days", value: "7" },
-                                    { label: "Last 30 Days", value: "30" },
-                                    { label: "Last 3 Months", value: "90" },
-                                    { label: "Year to Date", value: "ytd" },
-                                    { label: "All Time", value: "all" },
+                                    { label: "Last 7 Days", value: "7d" },
+                                    { label: "Last 30 Days", value: "30d" },
+                                    { label: "Last 6 Months", value: "6m" },
                                 ]}
                                 className="min-w-full"
                             />
@@ -157,17 +223,17 @@ export default function AdminDashboardPage({ data } = {}) {
                 <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Plays</p>
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboard.stats.totalPlays.toLocaleString()}</h3>
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Players</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboardStats.totalPlayers.value.toLocaleString()}</h3>
                         </div>
                         <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                            <Gamepad2 />
+                            <Users />
                         </div>
                     </div>
                     <div className="flex items-center text-sm">
-                        <span className={`flex items-center font-medium mr-2 ${dashboard.stats.totalPlaysChangePct >= 0 ? "text-green-500" : "text-red-500"}`}>
-                            <span className="text-base mr-0.5">{dashboard.stats.totalPlaysChangePct >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
-                            {Math.abs(dashboard.stats.totalPlaysChangePct)}%
+                        <span className={`flex items-center font-medium mr-2 ${dashboardStats.totalPlayers.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                            <span className="text-base mr-0.5">{dashboardStats.totalPlayers.change >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
+                            {Math.abs(dashboardStats.totalPlayers.change)}%
                         </span>
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
                     </div>
@@ -176,16 +242,16 @@ export default function AdminDashboardPage({ data } = {}) {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">New Registrations</p>
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboard.stats.newRegistrations.toLocaleString()}</h3>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboardStats.newUsers.value.toLocaleString()}</h3>
                         </div>
                         <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-500 dark:text-purple-400 group-hover:scale-110 transition-transform">
                             <UserPlus />
                         </div>
                     </div>
                     <div className="flex items-center text-sm">
-                        <span className={`flex items-center font-medium mr-2 ${dashboard.stats.newRegistrationsChangePct >= 0 ? "text-green-500" : "text-red-500"}`}>
-                            <span className="text-base mr-0.5">{dashboard.stats.newRegistrationsChangePct >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
-                            {Math.abs(dashboard.stats.newRegistrationsChangePct)}%
+                        <span className={`flex items-center font-medium mr-2 ${dashboardStats.newUsers.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                            <span className="text-base mr-0.5">{dashboardStats.newUsers.change >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
+                            {Math.abs(dashboardStats.newUsers.change)}%
                         </span>
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
                     </div>
@@ -193,44 +259,40 @@ export default function AdminDashboardPage({ data } = {}) {
                 <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg. Session Time</p>
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboard.stats.avgSessionTime}</h3>
-                        </div>
-                        <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
-                            <Timer />
-                        </div>
-                    </div>
-                    <div className="flex items-center text-sm">
-                        <span className={`flex items-center font-medium mr-2 ${dashboard.stats.avgSessionTimeChangePct >= 0 ? "text-green-500" : "text-red-500"}`}>
-                            <span className="text-base mr-0.5">{dashboard.stats.avgSessionTimeChangePct >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
-                            {Math.abs(dashboard.stats.avgSessionTimeChangePct)}%
-                        </span>
-                        <span className="text-gray-400 dark:text-gray-500">vs last period</span>
-                    </div>
-                </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Server Uptime</p>
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboard.stats.serverUptime}</h3>
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Finished Games</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboardStats.finishedGames.value.toLocaleString()}</h3>
                         </div>
                         <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-500 dark:text-green-400 group-hover:scale-110 transition-transform">
-                            <HardDrive />
+                            <CheckCircle />
                         </div>
                     </div>
                     <div className="flex items-center text-sm">
-                        <span className={`flex items-center font-medium mr-2 ${dashboard.stats.serverUptimeChangePct >= 0 ? "text-green-500" : "text-red-500"}`}>
-                            <span className="text-base mr-0.5">{dashboard.stats.serverUptimeChangePct >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
-                            {Math.abs(dashboard.stats.serverUptimeChangePct)}%
+                        <span className={`flex items-center font-medium mr-2 ${dashboardStats.finishedGames.change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                            <span className="text-base mr-0.5">{dashboardStats.finishedGames.change >= 0 ? <TrendingUp /> : <TrendingDown />}</span>
+                            {Math.abs(dashboardStats.finishedGames.change)}%
                         </span>
                         <span className="text-gray-400 dark:text-gray-500">vs last period</span>
+                    </div>
+                </div>
+                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm hover:shadow-md border border-border-light dark:border-border-dark group hover:border-primary/30 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Games</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{dashboardStats.activeGames.value.toLocaleString()}</h3>
+                        </div>
+                        <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                            <Activity />
+                        </div>
+                    </div>
+                    <div className="flex items-center text-sm">
+                         <span className="text-green-500 font-medium mr-2">Live Now</span>
                     </div>
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <div className="lg:col-span-2 flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">Game Activity Overview</h3>
-
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Completed game sessions over time</p>
                     <div className="flex-1"></div>
                     <div className="h-64">
                         <Column {...columnConfig} />
@@ -296,22 +358,9 @@ export default function AdminDashboardPage({ data } = {}) {
                 </div>
                 <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">User Registrations</h3>
-                    <p className="text-sm text-gray-500 mb-6">New accounts created over the last 6 months</p>
-                    <div className="space-y-5">
-                        {dashboard.userRegistrations.map((reg) => {
-                            const highlighted = reg.percent >= 80;
-                            return (
-                                <div className="group" key={reg.month}>
-                                    <div className="flex justify-between text-sm mb-1">
-                                        <span className="font-medium text-gray-700 dark:text-gray-300">{reg.month}</span>
-                                        <span className={`text-gray-500 ${highlighted ? "font-bold dark:text-white" : ""}`}>{reg.value.toLocaleString()}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3">
-                                        <div className={`h-3 rounded-full ${highlighted ? "bg-primary shadow-lg shadow-primary/20" : "bg-indigo-400"}`} style={{ width: `${reg.percent}%` }}></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <p className="text-sm text-gray-500 mb-6">New accounts created over time</p>
+                    <div className="h-80 w-full">
+                         <Line {...lineConfig} />
                     </div>
                 </div>
             </div>

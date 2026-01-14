@@ -114,4 +114,16 @@ export const userApi = {
             data: response.data,
         }
     },
+
+    /**
+     * Get user registration stats
+     * @returns {Promise<Object>} Registration stats
+     */
+    getRegistrationStats: async () => {
+        const response = await axiosInstance.get('/users/stats/registrations')
+        return {
+            success: response.success || true,
+            data: response.data,
+        }
+    },
 }
