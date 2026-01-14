@@ -13,6 +13,7 @@ const ProfilePage = lazy(() => import('../pages/user/ProfilePage'))
 const FriendProfilePage = lazy(() => import('../pages/user/FriendProfilePage'))
 const RankingPage = lazy(() => import('../pages/user/RankingPage'))
 const MessagePage = lazy(() => import('../pages/user/MessagePage'))
+const GameReviewPage = lazy(() => import('../pages/user/GameReviewPage'))
 
 const LoginPage = lazy(() => import('../pages/common/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/common/RegisterPage'))
@@ -93,6 +94,10 @@ export const router = createBrowserRouter([
       {
         path: '/settings',
         element: withAuth(SettingPage),
+      },
+      {
+        path: '/game/:gameId/reviews',
+        element: withAuth(GameReviewPage),
       }
     ],
     errorElement: withSuspense(NotFoundPage),

@@ -786,3 +786,83 @@ body {
 .animate-cursor-dot-pulse circle {
   animation: cursor-dot-pulse 1.5s ease-in-out infinite;
 }
+
+/* ===== Rating & Review Styles ===== */
+
+/* Rating badge hover glow */
+.rating-badge-glow {
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+}
+.rating-badge-glow:hover {
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 0 40px rgba(250, 204, 21, 0.3);
+}
+
+/* Star rating hover effects */
+.star-interactive:hover {
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.8));
+}
+
+/* Review card hover */
+.review-card {
+  transition: all 0.3s ease;
+}
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.dark .review-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
+}
+
+/* Rating distribution bar animation */
+@keyframes rating-bar-fill {
+  from { width: 0; }
+}
+
+.rating-bar-animate {
+  animation: rating-bar-fill 1s ease-out forwards;
+}
+
+/* Review submit button pulse */
+@keyframes review-submit-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(29, 122, 242, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(29, 122, 242, 0);
+  }
+}
+
+.review-submit-pulse:not(:disabled) {
+  animation: review-submit-pulse 2s ease-in-out infinite;
+}
+
+/* Game card enhanced hover */
+.game-card-hover-glow:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.15), 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+.dark .game-card-hover-glow:hover {
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Rating badge shimmer */
+@keyframes rating-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.rating-badge-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: rating-shimmer 2s linear infinite;
+}
+
