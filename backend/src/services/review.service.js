@@ -90,11 +90,8 @@ class ReviewService {
         const existingReview = await reviewRepo.findByUserAndGame(userId, gameId);
 
         if (existingReview) {
-            // Update existing review
-            return reviewRepo.update(existingReview.id, {
-                rating,
-                comment,
-            });
+            // Người dùng đã đánh giá rồi
+            throw new BadRequestError("Bạn đã đánh giá trò chơi này rồi");
         }
 
         // Create new review
