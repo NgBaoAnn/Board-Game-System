@@ -50,7 +50,7 @@ function GameCard({ game, isSelected, hasSavedSession, onSelect, onPlay, onResum
     // Handle rating badge click
     const handleRatingClick = (e) => {
         e.stopPropagation()
-        navigate(`/game/${game.id}/reviews?code=${game.code}&name=${encodeURIComponent(game.name)}`)
+        navigate(`/reviews?gameId=${game.id}`)
     }
 
     return (

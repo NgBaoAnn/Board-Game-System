@@ -1,369 +1,308 @@
-import { useState, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-// Direct imports for better bundle size (rule: bundle-barrel-imports)
-import Users from 'lucide-react/dist/esm/icons/users'
-import Clock from 'lucide-react/dist/esm/icons/clock'
-import Zap from 'lucide-react/dist/esm/icons/zap'
-import Crown from 'lucide-react/dist/esm/icons/crown'
-import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
 import { motion } from 'framer-motion'
-import GameCard from '@/components/Game/GameCard'
-import NewArrivalCard from '@/components/Game/NewArrivalCard'
-import HeroSection from '@/components/Home/HeroSection'
-import SectionHeader from '@/components/common/SectionHeader'
+// Direct imports for better bundle size
+import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
+import Trophy from 'lucide-react/dist/esm/icons/trophy'
+import Users from 'lucide-react/dist/esm/icons/users'
+import Zap from 'lucide-react/dist/esm/icons/zap'
+import Target from 'lucide-react/dist/esm/icons/target'
+import Sparkles from 'lucide-react/dist/esm/icons/sparkles'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
+import Star from 'lucide-react/dist/esm/icons/star'
 
-const heroImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6nScqmqkDA1m73ZB3NIoVYRn-NoVZhlNJ6nHG9PfYNu9htB7sIwq13rXhzRACpmWTVotZmL-bJXc11wxiETP5COG0Do-JqiTUHndRbDQ9_yIdOhsXxOZbyGrpxvBaQ442jGILlt7ODsA-E1sYMF7xoGFwMX6tyG1iJLemgwFfesLcyU_GXtdEo8fkDZaqqzyIibwLNVvNe7YDw7vflxVsUtVsL0dveXcWKhDJRmGmw9sI21nucjFIu75w23J1uoO9MYLQ78muDoix'
+// Hero background image
+const HERO_BG = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1920&h=1080&fit=crop'
 
-const popularGames = [
+// Feature data
+const FEATURES = [
   {
-    id: 1,
-    title: 'Monopoly Classic',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDA7vEIR_RPLJ-YS9YGou4QC8ktUwEWDbpBMcrZ3iMxUYoQpWRjw5YH_yf1-__8FYkpzxkmZFAxWkdiOY4Zft7x5_jGcvUOw_Tu6m1SFAHr05Z-RT21Dsc-xfan-JnLfC89NIt_cZTUx6ikFF_oFppVLTluEvuceyYkM0TVE24GIA9-grrgOBhGLq73GWFRcFURNUPMhn20XJ3e_V7iK7Cu97V7cloLtvm8e2AkFIR7LQO0L572Vm4bzNlfKGvpDcyH098NRfPwV1C2',
-    rating: 4.5,
-    players: '2-6 Players',
-    duration: '60m+',
-    rarity: 'legendary',
-    onlinePlayers: 234,
-    isHot: true,
-    isNew: false,
+    icon: Gamepad2,
+    title: 'Classic Games',
+    description: 'Enjoy timeless board games like Tic-Tac-Toe, Caro, Memory Match and more.',
+    gradient: 'from-purple-500 to-pink-500',
   },
   {
-    id: 2,
-    title: 'Chess Arena',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJG3iIs6S7sYzD2VxpjHBJmcchytJ3n7BArtH7Wep8scO_R5UaglCjVxh9SdRRb_ysfcGsxbkl-v5p7P1RlIfA39EW5E7m91i52bzoRcDGJgHnZcy4cjSQTpcX5UZ4MS3yLpOjJVEbXIx_GD2ht_j_SLMF0TCVEJRuzWs0JuFk4FMfQ9PqSMkwUIkGmO4g1VRGtZwJ_q1YR6WLCACcKwUCtJ0_A3580MgOaBHvSYjzm3xr-pGrVhSVwMbXLimCiRJwTlQe_ia86cNZ',
-    rating: 4.8,
-    players: '2 Players',
-    duration: '15-30m',
-    rarity: 'epic',
-    onlinePlayers: 567,
-    isHot: false,
-    isNew: false,
+    icon: Trophy,
+    title: 'Achievements',
+    description: 'Unlock achievements, earn badges and showcase your gaming skills.',
+    gradient: 'from-yellow-500 to-orange-500',
   },
   {
-    id: 3,
-    title: 'Word Master',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD6A2ruZqVGA-_JXC7lNl3RFQaMgk-bU9lDIZ2ywSru1XZrKfNmg-dcygzmHrTnrwqHm81JG527rADKfuKvmxVNvaX48L-KifLS9JcneaN2xRlP4x0OeS-BGUT329xiA66KINvSSw-O1WQOaaMzukFygfDVU9L0TWWcT05BxNQi9tQ989MFm_eIFSRzgp1sWNLll6u8227Xu4JdOGLuLdjp0MBvWFTY-edcU9BKT7w3P2ln1rcc0icfn_r4TSJ9k6XfWk32q5TNKvQd',
-    rating: 4.2,
-    players: '2-4 Players',
-    duration: '45m',
-    rarity: 'rare',
-    onlinePlayers: 89,
-    isHot: false,
-    isNew: true,
+    icon: Users,
+    title: 'Community',
+    description: 'Connect with friends, challenge players and climb the leaderboards.',
+    gradient: 'from-cyan-500 to-blue-500',
   },
   {
-    id: 4,
-    title: 'Poker Night',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQY-9JY2r5FbqNjNrYHA1C7TryNl0EdBTBuF1l0WXYyCZuFKJ_n4RO95zDNp3FH6Up8U7-v4DCkY0jWHVUMMuKenwsb7VBNFeR7EpJ2N6g4pnHrAe5QGfybkMR0tStnUxmtPEuyarAwwvZiCAnEZNSWu2VaqA36Qur0_KpPbdrPrabqIvIqNCsPcZF0wSZhfhJz1pOUQsapTK6rakRa0xx_LQ9daEeS4xhd9OpwMG8YrZrxvmrWUnDi4qlb9R0lGSpY3RVMeVEL6Ug',
-    rating: 4.7,
-    players: '2-10 Players',
-    duration: '30m+',
-    rarity: 'common',
-    onlinePlayers: 156,
-    isHot: true,
-    isNew: false,
+    icon: Target,
+    title: 'Track Progress',
+    description: 'Save your game progress and continue anytime, anywhere.',
+    gradient: 'from-green-500 to-emerald-500',
   },
 ]
 
-const newArrivals = [
-  {
-    id: 1,
-    title: 'Galaxy Trucker',
-    category: 'Sci-Fi • Strategy',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3RG2UKiaLxTTqjeS62ZQP04LnQm4n1KqQbjc_VnnaC5k4u0jvPfZml8A8yQZfVyjsBlQ3g8BDIEdykad0dJCbVYN-jC_v2zDWNjanmfGHw5QIIyGtrTeY3I1VPRrbtRa40XR7T7nMxq5JNTl6vHNVTrwDXTYcEptBF3z5eU2ECk6fajQ3RgfdAu66jG2FQ6hxms7eIzJQJwZXsB17dEsjij8P964uoeEjHqib2lzYzTi-ulHoDexcGjVz4BNTFBV5TFB1OERZpQSD',
-  },
-  {
-    id: 2,
-    title: 'Dungeon Quest',
-    category: 'RPG • Adventure',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYvG4yk5pzKlufV9CPh5OnzOSLfxFg8J2FYuV8kKUo47Kbn02bJovBK7R1EGeWKqV2z4P7D1n9Qzhm8-Z_nI4tzk_-bWi7l3rprnhYRoFFL1z6n_mFhRUsO1F3qmPVBejS_S3r7PxfdAp0jU_gbYj46lpQtFDn7bLzwej6ydEwW1OMX_-_8Qhk7Q_0AIMc7Y55B17RaBiSnZl37oKOFOpXHExUeTecUVf007nwvcMF3m2n-RnsfJYNAlZQEkaRfQoc6PB7RQyoWA5R',
-  },
-  {
-    id: 3,
-    title: 'Tower Tumble',
-    category: 'Family • Dexterity',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBz_YidSQm793BN9aANk1G0qq4lDrO84IRPZ7HoDrZr1tXYT-JgMjuBjPyK1fAnscUjC13O7541-5-euztiITYEwrr0auOjCQDVIP30Dn1sVPYgCRIKuMNej4J5ur3_9nz8R4geyKEqfpudTgCdRjKLZjEIIxiKMqe35BQIJ1xMONtrU_QirDpyi7XjJVHYzh-b1_ytPW6lN8d0iL6F7_VnVCtrfg7_uNgOL75eUaQVNhm2nCmUgP_WCHfZqq9vVOKe9eg_q6vA9_Xv',
-  },
-  {
-    id: 4,
-    title: 'Cosmic Clash',
-    category: 'Sci-Fi • Combat',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6nScqmqkDA1m73ZB3NIoVYRn-NoVZhlNJ6nHG9PfYNu9htB7sIwq13rXhzRACpmWTVotZmL-bJXc11wxiETP5COG0Do-JqiTUHndRbDQ9_yIdOhsXxOZbyGrpxvBaQ442jGILlt7ODsA-E1sYMF7xoGFwMX6tyG1iJLemgwFfesLcyU_GXtdEo8fkDZaqqzyIibwLNVvNe7YDw7vflxVsUtVsL0dveXcWKhDJRmGmw9sI21nucjFIu75w23J1uoO9MYLQ78muDoix',
-  },
+// Stats data
+const STATS = [
+  { value: '7+', label: 'Games Available' },
+  { value: '1000+', label: 'Active Players' },
+  { value: '50K+', label: 'Games Played' },
+  { value: '99%', label: 'Uptime' },
 ]
 
-const liveGames = [
-  {
-    id: 1,
-    gameName: 'Monopoly Classic',
-    hostName: 'DragonMaster',
-    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dragon',
-    players: 3,
-    maxPlayers: 6,
-    status: 'waiting',
-    timeElapsed: null,
-    isRanked: true,
-    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDA7vEIR_RPLJ-YS9YGou4QC8ktUwEWDbpBMcrZ3iMxUYoQpWRjw5YH_yf1-__8FYkpzxkmZFAxWkdiOY4Zft7x5_jGcvUOw_Tu6m1SFAHr05Z-RT21Dsc-xfan-JnLfC89NIt_cZTUx6ikFF_oFppVLTluEvuceyYkM0TVE24GIA9-grrgOBhGLq73GWFRcFURNUPMhn20XJ3e_V7iK7Cu97V7cloLtvm8e2AkFIR7LQO0L572Vm4bzNlfKGvpDcyH098NRfPwV1C2',
-  },
-  {
-    id: 2,
-    gameName: 'Chess Arena',
-    hostName: 'GrandMaster99',
-    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=chess',
-    players: 1,
-    maxPlayers: 2,
-    status: 'waiting',
-    timeElapsed: null,
-    isRanked: true,
-    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJG3iIs6S7sYzD2VxpjHBJmcchytJ3n7BArtH7Wep8scO_R5UaglCjVxh9SdRRb_ysfcGsxbkl-v5p7P1RlIfA39EW5E7m91i52bzoRcDGJgHnZcy4cjSQTpcX5UZ4MS3yLpOjJVEbXIx_GD2ht_j_SLMF0TCVEJRuzWs0JuFk4FMfQ9PqSMkwUIkGmO4g1VRGtZwJ_q1YR6WLCACcKwUCtJ0_A3580MgOaBHvSYjzm3xr-pGrVhSVwMbXLimCiRJwTlQe_ia86cNZ',
-  },
-  {
-    id: 3,
-    gameName: 'Poker Night',
-    hostName: 'CardShark',
-    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=poker',
-    players: 5,
-    maxPlayers: 10,
-    status: 'in-progress',
-    timeElapsed: '12:34',
-    isRanked: false,
-    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQY-9JY2r5FbqNjNrYHA1C7TryNl0EdBTBuF1l0WXYyCZuFKJ_n4RO95zDNp3FH6Up8U7-v4DCkY0jWHVUMMuKenwsb7VBNFeR7EpJ2N6g4pnHrAe5QGfybkMR0tStnUxmtPEuyarAwwvZiCAnEZNSWu2VaqA36Qur0_KpPbdrPrabqIvIqNCsPcZF0wSZhfhJz1pOUQsapTK6rakRa0xx_LQ9daEeS4xhd9OpwMG8YrZrxvmrWUnDi4qlb9R0lGSpY3RVMeVEL6Ug',
-  },
-  {
-    id: 4,
-    gameName: 'Word Master',
-    hostName: 'WordWizard',
-    hostAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=word',
-    players: 2,
-    maxPlayers: 4,
-    status: 'waiting',
-    timeElapsed: null,
-    isRanked: false,
-    gameImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD6A2ruZqVGA-_JXC7lNl3RFQaMgk-bU9lDIZ2ywSru1XZrKfNmg-dcygzmHrTnrwqHm81JG527rADKfuKvmxVNvaX48L-KifLS9JcneaN2xRlP4x0OeS-BGUT329xiA66KINvSSw-O1WQOaaMzukFygfDVU9L0TWWcT05BxNQi9tQ989MFm_eIFSRzgp1sWNLll6u8227Xu4JdOGLuLdjp0MBvWFTY-edcU9BKT7w3P2ln1rcc0icfn_r4TSJ9k6XfWk32q5TNKvQd',
-  },
+// Game showcase
+const GAME_SHOWCASE = [
+  { name: 'Tic-Tac-Toe', image: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?w=300&h=200&fit=crop' },
+  { name: 'Caro 5x5', image: 'https://images.unsplash.com/photo-1606503153255-59d8b2e4739e?w=300&h=200&fit=crop' },
+  { name: 'Memory Match', image: 'https://images.unsplash.com/photo-1632501641765-e568d28b0015?w=300&h=200&fit=crop' },
+  { name: 'Snake Game', image: 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=300&h=200&fit=crop' },
 ]
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const [carouselIndex, setCarouselIndex] = useState(0)
-  const itemsPerView = 3
-  // Memoize maxIndex to avoid recalculating on every render (rule: rerender-memo)
-  const maxIndex = useMemo(() => Math.max(0, newArrivals.length - itemsPerView), [itemsPerView])
 
-  const handlePlayNow = () => {
+  const handlePlayNow = useCallback(() => {
     navigate('/boardgame')
-  }
-
-  const handleWatchTutorial = () => {
-    console.log('Watch Tutorial clicked')
-  }
-
-  const handleJoinGame = (gameId) => {
-    console.log('Join game clicked:', gameId)
-  }
-
-  const handleGameFavorite = (gameId, isFavorited) => {
-    console.log('Game favorited:', gameId, isFavorited)
-  }
-
-  const handlePrevious = () => {
-    setCarouselIndex(Math.max(0, carouselIndex - 1))
-  }
-
-  const handleNext = () => {
-    setCarouselIndex(Math.min(maxIndex, carouselIndex + 1))
-  }
+  }, [navigate])
 
   return (
-    <div className="flex flex-col gap-10 max-w-[1200px] mx-auto">
-
-      <HeroSection
-        title="Strategy Awaits: Master Catan Today"
-        description="Join over 10,000 players in the ultimate classic strategy game. Build settlements, trade resources, and pave your way to victory."
-        image={heroImage}
-        rating={4.9}
-        tag="Featured Game"
-        onlineCount={10234}
-        onPlayNow={handlePlayNow}
-        onWatchTutorial={handleWatchTutorial}
-      />
-
-
-      <div className="flex flex-col gap-5">
-        <SectionHeader
-          title="Live Games"
-          viewAllLink="/lobbies"
-          badge={
-            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              {liveGames.length} Active
-            </span>
-          }
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {liveGames.map((game, index) => (
-            <motion.div
-              key={game.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e]/80 to-[#16213e]/80 border border-white/10 hover:border-[#00f0ff]/50 transition-all duration-300"
-            >
-
-              <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
-                <img
-                  src={game.gameImage}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] via-[#1a1a2e]/80 to-transparent" />
-              </div>
-
-              <div className="relative p-4 flex items-center gap-4">
-
-                <div className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-white/20">
-                  <img
-                    src={game.gameImage}
-                    alt={game.gameName}
-                    className="w-full h-full object-cover"
-                  />
-                  {game.isRanked && (
-                    <div className="absolute top-0 right-0 p-0.5 bg-yellow-500 rounded-bl">
-                      <Crown className="w-3 h-3 text-black" />
-                    </div>
-                  )}
-                </div>
-
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-white truncate">{game.gameName}</h4>
-                    {game.status === 'waiting' ? (
-                      <span className="flex-shrink-0 px-2 py-0.5 text-[10px] font-medium bg-[#00f0ff]/20 text-[#00f0ff] rounded-full">
-                        WAITING
-                      </span>
-                    ) : (
-                      <span className="flex-shrink-0 px-2 py-0.5 text-[10px] font-medium bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1">
-                        <Gamepad2 className="w-3 h-3" />
-                        LIVE
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 text-sm text-gray-400">
-
-                    <div className="flex items-center gap-1.5">
-                      <img
-                        src={game.hostAvatar}
-                        alt={game.hostName}
-                        className="w-5 h-5 rounded-full border border-white/20"
-                      />
-                      <span className="truncate max-w-[80px]">{game.hostName}</span>
-                    </div>
-
-
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{game.players}/{game.maxPlayers}</span>
-                    </div>
-
-
-                    {game.timeElapsed && (
-                      <div className="flex items-center gap-1 text-orange-400">
-                        <Clock className="w-4 h-4" />
-                        <span>{game.timeElapsed}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-
-                <button
-                  onClick={() => handleJoinGame(game.id)}
-                  disabled={game.status === 'in-progress'}
-                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${game.status === 'waiting'
-                      ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] text-black hover:shadow-lg hover:shadow-[#00f0ff]/25 hover:scale-105'
-                      : 'bg-white/10 text-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                  {game.status === 'waiting' ? (
-                    <span className="flex items-center gap-1.5">
-                      <Zap className="w-4 h-4" />
-                      Join
-                    </span>
-                  ) : (
-                    'Spectate'
-                  )}
-                </button>
-              </div>
-
-
-              <div className="relative px-4 pb-3">
-                <div className="flex gap-1">
-                  {Array.from({ length: game.maxPlayers }, (_, i) => (
-                    <div
-                      key={i}
-                      className={`h-1 flex-1 rounded-full transition-all ${i < game.players
-                          ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7]'
-                          : 'bg-white/10'
-                        }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <img
+            src={HERO_BG}
+            alt="Gaming background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F0F23]/80 via-[#0F0F23]/60 to-[#0F0F23]" />
         </div>
-      </div>
 
+        {/* Animated glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse delay-1000" />
 
-      <div className="flex flex-col gap-5">
-        <SectionHeader title="Popular Games" viewAllLink="/browse" />
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {popularGames.map((game) => (
-            <GameCard key={game.id} game={game} onFavorite={handleGameFavorite} />
-          ))}
-        </div>
-      </div>
-
-
-      <div className="flex flex-col gap-5 pb-10">
-        <SectionHeader
-          title="New Arrivals"
-          showNavigation
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-        />
-
-
-        <div className="relative overflow-hidden">
+        {/* Content */}
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           <motion.div
-            className="flex gap-6"
-            animate={{ x: -carouselIndex * (280 + 24) }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            {newArrivals.map((game) => (
-              <NewArrivalCard key={game.id} game={game} />
-            ))}
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium text-white/90">Welcome to Game Arcade</span>
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+              <span className="text-white">Play Classic Games</span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-[#7C3AED] to-[#F43F5E]">
+                Anytime, Anywhere
+              </span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Discover a collection of timeless board games. Challenge yourself, track your progress, and compete with friends.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <motion.button
+                onClick={handlePlayNow}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group px-8 py-4 bg-gradient-to-r from-[#7C3AED] to-[#F43F5E] text-white font-bold text-lg rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 flex items-center gap-2 cursor-pointer"
+              >
+                <Gamepad2 className="w-5 h-5" />
+                Start Playing Now
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+              
+              <button
+                onClick={() => navigate('/ranking')}
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer"
+              >
+                View Leaderboard
+              </button>
+            </div>
           </motion.div>
         </div>
 
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+            <div className="w-1.5 h-3 bg-white/50 rounded-full" />
+          </div>
+        </motion.div>
+      </section>
 
-        {/* Memoized carousel dots would require extracting to component or useMemo */}
-        <div className="flex justify-center gap-2 mt-2">
-          {Array.from({ length: maxIndex + 1 }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCarouselIndex(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${i === carouselIndex
-                  ? 'bg-gradient-to-r from-[#00f0ff] to-[#a855f7] w-6'
-                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
-                }`}
-            />
-          ))}
+      {/* Features Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED]">Game Arcade</span>?
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Everything you need for the ultimate gaming experience
+            </p>
+          </motion.div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FEATURES.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-purple-500/50 transition-all duration-300 cursor-pointer"
+              >
+                {/* Hover glow */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/0 to-cyan-500/0 group-hover:from-purple-500/10 group-hover:to-cyan-500/10 transition-all duration-300" />
+                
+                <div className="relative">
+                  {/* Icon */}
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className="w-7 h-7 text-white" />
+                  </div>
+                  
+                  {/* Content */}
+                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Game Showcase Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F43F5E] to-[#F97316]">Games</span>
+            </h2>
+            <p className="text-xl text-gray-400">Choose from our collection of classic games</p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {GAME_SHOWCASE.map((game, index) => (
+              <motion.div
+                key={game.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                onClick={handlePlayNow}
+                className="group relative aspect-[3/2] rounded-2xl overflow-hidden cursor-pointer"
+              >
+                <img
+                  src={game.image}
+                  alt={game.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 flex items-end p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Gamepad2 className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-white font-semibold">{game.name}</span>
+                  </div>
+                </div>
+                {/* Hover overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-purple-500/40 backdrop-blur-sm">
+                  <span className="px-4 py-2 bg-white text-black font-bold rounded-lg">Play Now</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {STATS.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED] mb-2">
+                  {stat.value}
+                </div>
+                <div className="text-gray-400 font-medium">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 px-6 pb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          {/* Stars decoration */}
+          <div className="flex justify-center gap-1 mb-6">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+            ))}
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Start Playing?
+          </h2>
+          <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+            Join thousands of players who are already enjoying our classic board games. No downloads required!
+          </p>
+          
+          <motion.button
+            onClick={handlePlayNow}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="group px-10 py-5 bg-gradient-to-r from-[#7C3AED] to-[#F43F5E] text-white font-bold text-xl rounded-2xl shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 cursor-pointer"
+          >
+            <span className="flex items-center gap-3">
+              <Zap className="w-6 h-6" />
+              Play Now — It's Free!
+              <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+            </span>
+          </motion.button>
+        </motion.div>
+      </section>
     </div>
   )
 }

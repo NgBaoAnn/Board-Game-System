@@ -16,6 +16,7 @@ import {
   X,
   Sun,
   Moon,
+  Star,
 } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
 import { useTheme } from '@/context/ThemeContext'
@@ -27,6 +28,7 @@ import GamingParticles from '@/components/common/GamingParticles'
 const menuItems = [
   { key: '/', icon: Home, label: 'Home' },
   { key: '/boardgame', icon: Gamepad2, label: 'Board Game' },
+  { key: '/reviews', icon: Star, label: 'Reviews' },
   { key: '/community', icon: Users, label: 'Community' },
   { key: '/rankings', icon: Trophy, label: 'Rankings' },
   { key: '/settings', icon: Settings, label: 'Settings' },

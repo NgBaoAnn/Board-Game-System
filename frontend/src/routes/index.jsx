@@ -96,7 +96,7 @@ export const router = createBrowserRouter([
         element: withAuth(SettingPage),
       },
       {
-        path: '/game/:gameId/reviews',
+        path: '/reviews',
         element: withAuth(GameReviewPage),
       }
     ],
