@@ -123,7 +123,7 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#a855f7] flex items-center gap-3">
+        <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7] flex items-center gap-3">
           <Crown className="text-yellow-400" size={28} />
           My Profile
         </h2>

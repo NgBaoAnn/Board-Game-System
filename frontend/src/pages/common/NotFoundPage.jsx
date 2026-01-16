@@ -4,7 +4,7 @@ import robotAnimation from '@/assets/animations/404-robot.json'
 
 export default function NotFoundPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       
       <div className="w-64 h-64 md:w-80 md:h-80 mb-4">
         <Lottie
@@ -16,20 +16,20 @@ export default function NotFoundPage() {
 
       
       <div className="text-center px-4">
-        <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+        <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-purple-500 bg-clip-text text-transparent mb-2">
           404
         </h1>
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mb-2">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
           Oops! Trang không tìm thấy
         </h2>
-        <p className="text-gray-500 mb-8 max-w-md">
+        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">
           Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên hoặc tạm thời không khả dụng.
         </p>
 
         
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-500 dark:to-purple-600 text-white font-medium rounded-full hover:from-blue-700 hover:to-indigo-700 dark:hover:from-cyan-600 dark:hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

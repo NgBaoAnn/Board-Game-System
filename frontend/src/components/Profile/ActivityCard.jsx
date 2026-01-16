@@ -6,7 +6,7 @@ export function ActivityCard({ activity }) {
           {activity.image ? (
             <img src={activity.image} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-800">
+            <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-200 dark:bg-gray-800">
               {activity.icon}
             </div>
           )}
