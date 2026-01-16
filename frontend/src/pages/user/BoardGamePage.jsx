@@ -134,7 +134,7 @@ export default function BoardGamePage() {
         const fetchGames = async () => {
             try {
                 setLoading(true)
-                const response = await gameApi.getAllGames()
+                const response = await gameApi.getActiveGames()
                 const gamesData = response.data || []
                 setGames(gamesData)
                 setError(null)

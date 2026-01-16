@@ -34,6 +34,11 @@ class AuthService {
       throw new UnauthorizedError("Invalid email or password");
     }
 
+    // Check if user account is banned/inactive
+    if (user.active === false) {
+      throw new ForbiddenError("Your account has been banned. Please contact support for assistance.");
+    }
+
     const isMatch = await passwordService.compare(password, user.password);
     if (!isMatch) {
       throw new UnauthorizedError("Invalid email or password");
