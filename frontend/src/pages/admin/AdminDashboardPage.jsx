@@ -1,6 +1,20 @@
 import { Select, ConfigProvider, theme, Spin, message } from "antd";
-import { Column, Pie, Line, Area } from "@ant-design/plots";
-import { UserPlus, TrendingUp, TrendingDown, Users, CheckCircle, Activity, Trophy, BarChart3, PieChart } from "lucide-react";
+import { lazy, Suspense } from 'react';
+// Lazy load heavy chart components for better bundle size (rule: bundle-dynamic-imports)
+const Column = lazy(() => import("@ant-design/plots").then(m => ({ default: m.Column })));
+const Pie = lazy(() => import("@ant-design/plots").then(m => ({ default: m.Pie })));
+const Line = lazy(() => import("@ant-design/plots").then(m => ({ default: m.Line })));
+const Area = lazy(() => import("@ant-design/plots").then(m => ({ default: m.Area })));
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import UserPlus from 'lucide-react/dist/esm/icons/user-plus'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down'
+import Users from 'lucide-react/dist/esm/icons/users'
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle'
+import Activity from 'lucide-react/dist/esm/icons/activity'
+import Trophy from 'lucide-react/dist/esm/icons/trophy'
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3'
+import PieChart from 'lucide-react/dist/esm/icons/pie-chart'
 import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { dashboardApi } from "../../api/dashboard";
@@ -10,105 +24,69 @@ export default function AdminDashboardPage() {
 
     const [range, setRange] = useState("30d");
     const [activityData, setActivityData] = useState([]);
-
-    // Global loading counter for spinner overlay
-    const [loadingCount, setLoadingCount] = useState(0);
-    const isLoading = loadingCount > 0;
-    const startLoading = () => setLoadingCount((c) => c + 1);
-    const stopLoading = () => setLoadingCount((c) => Math.max(0, c - 1));
-
-    useEffect(() => {
-        const fetchActivityChart = async () => {
-            startLoading();
-            try {
-                const res = await dashboardApi.getActivityChart(range);
-                if (res.success) {
-                    setActivityData(res.data);
-                }
-            } catch (error) {
-                message.error(error.message || "Failed to fetch activity chart");
-            } finally {
-                stopLoading();
-            }
-        };
-        fetchActivityChart();
-    }, [range]);
-
     const [dashboardStats, setDashboardStats] = useState({
         totalPlayers: { value: 0, change: 0 },
         newUsers: { value: 0, change: 0 },
         finishedGames: { value: 0, change: 0 },
         activeGames: { value: 0 },
     });
-
-    useEffect(() => {
-        const fetchDashboardStats = async () => {
-            startLoading();
-            try {
-                const res = await dashboardApi.getStats(range);
-                if (res.success) {
-                    setDashboardStats(res.data);
-                }
-            } catch (error) {
-                message.error(error.message || "Failed to fetch dashboard stats");
-            } finally {
-                stopLoading();
-            }
-        };
-        fetchDashboardStats();
-    }, [range]);
-
-
     const [registrationStats, setRegistrationStats] = useState([]);
     const [popularityData, setPopularityData] = useState([]);
     const [achievementData, setAchievementData] = useState([]);
 
+    // Global loading state
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Consolidated useEffect - fetch all data in parallel (rule: async-parallel)
     useEffect(() => {
-        const fetchRegistrationStats = async () => {
-            startLoading();
+        const fetchAllData = async () => {
+            setIsLoading(true);
             try {
-                const res = await dashboardApi.getRegistrationChart(range);
-                if (res.success) {
-                    setRegistrationStats(res.data);
+                // Parallel fetch using Promise.allSettled for resilience
+                const [activityRes, statsRes, registrationRes, popularityRes, achievementRes] = await Promise.allSettled([
+                    dashboardApi.getActivityChart(range),
+                    dashboardApi.getStats(range),
+                    dashboardApi.getRegistrationChart(range),
+                    dashboardApi.getPopularityChart(range),
+                    dashboardApi.getAchievementChart(range)
+                ]);
+
+                // Process results
+                if (activityRes.status === 'fulfilled' && activityRes.value.success) {
+                    setActivityData(activityRes.value.data);
+                } else if (activityRes.status === 'rejected') {
+                    message.error("Failed to fetch activity chart");
                 }
-            } catch (error) {
-                message.error(error.message || "Failed to fetch registration stats");
+
+                if (statsRes.status === 'fulfilled' && statsRes.value.success) {
+                    setDashboardStats(statsRes.value.data);
+                } else if (statsRes.status === 'rejected') {
+                    message.error("Failed to fetch dashboard stats");
+                }
+
+                if (registrationRes.status === 'fulfilled' && registrationRes.value.success) {
+                    setRegistrationStats(registrationRes.value.data);
+                } else if (registrationRes.status === 'rejected') {
+                    message.error("Failed to fetch registration stats");
+                }
+
+                if (popularityRes.status === 'fulfilled' && popularityRes.value.success) {
+                    setPopularityData(popularityRes.value.data);
+                } else if (popularityRes.status === 'rejected') {
+                    message.error("Failed to fetch popularity chart");
+                }
+
+                if (achievementRes.status === 'fulfilled' && achievementRes.value.success) {
+                    setAchievementData(achievementRes.value.data);
+                } else if (achievementRes.status === 'rejected') {
+                    message.error("Failed to fetch achievement chart");
+                }
             } finally {
-                stopLoading();
+                setIsLoading(false);
             }
         };
 
-        const fetchPopularityChart = async () => {
-            startLoading();
-            try {
-                const res = await dashboardApi.getPopularityChart(range);
-                if (res.success) {
-                    setPopularityData(res.data);
-                }
-            } catch (error) {
-                message.error(error.message || "Failed to fetch popularity chart");
-            } finally {
-                stopLoading();
-            }
-        };
-
-        const fetchAchievementChart = async () => {
-            startLoading();
-            try {
-                const res = await dashboardApi.getAchievementChart(range);
-                if (res.success) {
-                    setAchievementData(res.data);
-                }
-            } catch (error) {
-                message.error(error.message || "Failed to fetch achievement chart");
-            } finally {
-                stopLoading();
-            }
-        };
-
-        fetchRegistrationStats();
-        fetchPopularityChart();
-        fetchAchievementChart();
+        fetchAllData();
     }, [range]);
 
     const areaConfig = {
@@ -212,11 +190,12 @@ export default function AdminDashboardPage() {
 
     return (
         <div className="flex-1 pt-20 xl:pt-6 p-6 overflow-y-auto">
-            {isLoading && (
+            {/* Conditional rendering with ternary (rule: rendering-conditional-render) */}
+            {isLoading ? (
                 <div className="fixed inset-0 z-50 xl:ml-50 flex items-center justify-center">
                     <Spin size="large" />
                 </div>
-            )}
+            ) : null}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
@@ -331,7 +310,9 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="flex-1"></div>
                     <div className="h-64">
-                        <Column {...columnConfig} />
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Spin /></div>}>
+                            <Column {...columnConfig} />
+                        </Suspense>
                     </div>
                     <div className="flex-1"></div>
                 </div>
@@ -346,7 +327,9 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                     <div className="h-78">
-                        <Pie {...pieConfig} />
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Spin /></div>}>
+                            <Pie {...pieConfig} />
+                        </Suspense>
                     </div>
                 </div>
             </div>
@@ -362,7 +345,9 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                      <div className="h-74">
-                        <Area {...areaConfig} />
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Spin /></div>}>
+                            <Area {...areaConfig} />
+                        </Suspense>
                     </div>
                 </div>
                 <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6">
@@ -376,7 +361,9 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                     <div className="h-80 w-full">
-                         <Line {...lineConfig} />
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Spin /></div>}>
+                            <Line {...lineConfig} />
+                        </Suspense>
                     </div>
                 </div>
             </div>

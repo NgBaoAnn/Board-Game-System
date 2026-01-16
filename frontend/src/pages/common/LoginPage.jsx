@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Checkbox, message } from 'antd'
-import { Gamepad2, Mail, Lock } from 'lucide-react'
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
+import Mail from 'lucide-react/dist/esm/icons/mail'
+import Lock from 'lucide-react/dist/esm/icons/lock'
 import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
 import AuthLayout from '@/components/layout/AuthLayout'

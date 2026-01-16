@@ -1,6 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, Clock, Zap, Crown, Gamepad2 } from 'lucide-react'
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import Users from 'lucide-react/dist/esm/icons/users'
+import Clock from 'lucide-react/dist/esm/icons/clock'
+import Zap from 'lucide-react/dist/esm/icons/zap'
+import Crown from 'lucide-react/dist/esm/icons/crown'
+import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
 import { motion } from 'framer-motion'
 import GameCard from '@/components/Game/GameCard'
 import NewArrivalCard from '@/components/Game/NewArrivalCard'
@@ -142,7 +147,8 @@ export default function HomePage() {
   const navigate = useNavigate()
   const [carouselIndex, setCarouselIndex] = useState(0)
   const itemsPerView = 3
-  const maxIndex = Math.max(0, newArrivals.length - itemsPerView)
+  // Memoize maxIndex to avoid recalculating on every render (rule: rerender-memo)
+  const maxIndex = useMemo(() => Math.max(0, newArrivals.length - itemsPerView), [itemsPerView])
 
   const handlePlayNow = () => {
     navigate('/boardgame')
@@ -344,6 +350,7 @@ export default function HomePage() {
         </div>
 
 
+        {/* Memoized carousel dots would require extracting to component or useMemo */}
         <div className="flex justify-center gap-2 mt-2">
           {Array.from({ length: maxIndex + 1 }, (_, i) => (
             <button

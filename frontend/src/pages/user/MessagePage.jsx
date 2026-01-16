@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Input, Spin, message as antMessage } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, MessageCircle, UserPlus, RefreshCw, AlertCircle, Users } from 'lucide-react'
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import Search from 'lucide-react/dist/esm/icons/search'
+import MessageCircle from 'lucide-react/dist/esm/icons/message-circle'
+import UserPlus from 'lucide-react/dist/esm/icons/user-plus'
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
+import Users from 'lucide-react/dist/esm/icons/users'
 import { ConversationItem } from '@/components/Message/ConversationItem'
 import { MessageBubble } from '@/components/Message/MessageBubble'
 import { ChatInput } from '@/components/Message/ChatInput'
@@ -11,6 +17,9 @@ import conversationApi from '@/api/api-conversation'
 import friendApi from '@/api/api-friend'
 import { useAuth } from '@/store/useAuth'
 import { useNavigate } from 'react-router-dom'
+
+// Constants for setTimeout delays (rule: avoid magic numbers)
+const SCROLL_DELAY_MS = 100
 
 // Helper to generate initials from username
 function getInitials(name) {
@@ -283,7 +292,7 @@ export default function MessagePage() {
       // API returns newest first, reverse for display
       const transformed = messagesData.map((msg) => transformMessage(msg, user.id)).reverse()
       setMessages(transformed)
-      setTimeout(scrollToBottom, 100)
+      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
 
       // Mark messages as read when conversation is opened
       try {
@@ -321,7 +330,7 @@ export default function MessagePage() {
       setMessages((prev) => [...prev, transformed])
       
       // Scroll to bottom
-      setTimeout(scrollToBottom, 100)
+      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
     } catch (error) {
       console.error('Failed to send message:', error)
       antMessage.error('Không thể gửi tin nhắn')
@@ -344,7 +353,7 @@ export default function MessagePage() {
       setMessages((prev) => [...prev, transformed])
       
       // Scroll to bottom
-      setTimeout(scrollToBottom, 100)
+      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
     } catch (error) {
       console.error('Failed to send file:', error)
       antMessage.error('Không thể gửi tệp')
@@ -372,9 +381,10 @@ export default function MessagePage() {
     }
   }, [])
 
-  // Filter friends by search
+  // Filter friends by search - cache toLowerCase for performance (rule: js-cache-function-results)
+  const searchLower = searchText.toLowerCase()
   const filteredFriends = friends.filter((f) =>
-    f.name.toLowerCase().includes(searchText.toLowerCase())
+    f.name.toLowerCase().includes(searchLower)
   )
 
   return (

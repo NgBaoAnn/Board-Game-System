@@ -1,5 +1,13 @@
-import { Users, Radio, Star, Ban, Search, LockKeyholeOpen, EllipsisVertical, LockKeyhole } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import Users from 'lucide-react/dist/esm/icons/users'
+import Radio from 'lucide-react/dist/esm/icons/radio'
+import Star from 'lucide-react/dist/esm/icons/star'
+import Ban from 'lucide-react/dist/esm/icons/ban'
+import Search from 'lucide-react/dist/esm/icons/search'
+import LockKeyholeOpen from 'lucide-react/dist/esm/icons/lock-keyhole-open'
+import EllipsisVertical from 'lucide-react/dist/esm/icons/ellipsis-vertical'
+import LockKeyhole from 'lucide-react/dist/esm/icons/lock-keyhole'
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Select, Input, Pagination, Spin, message, ConfigProvider, theme, Modal } from "antd";
 import { useTheme } from "@/context/ThemeContext";
 import { userApi } from "@/api/user";
@@ -85,7 +93,8 @@ export default function AdminUsersPage() {
         return base;
     };
 
-    const timeAgo = (iso) => {
+    // Memoized timeAgo function (rule: js-cache-function-results)
+    const timeAgo = useCallback((iso) => {
         if (!iso) return "—";
         const d = new Date(iso);
         if (Number.isNaN(d.getTime())) return iso;
@@ -94,7 +103,7 @@ export default function AdminUsersPage() {
         if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
         if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
         return `${Math.floor(diff / 86400)} days ago`;
-    };
+    }, []);
 
     const getInitials = (username) => {
         if (!username) return "??";

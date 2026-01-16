@@ -13,4 +13,6 @@ dist-ssr
 *.sw?
 .agent
 .shared
+.claude
+.cursor
 .env

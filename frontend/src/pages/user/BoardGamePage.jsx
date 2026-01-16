@@ -1,14 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import {
-    Grid3x3,
-    Joystick,
-    Loader2,
-    Save,
-    HelpCircle,
-    Pencil,
-    ChevronLeft,
-    ChevronRight,
-} from 'lucide-react'
+// Direct imports for better bundle size (rule: bundle-barrel-imports)
+import Grid3x3 from 'lucide-react/dist/esm/icons/grid-3x3'
+import Joystick from 'lucide-react/dist/esm/icons/joystick'
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2'
+import Save from 'lucide-react/dist/esm/icons/save'
+import HelpCircle from 'lucide-react/dist/esm/icons/help-circle'
+import Pencil from 'lucide-react/dist/esm/icons/pencil'
+import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left'
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right'
 
 import BoardGrid from '../../components/Board/BoardGrid.jsx'
 import { TimeSelectionModal, ScoreResultModal, TicTacToeGame, Caro4Game, Caro5Game, SnakeGame, Match3Game, MemoryGame, FreeDrawGame } from '../../components/Game'
@@ -181,6 +180,17 @@ export default function BoardGamePage() {
 
     const handleLeft = () => selectGame(activeGame - 1)
     const handleRight = () => selectGame(activeGame + 1)
+
+    // Memoized callbacks for GameCard (rule: rerender-functional-setstate)
+    const handleGameCardPlay = useCallback((idx) => {
+        selectGame(idx)
+        handleStartClick()
+    }, [gameStarted, games.length, activeGame])
+
+    const handleHelpClick = useCallback((game) => {
+        setHelpGameCode(game.code)
+        setShowHelpModal(true)
+    }, [])
 
     // Handle Game Switch Request (from GameTopBar)
     const handleSwitchRequest = (direction) => {
@@ -872,38 +882,39 @@ export default function BoardGamePage() {
 
                     {/* Stats Badge */}
                     <div className="flex items-center gap-3">
-                        {games.filter(g => g.hasSaved).length > 0 && (
+                        {/* Conditional rendering with ternary (rule: rendering-conditional-render) */}
+                        {games.filter(g => g.hasSaved).length > 0 ? (
                             <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-semibold flex items-center gap-2">
                                 <Save size={16} />
                                 {games.filter(g => g.hasSaved).length} Saved
                             </div>
-                        )}
+                        ) : null}
                         <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-sm font-semibold">
                             {games.length} Games
                         </div>
                     </div>
                 </div>
 
-                {/* Loading State */}
-                {loading && (
+                {/* Loading State (rule: rendering-conditional-render) */}
+                {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 size={48} className="animate-spin text-[#7C3AED] mb-4" />
                         <p className="text-slate-500 dark:text-slate-400">Loading games...</p>
                     </div>
-                )}
+                ) : null}
 
-                {/* Error State */}
-                {error && !loading && (
+                {/* Error State (rule: rendering-conditional-render) */}
+                {error && !loading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
                             <HelpCircle size={40} className="text-rose-500" />
                         </div>
                         <p className="text-rose-600 dark:text-rose-400 font-medium">{error}</p>
                     </div>
-                )}
+                ) : null}
 
-                {/* Game Grid */}
-                {!loading && !error && games.length > 0 && (
+                {/* Game Grid (rule: rendering-conditional-render) */}
+                {!loading && !error && games.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {games.map((game, idx) => (
                             <GameCard
@@ -912,19 +923,13 @@ export default function BoardGamePage() {
                                 isSelected={idx === activeGame}
                                 hasSavedSession={hasSavedSession && idx === activeGame}
                                 onSelect={() => selectGame(idx)}
-                                onPlay={() => {
-                                    selectGame(idx)
-                                    handleStartClick()
-                                }}
+                                onPlay={() => handleGameCardPlay(idx)}
                                 onResume={handleResumeClick}
-                                onHelpClick={(game) => {
-                                    setHelpGameCode(game.code)
-                                    setShowHelpModal(true)
-                                }}
+                                onHelpClick={handleHelpClick}
                             />
                         ))}
                     </div>
-                )}
+                ) : null}
 
                 {/* Empty State */}
                 {!loading && !error && games.length === 0 && (
