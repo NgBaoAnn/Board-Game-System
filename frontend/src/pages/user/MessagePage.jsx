@@ -1,67 +1,73 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Input, Spin, message as antMessage } from 'antd'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Input, Spin, message as antMessage } from "antd";
+import { motion, AnimatePresence } from "framer-motion";
 // Direct imports for better bundle size (rule: bundle-barrel-imports)
-import Search from 'lucide-react/dist/esm/icons/search'
-import MessageCircle from 'lucide-react/dist/esm/icons/message-circle'
-import UserPlus from 'lucide-react/dist/esm/icons/user-plus'
-import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw'
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle'
-import Users from 'lucide-react/dist/esm/icons/users'
-import { ConversationItem } from '@/components/Message/ConversationItem'
-import { MessageBubble } from '@/components/Message/MessageBubble'
-import { ChatInput } from '@/components/Message/ChatInput'
-import { ChatHeader } from '@/components/Message/ChatHeader'
-import { TypingIndicator } from '@/components/Message/TypingIndicator'
-import conversationApi from '@/api/api-conversation'
-import friendApi from '@/api/api-friend'
-import { useAuth } from '@/store/useAuth'
-import { useNavigate } from 'react-router-dom'
+import Search from "lucide-react/dist/esm/icons/search";
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Users from "lucide-react/dist/esm/icons/users";
+import { ConversationItem } from "@/components/Message/ConversationItem";
+import { MessageBubble } from "@/components/Message/MessageBubble";
+import { ChatInput } from "@/components/Message/ChatInput";
+import { ChatHeader } from "@/components/Message/ChatHeader";
+import { TypingIndicator } from "@/components/Message/TypingIndicator";
+import conversationApi from "@/api/api-conversation";
+import friendApi from "@/api/api-friend";
+import { useAuth } from "@/store/useAuth";
+import { useNavigate } from "react-router-dom";
 
 // Constants for setTimeout delays (rule: avoid magic numbers)
-const SCROLL_DELAY_MS = 100
+const SCROLL_DELAY_MS = 100;
+const MESSAGES_PER_PAGE = 20;
 
 // Helper to generate initials from username
 function getInitials(name) {
-  if (!name) return '?'
-  const parts = name.split(' ')
+  if (!name) return "?";
+  const parts = name.split(" ");
   if (parts.length > 1) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase()
+  return name.slice(0, 2).toUpperCase();
 }
 
 // Helper to generate consistent gradient from username
 function getGradient(name) {
   const gradients = [
-    'from-indigo-400 to-purple-500',
-    'from-orange-400 to-red-500',
-    'from-green-400 to-teal-500',
-    'from-blue-400 to-cyan-500',
-    'from-pink-400 to-rose-500',
-    'from-amber-400 to-orange-500',
-  ]
-  if (!name) return gradients[0]
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  return gradients[hash % gradients.length]
+    "from-indigo-400 to-purple-500",
+    "from-orange-400 to-red-500",
+    "from-green-400 to-teal-500",
+    "from-blue-400 to-cyan-500",
+    "from-pink-400 to-rose-500",
+    "from-amber-400 to-orange-500",
+  ];
+  if (!name) return gradients[0];
+  const hash = name
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return gradients[hash % gradients.length];
 }
 
 // Helper to format time
 function formatTime(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now - date
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   } else if (diffDays === 1) {
-    return 'Yesterday'
+    return "Yesterday";
   } else if (diffDays < 7) {
-    return date.toLocaleDateString('en-US', { weekday: 'short' })
+    return date.toLocaleDateString("en-US", { weekday: "short" });
   } else {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
 }
 
@@ -74,17 +80,17 @@ function transformFriend(friend) {
     initials: getInitials(friend.username),
     gradient: getGradient(friend.username),
     avatar: friend.avatar_url,
-    status: 'offline', // Can be enhanced with online status later
-    time: '', // No recent message time for new conversations
-    lastMessage: 'Bắt đầu trò chuyện...', // Placeholder
+    status: "offline", // Can be enhanced with online status later
+    time: "", // No recent message time for new conversations
+    lastMessage: "Bắt đầu trò chuyện...", // Placeholder
     unreadCount: 0,
     isTyping: false,
-  }
+  };
 }
 
 // Transform API message to frontend format
-function transformMessage(apiMessage, currentUserId) {
-  const isOwn = apiMessage.sender_id === currentUserId
+function transformMessage(apiMessage, currentUserId, status = "sent") {
+  const isOwn = apiMessage.sender_id === currentUserId;
   return {
     id: apiMessage.id,
     content: apiMessage.content,
@@ -92,6 +98,7 @@ function transformMessage(apiMessage, currentUserId) {
     isOwn,
     read: true, // Could be enhanced with read receipts
     reaction: apiMessage.reaction || null,
+    status, // 'sending', 'sent', 'failed'
     // File attachment fields
     file_url: apiMessage.file_url,
     file_name: apiMessage.file_name,
@@ -101,10 +108,10 @@ function transformMessage(apiMessage, currentUserId) {
     senderAvatar: apiMessage.sender_avatar,
     initials: getInitials(apiMessage.sender_username),
     gradient: getGradient(apiMessage.sender_username),
-  }
+  };
 }
 
-function EmptyState({ type = 'chat', onRetry, onFindFriends }) {
+function EmptyState({ type = "chat", onRetry, onFindFriends }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -112,19 +119,23 @@ function EmptyState({ type = 'chat', onRetry, onFindFriends }) {
       className="flex-1 flex flex-col items-center justify-center text-center p-8"
     >
       <div className="text-6xl mb-4">
-        {type === 'friends' ? '�' : type === 'error' ? '⚠️' : '🎮'}
+        {type === "friends" ? "�" : type === "error" ? "⚠️" : "🎮"}
       </div>
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-        {type === 'friends' ? 'Chưa có bạn bè' : type === 'error' ? 'Có lỗi xảy ra' : 'Chọn một cuộc trò chuyện'}
+        {type === "friends"
+          ? "Chưa có bạn bè"
+          : type === "error"
+            ? "Có lỗi xảy ra"
+            : "Chọn một cuộc trò chuyện"}
       </h3>
       <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 max-w-xs">
-        {type === 'friends'
-          ? 'Kết bạn với người chơi khác để bắt đầu trò chuyện!'
-          : type === 'error'
-          ? 'Không thể tải dữ liệu. Vui lòng thử lại.'
-          : 'Chọn một người bạn để bắt đầu nhắn tin'}
+        {type === "friends"
+          ? "Kết bạn với người chơi khác để bắt đầu trò chuyện!"
+          : type === "error"
+            ? "Không thể tải dữ liệu. Vui lòng thử lại."
+            : "Chọn một người bạn để bắt đầu nhắn tin"}
       </p>
-      {type === 'friends' && onFindFriends && (
+      {type === "friends" && onFindFriends && (
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -135,7 +146,7 @@ function EmptyState({ type = 'chat', onRetry, onFindFriends }) {
           Tìm bạn bè
         </motion.button>
       )}
-      {type === 'error' && onRetry && (
+      {type === "error" && onRetry && (
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -147,7 +158,7 @@ function EmptyState({ type = 'chat', onRetry, onFindFriends }) {
         </motion.button>
       )}
     </motion.div>
-  )
+  );
 }
 
 function LoadingState() {
@@ -155,81 +166,105 @@ function LoadingState() {
     <div className="flex-1 flex items-center justify-center">
       <Spin size="large" />
     </div>
-  )
+  );
 }
 
 export default function MessagePage() {
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const [searchText, setSearchText] = useState('')
-  
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchText, setSearchText] = useState("");
+
   // Friends state (displayed as conversations)
-  const [friends, setFriends] = useState([])
-  const [friendsLoading, setFriendsLoading] = useState(true)
-  const [friendsError, setFriendsError] = useState(null)
-  
+  const [friends, setFriends] = useState([]);
+  const [friendsLoading, setFriendsLoading] = useState(true);
+  const [friendsError, setFriendsError] = useState(null);
+
   // Active conversation
-  const [activeConversation, setActiveConversation] = useState(null)
-  
+  const [activeConversation, setActiveConversation] = useState(null);
+
   // Messages state
-  const [messages, setMessages] = useState([])
-  const [messagesLoading, setMessagesLoading] = useState(false)
-  const [messagesError, setMessagesError] = useState(null)
-  
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState(null);
+
+  // Pagination state for infinite scroll
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Sending state
-  const [sending, setSending] = useState(false)
-  
+  const [sending, setSending] = useState(false);
+
+  // Flag to control auto-scroll to bottom
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
+
   // Ref for scrolling to bottom
-  const messagesEndRef = useRef(null)
+  const messagesEndRef = useRef(null);
+  // Ref for scroll container to detect scroll position
+  const messagesContainerRef = useRef(null);
+  // Ref for ChatInput to focus after sending
+  const chatInputRef = useRef(null);
 
   // Scroll to bottom of messages
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  // Effect to scroll to bottom when flag is set (after messages render)
+  useEffect(() => {
+    if (shouldScrollToBottom && messages.length > 0 && !messagesLoading) {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+        setShouldScrollToBottom(false);
+      });
+    }
+  }, [shouldScrollToBottom, messages, messagesLoading]);
 
   // Navigate to community page to find friends
   const handleFindFriends = useCallback(() => {
-    navigate('/community')
-  }, [navigate])
+    navigate("/community");
+  }, [navigate]);
 
   // Fetch friends list and their conversation data
   const fetchFriends = useCallback(async () => {
     try {
-      setFriendsLoading(true)
-      setFriendsError(null)
-      
+      setFriendsLoading(true);
+      setFriendsError(null);
+
       // Fetch friends and conversations in parallel
       const [friendsResponse, convsResponse] = await Promise.all([
         friendApi.getFriends(1, 100),
-        conversationApi.getConversations(1, 100)
-      ])
-      
-      const friendsData = friendsResponse.data?.data || []
-      const convsData = convsResponse.data?.data || []
-      
+        conversationApi.getConversations(1, 100),
+      ]);
+
+      const friendsData = friendsResponse.data?.data || [];
+      const convsData = convsResponse.data?.data || [];
+
       // Create a map of friend conversations by user_id
-      const convMap = new Map()
+      const convMap = new Map();
       convsData.forEach((conv) => {
-        convMap.set(conv.user_id, conv)
-      })
-      
+        convMap.set(conv.user_id, conv);
+      });
+
       // Transform friends with conversation data
       const transformed = friendsData.map((friend) => {
-        const conv = convMap.get(friend.id)
-        
+        const conv = convMap.get(friend.id);
+
         // Determine last message preview
-        let lastMessage = ''
+        let lastMessage = "";
         if (conv) {
           if (conv.last_message_file) {
-            lastMessage = '📎 Đã gửi tệp đính kèm'
+            lastMessage = "📎 Đã gửi tệp đính kèm";
           } else if (conv.last_message) {
             // Truncate message
-            lastMessage = conv.last_message.length > 30 
-              ? conv.last_message.substring(0, 30) + '...' 
-              : conv.last_message
+            lastMessage =
+              conv.last_message.length > 30
+                ? conv.last_message.substring(0, 30) + "..."
+                : conv.last_message;
           }
         }
-        
+
         return {
           id: conv?.conversation_id || null,
           friendId: friend.id,
@@ -237,155 +272,270 @@ export default function MessagePage() {
           initials: getInitials(friend.username),
           gradient: getGradient(friend.username),
           avatar: friend.avatar_url,
-          status: 'offline',
-          time: conv?.last_message_at ? formatTime(conv.last_message_at) : '',
-          lastMessage: lastMessage || '', // Empty if no messages
+          status: "offline",
+          time: conv?.last_message_at ? formatTime(conv.last_message_at) : "",
+          lastMessage: lastMessage || "", // Empty if no messages
           unreadCount: conv?.unread_count || 0,
           isTyping: false,
-        }
-      })
-      
+        };
+      });
+
       // Sort: unread first, then by time
       transformed.sort((a, b) => {
-        if (a.unreadCount > 0 && b.unreadCount === 0) return -1
-        if (a.unreadCount === 0 && b.unreadCount > 0) return 1
-        return 0
-      })
-      
-      setFriends(transformed)
+        if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+        if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+        return 0;
+      });
+
+      setFriends(transformed);
     } catch (error) {
-      console.error('Failed to fetch friends:', error)
-      setFriendsError(error.message || 'Không thể tải danh sách bạn bè')
+      console.error("Failed to fetch friends:", error);
+      setFriendsError(error.message || "Không thể tải danh sách bạn bè");
     } finally {
-      setFriendsLoading(false)
+      setFriendsLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchFriends()
-  }, [fetchFriends])
+    fetchFriends();
+  }, [fetchFriends]);
 
-  // Fetch or create conversation and load messages
-  const fetchConversationAndMessages = useCallback(async (friend) => {
-    if (!friend || !user) return
-    
-    try {
-      setMessagesLoading(true)
-      setMessagesError(null)
-      setMessages([])
-      
-      // Get or create conversation with this friend
-      const convResponse = await conversationApi.getOrCreateConversation(friend.friendId)
-      const conversationData = convResponse.data
-      
-      // Update active conversation with real conversation ID
-      const updatedConversation = {
-        ...friend,
-        id: conversationData.id,
-      }
-      setActiveConversation(updatedConversation)
-      
-      // Now fetch messages for this conversation
-      const msgResponse = await conversationApi.getMessages(conversationData.id, 1, 100)
-      const messagesData = msgResponse.data?.data || []
-      
-      // API returns newest first, reverse for display
-      const transformed = messagesData.map((msg) => transformMessage(msg, user.id)).reverse()
-      setMessages(transformed)
-      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
+  // Fetch or create conversation and load initial messages (first page)
+  const fetchConversationAndMessages = useCallback(
+    async (friend) => {
+      if (!friend || !user) return;
 
-      // Mark messages as read when conversation is opened
       try {
-        await conversationApi.markAsRead(conversationData.id)
-      } catch (e) {
-        console.error('Failed to mark as read:', e)
+        setMessagesLoading(true);
+        setMessagesError(null);
+        setMessages([]);
+        setCurrentPage(1);
+        setHasMoreMessages(true);
+
+        // Get or create conversation with this friend
+        const convResponse = await conversationApi.getOrCreateConversation(
+          friend.friendId,
+        );
+        const conversationData = convResponse.data;
+
+        // Update active conversation with real conversation ID
+        const updatedConversation = {
+          ...friend,
+          id: conversationData.id,
+        };
+        setActiveConversation(updatedConversation);
+
+        // Now fetch first page of messages for this conversation
+        const msgResponse = await conversationApi.getMessages(
+          conversationData.id,
+          1,
+          MESSAGES_PER_PAGE,
+        );
+        const messagesData = msgResponse.data?.data || [];
+
+        // Check if there are more messages
+        setHasMoreMessages(messagesData.length === MESSAGES_PER_PAGE);
+
+        // API returns newest first, reverse for display
+        const transformed = messagesData
+          .map((msg) => transformMessage(msg, user.id))
+          .reverse();
+        setMessages(transformed);
+
+        // Set flag to scroll to bottom after messages render
+        setShouldScrollToBottom(true);
+
+        // Mark messages as read when conversation is opened
+        try {
+          await conversationApi.markAsRead(conversationData.id);
+        } catch (e) {
+          console.error("Failed to mark as read:", e);
+        }
+      } catch (error) {
+        console.error("Failed to fetch conversation/messages:", error);
+        setMessagesError(error.message || "Không thể tải tin nhắn");
+      } finally {
+        setMessagesLoading(false);
       }
+    },
+    [user],
+  );
+
+  // Load more messages when scrolling up (infinite scroll)
+  const loadMoreMessages = useCallback(async () => {
+    if (!activeConversation?.id || loadingMore || !hasMoreMessages) return;
+
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+
+      // Save current scroll position before loading
+      const container = messagesContainerRef.current;
+      const scrollHeightBefore = container?.scrollHeight || 0;
+
+      const msgResponse = await conversationApi.getMessages(
+        activeConversation.id,
+        nextPage,
+        MESSAGES_PER_PAGE,
+      );
+      const messagesData = msgResponse.data?.data || [];
+
+      // Check if there are more messages
+      setHasMoreMessages(messagesData.length === MESSAGES_PER_PAGE);
+      setCurrentPage(nextPage);
+
+      // API returns newest first, reverse for display and prepend to existing messages
+      const transformed = messagesData
+        .map((msg) => transformMessage(msg, user.id))
+        .reverse();
+      setMessages((prev) => [...transformed, ...prev]);
+
+      // Restore scroll position after new messages are added
+      setTimeout(() => {
+        if (container) {
+          const scrollHeightAfter = container.scrollHeight;
+          container.scrollTop = scrollHeightAfter - scrollHeightBefore;
+        }
+      }, 0);
     } catch (error) {
-      console.error('Failed to fetch conversation/messages:', error)
-      setMessagesError(error.message || 'Không thể tải tin nhắn')
+      console.error("Failed to load more messages:", error);
     } finally {
-      setMessagesLoading(false)
+      setLoadingMore(false);
     }
-  }, [user, scrollToBottom])
+  }, [activeConversation?.id, currentPage, loadingMore, hasMoreMessages, user]);
 
   // Handle friend selection
-  const handleSelectFriend = useCallback((friend) => {
-    // Set initial active conversation (without conversation ID yet)
-    setActiveConversation(friend)
-    // Fetch/create conversation and load messages
-    fetchConversationAndMessages(friend)
-  }, [fetchConversationAndMessages])
+  const handleSelectFriend = useCallback(
+    (friend) => {
+      // Set initial active conversation (without conversation ID yet)
+      setActiveConversation(friend);
+      // Fetch/create conversation and load messages
+      fetchConversationAndMessages(friend);
+    },
+    [fetchConversationAndMessages],
+  );
 
-  // Send message
-  const handleSendMessage = useCallback(async (content) => {
-    if (!activeConversation?.id || !content.trim() || sending) return
+  // Send message with optimistic update
+  const handleSendMessage = useCallback(
+    async (content) => {
+      if (!activeConversation?.id || !content.trim()) return;
 
-    try {
-      setSending(true)
-      const response = await conversationApi.sendMessage(activeConversation.id, content)
-      const newMessage = response.data
-      
-      // Transform and add to messages
-      const transformed = transformMessage(newMessage, user.id)
-      setMessages((prev) => [...prev, transformed])
-      
-      // Scroll to bottom
-      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      antMessage.error('Không thể gửi tin nhắn')
-    } finally {
-      setSending(false)
-    }
-  }, [activeConversation, user, sending, scrollToBottom])
+      // Generate temp ID for optimistic update
+      const tempId = `temp-${Date.now()}`;
+
+      // Create optimistic message (show immediately)
+      const optimisticMessage = {
+        id: tempId,
+        content: content.trim(),
+        time: formatTime(new Date().toISOString()),
+        isOwn: true,
+        read: false,
+        reaction: null,
+        status: "sending",
+        file_url: null,
+        file_name: null,
+        file_type: null,
+        file_size: null,
+        senderAvatar: user?.avatar_url,
+        initials: getInitials(user?.username),
+        gradient: getGradient(user?.username),
+      };
+
+      // Add optimistic message immediately
+      setMessages((prev) => [...prev, optimisticMessage]);
+
+      // Scroll to bottom and focus input immediately
+      setTimeout(() => {
+        scrollToBottom();
+        chatInputRef.current?.focusInput();
+      }, 50);
+
+      try {
+        const response = await conversationApi.sendMessage(
+          activeConversation.id,
+          content,
+        );
+        const newMessage = response.data;
+
+        // Replace temp message with real message
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === tempId
+              ? transformMessage(newMessage, user.id, "sent")
+              : msg,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        // Mark message as failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === tempId ? { ...msg, status: "failed" } : msg,
+          ),
+        );
+        antMessage.error("Không thể gửi tin nhắn");
+      }
+    },
+    [activeConversation, user, scrollToBottom],
+  );
 
   // Send message with file attachment
-  const handleSendFile = useCallback(async (content, file) => {
-    if (!activeConversation?.id || sending) return
+  const handleSendFile = useCallback(
+    async (content, file) => {
+      if (!activeConversation?.id || sending) return;
 
-    try {
-      setSending(true)
-      const response = await conversationApi.sendMessage(activeConversation.id, content, file)
-      const newMessage = response.data
-      
-      // Transform and add to messages
-      const transformed = transformMessage(newMessage, user.id)
-      setMessages((prev) => [...prev, transformed])
-      
-      // Scroll to bottom
-      setTimeout(scrollToBottom, SCROLL_DELAY_MS)
-    } catch (error) {
-      console.error('Failed to send file:', error)
-      antMessage.error('Không thể gửi tệp')
-    } finally {
-      setSending(false)
-    }
-  }, [activeConversation, user, sending, scrollToBottom])
+      try {
+        setSending(true);
+        const response = await conversationApi.sendMessage(
+          activeConversation.id,
+          content,
+          file,
+        );
+        const newMessage = response.data;
+
+        // Transform and add to messages
+        const transformed = transformMessage(newMessage, user.id);
+        setMessages((prev) => [...prev, transformed]);
+
+        // Scroll to bottom and focus input
+        setTimeout(() => {
+          scrollToBottom();
+          chatInputRef.current?.focusInput();
+        }, SCROLL_DELAY_MS);
+      } catch (error) {
+        console.error("Failed to send file:", error);
+        antMessage.error("Không thể gửi tệp");
+      } finally {
+        setSending(false);
+      }
+    },
+    [activeConversation, user, sending, scrollToBottom],
+  );
 
   // Handle reaction - call API and update local state
   const handleReaction = useCallback(async (messageId, emoji) => {
     // Optimistic update
     setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, reaction: emoji } : m))
-    )
-    
+      prev.map((m) => (m.id === messageId ? { ...m, reaction: emoji } : m)),
+    );
+
     try {
-      await conversationApi.reactToMessage(messageId, emoji)
+      await conversationApi.reactToMessage(messageId, emoji);
     } catch (error) {
-      console.error('Failed to react to message:', error)
+      console.error("Failed to react to message:", error);
       // Revert on error
       setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, reaction: null } : m))
-      )
-      antMessage.error('Không thể thêm reaction')
+        prev.map((m) => (m.id === messageId ? { ...m, reaction: null } : m)),
+      );
+      antMessage.error("Không thể thêm reaction");
     }
-  }, [])
+  }, []);
 
   // Filter friends by search - cache toLowerCase for performance (rule: js-cache-function-results)
-  const searchLower = searchText.toLowerCase()
+  const searchLower = searchText.toLowerCase();
   const filteredFriends = friends.filter((f) =>
-    f.name.toLowerCase().includes(searchLower)
-  )
+    f.name.toLowerCase().includes(searchLower),
+  );
 
   return (
     <div className="absolute inset-0 flex overflow-hidden">
@@ -394,7 +544,10 @@ export default function MessagePage() {
         {/* Header */}
         <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/30 flex justify-between items-center">
           <h2 className="font-bold text-lg text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#00f0ff] dark:to-[#a855f7] flex items-center gap-2">
-            <MessageCircle size={20} className="text-[#1d7af2] dark:text-[#00f0ff]" />
+            <MessageCircle
+              size={20}
+              className="text-[#1d7af2] dark:text-[#00f0ff]"
+            />
             Tin nhắn
           </h2>
           <div className="flex items-center gap-2">
@@ -402,11 +555,14 @@ export default function MessagePage() {
               <Users size={12} />
               {friends.length}
             </span>
-            <button 
+            <button
               onClick={fetchFriends}
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-[#1d7af2] dark:text-[#00f0ff] transition-colors"
             >
-              <RefreshCw size={18} className={friendsLoading ? 'animate-spin' : ''} />
+              <RefreshCw
+                size={18}
+                className={friendsLoading ? "animate-spin" : ""}
+              />
             </button>
           </div>
         </div>
@@ -415,7 +571,9 @@ export default function MessagePage() {
         <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/30">
           <Input
             placeholder="Tìm kiếm bạn bè..."
-            prefix={<Search className="text-gray-400 dark:text-slate-400" size={16} />}
+            prefix={
+              <Search className="text-gray-400 dark:text-slate-400" size={16} />
+            }
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="rounded-xl"
@@ -457,17 +615,36 @@ export default function MessagePage() {
             <ChatHeader conversation={activeConversation} />
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col"
+              onScroll={(e) => {
+                // Load more messages when scrolled near the top
+                const { scrollTop } = e.target;
+                if (
+                  scrollTop < 100 &&
+                  hasMoreMessages &&
+                  !loadingMore &&
+                  !messagesLoading
+                ) {
+                  loadMoreMessages();
+                }
+              }}
+            >
               {messagesLoading ? (
                 <LoadingState />
               ) : messagesError ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                   <AlertCircle size={48} className="text-red-500 mb-4" />
-                  <p className="text-gray-500 dark:text-slate-400 mb-4">Không thể tải tin nhắn</p>
+                  <p className="text-gray-500 dark:text-slate-400 mb-4">
+                    Không thể tải tin nhắn
+                  </p>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => fetchConversationAndMessages(activeConversation)}
+                    onClick={() =>
+                      fetchConversationAndMessages(activeConversation)
+                    }
                     className="flex items-center gap-2 px-4 py-2 bg-[#1d7af2] text-white rounded-lg"
                   >
                     <RefreshCw size={16} />
@@ -486,6 +663,16 @@ export default function MessagePage() {
                 </div>
               ) : (
                 <>
+                  {/* Loading more indicator */}
+                  {loadingMore && (
+                    <div className="flex items-center justify-center py-2">
+                      <Spin size="small" />
+                      <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                        Đang tải thêm...
+                      </span>
+                    </div>
+                  )}
+
                   {/* Date separator */}
                   <div className="flex items-center justify-center my-4">
                     <span className="text-xs text-gray-500 dark:text-slate-400 bg-gray-200 dark:bg-slate-800 px-3 py-1 rounded-full">
@@ -496,7 +683,9 @@ export default function MessagePage() {
                   {/* Messages */}
                   <AnimatePresence>
                     {messages.map((message, index) => {
-                      const showAvatar = index === 0 || messages[index - 1]?.isOwn !== message.isOwn
+                      const showAvatar =
+                        index === 0 ||
+                        messages[index - 1]?.isOwn !== message.isOwn;
                       return (
                         <MessageBubble
                           key={message.id}
@@ -508,7 +697,7 @@ export default function MessagePage() {
                           recipientGradient={activeConversation?.gradient}
                           onReact={handleReaction}
                         />
-                      )
+                      );
                     })}
                   </AnimatePresence>
 
@@ -519,7 +708,7 @@ export default function MessagePage() {
                       gradient={activeConversation.gradient}
                     />
                   )}
-                  
+
                   {/* Scroll anchor */}
                   <div ref={messagesEndRef} />
                 </>
@@ -527,10 +716,11 @@ export default function MessagePage() {
             </div>
 
             {/* Chat Input */}
-            <ChatInput 
+            <ChatInput
+              ref={chatInputRef}
               onSend={handleSendMessage}
               onSendFile={handleSendFile}
-              disabled={sending || !activeConversation.id} 
+              disabled={sending || !activeConversation.id}
             />
           </>
         ) : (
@@ -538,5 +728,5 @@ export default function MessagePage() {
         )}
       </div>
     </div>
-  )
+  );
 }
