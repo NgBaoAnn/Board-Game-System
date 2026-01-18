@@ -17,6 +17,7 @@ import GamePlayArea from '../../components/BoardGame/GamePlayArea.jsx'
 import MobileDPad from '../../components/BoardGame/MobileDPad.jsx'
 import GameModals from '../../components/BoardGame/GameModals.jsx'
 import GameInstructionsModal from '../../components/BoardGame/GameInstructionsModal.jsx'
+import GameSelectionNav from '../../components/BoardGame/GameSelectionNav.jsx'
 import { TutorialOverlay, getTutorial, isTutorialCompleted } from '../../components/Tutorial'
 import gameApi from '../../api/api-game.js'
 import { message, Modal } from 'antd'
@@ -948,6 +949,22 @@ export default function BoardGamePage() {
                     </div>
                 ) : null}
 
+                {/* Navigation Bar */}
+                {!loading && !error && games.length > 0 && currentGame && (
+                    <GameSelectionNav
+                        currentGame={currentGame}
+                        onPrevGame={handleLeft}
+                        onNextGame={handleRight}
+                        onBack={handleBack}
+                        onHint={() => handleHelpClick(currentGame)}
+                        onPlay={hasSavedSession ? handleResumeClick : handleStartClick}
+                        canGoPrev={games.length > 1}
+                        canGoNext={games.length > 1}
+                        canGoBack={previousGame !== activeGame}
+                        hasSavedSession={hasSavedSession}
+                    />
+                )}
+
                 {/* Game Grid (rule: rendering-conditional-render) */}
                 {!loading && !error && games.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -1063,10 +1080,6 @@ export default function BoardGamePage() {
                 onResume={handleResumeGameClick}
                 onSave={handleSave}
                 onHelp={handleShowTutorial}
-                onPrevGame={() => handleSwitchRequest('prev')}
-                onNextGame={() => handleSwitchRequest('next')}
-                canGoPrev={games.length > 1}
-                canGoNext={games.length > 1}
                 onTimeUp={handleTimeUp}
                 onTick={handleTick}
             />
