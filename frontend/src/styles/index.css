@@ -866,3 +866,68 @@ body {
   animation: rating-shimmer 2s linear infinite;
 }
 
+/* ===== Game History Table Styles ===== */
+
+/* Light mode (default) */
+.game-history-table .ant-table {
+  background: transparent !important;
+}
+.game-history-table .ant-table-thead > tr > th {
+  background: #f8fafc !important;
+  color: #374151 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.game-history-table .ant-table-tbody > tr > td {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+  color: #374151;
+}
+.game-history-table .ant-table-tbody > tr:hover > td {
+  background: #f0f9ff !important;
+}
+
+/* Dark mode */
+.dark .game-history-table .ant-table-thead > tr > th {
+  background: rgba(15, 23, 42, 0.8) !important;
+  color: #94a3b8 !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+}
+.dark .game-history-table .ant-table-tbody > tr > td {
+  background: rgba(30, 41, 59, 0.5) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
+  color: #e2e8f0;
+}
+.dark .game-history-table .ant-table-tbody > tr:hover > td {
+  background: rgba(0, 240, 255, 0.05) !important;
+}
+
+/* Pagination */
+.game-history-table .ant-pagination-item {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+.game-history-table .ant-pagination-item a {
+  color: #374151 !important;
+}
+.game-history-table .ant-pagination-item-active {
+  background: linear-gradient(135deg, #1d7af2, #6366f1) !important;
+  border: none !important;
+}
+.game-history-table .ant-pagination-item-active a {
+  color: white !important;
+}
+
+.dark .game-history-table .ant-pagination-item {
+  background: rgba(30, 41, 59, 0.5) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+.dark .game-history-table .ant-pagination-item a {
+  color: #94a3b8 !important;
+}
+.dark .game-history-table .ant-pagination-item-active {
+  background: linear-gradient(135deg, #00f0ff, #a855f7) !important;
+}

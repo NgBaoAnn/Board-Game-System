@@ -24,6 +24,12 @@ router.get(
   userController.getUserRegistrations
 );
 
+router.get(
+  "/users/:id/stats",
+  authMiddleware.authenticate,
+  userController.getUserStats
+);
+
 router.get("/users/:id", userValidator.getById(), userController.getUser);
 
 router.put(

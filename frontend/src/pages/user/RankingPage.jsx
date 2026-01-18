@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Table, Avatar, Progress, Button, Spin, Select as AntSelect } from 'antd'
+import { Table, Avatar, Spin, Select as AntSelect } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Swords, CheckCircle, TrendingUp, TrendingDown, Trophy } from 'lucide-react'
+import { CheckCircle, Trophy } from 'lucide-react'
 import { PodiumCard } from '@/components/Ranking/PodiumCard'
 import { LeaderboardFilters } from '@/components/Ranking/LeaderboardFilters'
-import { TierBadge } from '@/components/Ranking/TierBadge'
-import { SeasonCountdown } from '@/components/Ranking/SeasonCountdown'
 import { useAuth } from '@/store/useAuth'
 import rankingApi from '@/api/api-ranking'
 import gameApi from '@/api/api-game'
@@ -16,7 +14,6 @@ export default function RankingPage() {
   const { user } = useAuth()
   const [searchText, setSearchText] = useState('')
   const [gameFilter, setGameFilter] = useState(null)
-  const [periodFilter, setPeriodFilter] = useState('season')
   const [viewMode, setViewMode] = useState('Global')
   const [leaderboardData, setLeaderboardData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -74,12 +71,8 @@ export default function RankingPage() {
         name: item.username || 'Unknown',
         avatar: item.avatar_url || null,
         initials: (item.username || 'U').substring(0, 2).toUpperCase(),
-        title: getTierFromScore(item.best_score || item.final_score || 0),
         rating: item.best_score || item.final_score || 0,
-        gamesPlayed: item.games_played || 0,
-        winRate: item.win_rate || 0,
         isCurrentUser: (item.user_id || item.id) === user?.id,
-        rankChange: 0,
         achievedAt: item.achieved_at || item.ended_at || item.created_at,
       }))
       
@@ -96,15 +89,6 @@ export default function RankingPage() {
     fetchLeaderboard()
   }, [fetchLeaderboard])
 
-  // Helper function to determine tier based on score
-  const getTierFromScore = (score) => {
-    if (score >= 2000) return 'Grandmaster'
-    if (score >= 1500) return 'Diamond'
-    if (score >= 1000) return 'Platinum'
-    if (score >= 500) return 'Gold'
-    return 'Bronze'
-  }
-
   const top3 = leaderboardData.filter(p => p.rank <= 3).sort((a, b) => a.rank - b.rank)
 
   // Show ALL players in the table (not just rank > 3)
@@ -120,19 +104,10 @@ export default function RankingPage() {
       width: 100,
       align: 'center',
       render: (rank, record) => (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center">
           <span className={`font-bold text-lg font-mono ${record.isCurrentUser ? 'text-[#1d7af2] dark:text-[#00f0ff]' : 'text-gray-900 dark:text-white'}`}>
             #{rank}
           </span>
-          {record.rankChange !== 0 && (
-            <span className={record.rankChange > 0 ? 'text-green-500' : 'text-red-500'}>
-              {record.rankChange > 0 ? (
-                <TrendingUp size={14} />
-              ) : (
-                <TrendingDown size={14} />
-              )}
-            </span>
-          )}
         </div>
       ),
     },
@@ -164,15 +139,11 @@ export default function RankingPage() {
           <div>
             <div className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
               {name}
-              {record.verified && <CheckCircle size={14} className="text-[#1d7af2] dark:text-[#00f0ff]" />}
               {record.isCurrentUser && (
                 <span className="text-[10px] bg-blue-50 dark:bg-[#00f0ff]/20 text-[#1d7af2] dark:text-[#00f0ff] px-1.5 py-0.5 rounded font-medium ml-1">
                   YOU
                 </span>
               )}
-            </div>
-            <div className="mt-1">
-              <TierBadge tier={record.title} size="sm" />
             </div>
           </div>
         </div>
@@ -184,14 +155,6 @@ export default function RankingPage() {
       key: 'rating',
       render: (rating) => (
         <span className="text-lg font-mono font-bold text-gray-900 dark:text-white">{rating.toLocaleString()}</span>
-      ),
-    },
-    {
-      title: 'Games Played',
-      dataIndex: 'gamesPlayed',
-      key: 'gamesPlayed',
-      render: (games) => (
-        <span className="text-sm text-gray-500 dark:text-slate-300 font-medium">{games.toLocaleString()}</span>
       ),
     },
     {
@@ -257,7 +220,6 @@ export default function RankingPage() {
               </AntSelect.Option>
             ))}
           </AntSelect>
-          <SeasonCountdown daysRemaining={14} hoursRemaining={5} minutesRemaining={22} />
         </div>
       </div>
 
@@ -288,10 +250,6 @@ export default function RankingPage() {
           onSearchChange={setSearchText}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          gameFilter={gameFilter}
-          onGameFilterChange={setGameFilter}
-          periodFilter={periodFilter}
-          onPeriodFilterChange={setPeriodFilter}
         />
         <Table
           columns={columns}
@@ -304,6 +262,45 @@ export default function RankingPage() {
           locale={{ emptyText: 'No rankings found' }}
         />
       </motion.div>
+
+      {/* Current User Rank Card */}
+      {user && leaderboardData.length > 0 && (() => {
+        const currentUserData = leaderboardData.find(p => p.isCurrentUser)
+        if (!currentUserData) return null
+        
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 bg-gradient-to-r from-[#1d7af2]/10 to-[#6366f1]/10 dark:from-[#00f0ff]/10 dark:to-[#a855f7]/10 backdrop-blur-sm rounded-2xl border border-[#1d7af2]/30 dark:border-[#00f0ff]/30 p-6"
+          >
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                {currentUserData.avatar ? (
+                  <Avatar src={currentUserData.avatar} size={56} className="border-2 border-[#1d7af2] dark:border-[#00f0ff]" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7]">
+                    {currentUserData.initials}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Your Rank</p>
+                  <p className="text-2xl font-black text-[#1d7af2] dark:text-[#00f0ff]">
+                    #{currentUserData.rank} <span className="text-gray-900 dark:text-white font-bold text-base">of {leaderboardData.length}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-6">
+                <div className="text-center">
+                  <p className="text-2xl font-black text-gray-900 dark:text-white">{currentUserData.rating.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 uppercase">Best Score</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )
+      })()}
     </div>
   )
 }

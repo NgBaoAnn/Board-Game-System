@@ -77,6 +77,14 @@ class UserService {
   async getUserRegistrations() {
     return await userRepo.getUserRegistrations();
   }
+
+  async getUserStats(userId) {
+    const user = await userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found!");
+    }
+    return await userRepo.getUserStats(userId);
+  }
 }
 
 module.exports = new UserService();

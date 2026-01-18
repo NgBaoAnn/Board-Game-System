@@ -105,6 +105,20 @@ class UserController {
       next(err);
     }
   }
+
+  async getUserStats(req, res, next) {
+    try {
+      const userId = req.params.id;
+      const response = await userService.getUserStats(userId);
+      return ResponseHandler.success(res, {
+        status: HTTP_STATUS.OK,
+        message: "Get user stats successfully!",
+        data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new UserController();

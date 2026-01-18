@@ -243,7 +243,7 @@ export default function CommunityPage() {
     {
       key: 'friends',
       label: (
-        <span className={`flex items-center gap-2 ${activeTab === 'friends' ? '' : 'text-white'}`}>
+        <span className={`flex items-center gap-2 ${activeTab === 'friends' ? '' : 'text-black dark:text-white'}`}>
           Friend List
           <span className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
             {friends.length}
@@ -254,7 +254,7 @@ export default function CommunityPage() {
     {
       key: 'requests',
       label: (
-        <span className={`flex items-center gap-2 ${activeTab === 'requests' ? '' : 'text-white'}`}>
+        <span className={`flex items-center gap-2 ${activeTab === 'requests' ? '' : 'text-black dark:text-white'}`}>
           Friend Requests
           {requests.length > 0 && (
             <span className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
@@ -267,7 +267,7 @@ export default function CommunityPage() {
     {
       key: 'players',
       label: (
-        <span className={`flex items-center gap-2 ${activeTab === 'players' ? '' : 'text-white'}`}>
+        <span className={`flex items-center gap-2 ${activeTab === 'players' ? '' : 'text-black dark:text-white'}`}>
           <Globe size={14} />
           All Players
         </span>

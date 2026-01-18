@@ -93,7 +93,7 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
               <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium text-white/90">Welcome to Game Arcade</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-white/90">Welcome to Game Arcade</span>
             </div>
 
             {/* Headline */}
@@ -106,7 +106,7 @@ export default function HomePage() {
             </h1>
 
             {/* Subheadline */}
-            <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
               Discover a collection of timeless board games. Challenge yourself, track your progress, and compete with friends.
             </p>
 
@@ -125,7 +125,7 @@ export default function HomePage() {
               
               <button
                 onClick={() => navigate('/ranking')}
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer"
+                className="px-8 py-4 bg-gray-100 dark:bg-white/10 backdrop-blur-sm text-gray-900 dark:text-white font-semibold text-lg rounded-xl border border-gray-300 dark:border-white/20 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 cursor-pointer"
               >
                 View Leaderboard
               </button>
@@ -140,8 +140,8 @@ export default function HomePage() {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
         >
-          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
-            <div className="w-1.5 h-3 bg-white/50 rounded-full" />
+          <div className="w-6 h-10 rounded-full border-2 border-gray-400 dark:border-white/30 flex items-start justify-center p-2">
+            <div className="w-1.5 h-3 bg-gray-500 dark:bg-white/50 rounded-full" />
           </div>
         </motion.div>
       </section>
@@ -156,10 +156,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED]">Game Arcade</span>?
             </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need for the ultimate gaming experience
             </p>
           </motion.div>
@@ -185,8 +185,8 @@ export default function HomePage() {
                   </div>
                   
                   {/* Content */}
-                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{feature.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -203,10 +203,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F43F5E] to-[#F97316]">Games</span>
             </h2>
-            <p className="text-xl text-gray-400">Choose from our collection of classic games</p>
+            <p className="text-xl text-gray-600 dark:text-gray-400">Choose from our collection of classic games</p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -260,7 +260,7 @@ export default function HomePage() {
                 <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED] mb-2">
                   {stat.value}
                 </div>
-                <div className="text-gray-400 font-medium">{stat.label}</div>
+                <div className="text-gray-600 dark:text-gray-400 font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -282,10 +282,10 @@ export default function HomePage() {
             ))}
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
             Ready to Start Playing?
           </h2>
-          <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
             Join thousands of players who are already enjoying our classic board games. No downloads required!
           </p>
           

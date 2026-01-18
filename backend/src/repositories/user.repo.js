@@ -373,6 +373,49 @@ class UserRepo {
     }
     return stats;
   }
+
+  async getUserStats(userId) {
+    // Get user's total score (sum of all best scores across all games)
+    const scoreResult = await db(MODULE.GAME_BEST_SCORE)
+      .where("user_id", userId)
+      .sum("best_score as total_score")
+      .first();
+
+    const totalScore = Number(scoreResult?.total_score) || 0;
+
+    // Calculate global rank based on total score
+    // Get all users' total scores and find position
+    const allScores = await db(MODULE.GAME_BEST_SCORE)
+      .select("user_id")
+      .sum("best_score as total_score")
+      .groupBy("user_id")
+      .orderBy("total_score", "desc");
+
+    let globalRank = 0;
+    for (let i = 0; i < allScores.length; i++) {
+      if (allScores[i].user_id === userId) {
+        globalRank = i + 1;
+        break;
+      }
+    }
+
+    // If user has no scores, rank is 0 (unranked)
+    if (totalScore === 0) {
+      globalRank = 0;
+    }
+
+    // Get games played count
+    const gamesPlayedResult = await db(MODULE.GAME_BEST_SCORE)
+      .where("user_id", userId)
+      .count("* as count")
+      .first();
+
+    return {
+      totalScore,
+      globalRank,
+      gamesPlayed: Number(gamesPlayedResult?.count) || 0,
+    };
+  }
 }
 
 module.exports = new UserRepo();
