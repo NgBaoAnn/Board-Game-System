@@ -34,11 +34,20 @@ class AchievementRepo {
   }
 
   // Admin: Get all achievements with pagination, search, and filter
-  async findAll({ page = 1, limit = 10, search = "", game_id, condition_type }) {
+  async findAll({
+    page = 1,
+    limit = 10,
+    search = "",
+    game_id,
+    condition_type,
+  }) {
     const offset = (page - 1) * limit;
 
-    let query = db(MODULE.ACHIEVEMENT)
-      .join(MODULE.GAME, `${MODULE.ACHIEVEMENT}.game_id`, `${MODULE.GAME}.id`);
+    let query = db(MODULE.ACHIEVEMENT).join(
+      MODULE.GAME,
+      `${MODULE.ACHIEVEMENT}.game_id`,
+      `${MODULE.GAME}.id`,
+    );
 
     if (search) {
       query = query.where((builder) => {
@@ -53,7 +62,10 @@ class AchievementRepo {
     }
 
     if (condition_type) {
-      query = query.where(`${MODULE.ACHIEVEMENT}.condition_type`, condition_type);
+      query = query.where(
+        `${MODULE.ACHIEVEMENT}.condition_type`,
+        condition_type,
+      );
     }
 
     const [totalResult, data] = await Promise.all([
@@ -63,7 +75,7 @@ class AchievementRepo {
         .select(
           `${MODULE.ACHIEVEMENT}.*`,
           `${MODULE.GAME}.name as game_name`,
-          `${MODULE.GAME}.code as game_code`
+          `${MODULE.GAME}.code as game_code`,
         )
         .orderBy(`${MODULE.ACHIEVEMENT}.created_at`, "desc")
         .limit(limit)
@@ -85,7 +97,7 @@ class AchievementRepo {
       .join(
         MODULE.ACHIEVEMENT,
         `${MODULE.USER_ACHIEVEMENT}.achievement_id`,
-        `${MODULE.ACHIEVEMENT}.id`
+        `${MODULE.ACHIEVEMENT}.id`,
       )
       .where({
         [`${MODULE.USER_ACHIEVEMENT}.user_id`]: userId,
@@ -93,7 +105,7 @@ class AchievementRepo {
       })
       .select(
         `${MODULE.ACHIEVEMENT}.*`,
-        `${MODULE.USER_ACHIEVEMENT}.achieved_at`
+        `${MODULE.USER_ACHIEVEMENT}.achieved_at`,
       );
   }
 
@@ -103,21 +115,17 @@ class AchievementRepo {
       .join(
         MODULE.ACHIEVEMENT,
         `${MODULE.USER_ACHIEVEMENT}.achievement_id`,
-        `${MODULE.ACHIEVEMENT}.id`
+        `${MODULE.ACHIEVEMENT}.id`,
       )
-      .join(
-        MODULE.GAME,
-        `${MODULE.ACHIEVEMENT}.game_id`,
-        `${MODULE.GAME}.id`
-      )
+      .join(MODULE.GAME, `${MODULE.ACHIEVEMENT}.game_id`, `${MODULE.GAME}.id`)
       .where({ [`${MODULE.USER_ACHIEVEMENT}.user_id`]: userId })
       .select(
         `${MODULE.ACHIEVEMENT}.*`,
         `${MODULE.USER_ACHIEVEMENT}.achieved_at`,
         `${MODULE.GAME}.name as game_name`,
-        `${MODULE.GAME}.code as game_code`
+        `${MODULE.GAME}.code as game_code`,
       )
-      .orderBy(`${MODULE.USER_ACHIEVEMENT}.achieved_at`, 'desc');
+      .orderBy(`${MODULE.USER_ACHIEVEMENT}.achieved_at`, "desc");
   }
 
   findUserAchievement(userId, achievementId) {

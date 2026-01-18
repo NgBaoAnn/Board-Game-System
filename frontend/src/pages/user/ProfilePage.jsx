@@ -23,8 +23,14 @@ export default function ProfilePage() {
       }
 
       try {
-        const response = await userApi.getProfile(user.id)
-        const userData = response.user || response.data || response
+        // Fetch profile and stats in parallel
+        const [profileResponse, statsResponse] = await Promise.all([
+          userApi.getProfile(user.id),
+          userApi.getStats(user.id).catch(() => ({ stats: {} })) // Fallback if stats fail
+        ])
+        
+        const userData = profileResponse.user || profileResponse.data || profileResponse
+        const stats = statsResponse.stats || {}
         
         setProfileData({
           id: userData.id,
@@ -43,11 +49,9 @@ export default function ProfilePage() {
           joinedDate: userData.created_at 
             ? new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
             : '',
-          totalScore: userData.totalScore || 0,
-          globalRank: userData.globalRank || 0,
-          wins: userData.wins || 0,
-          losses: userData.losses || 0,
-          winRate: userData.winRate || 0,
+          totalScore: stats.totalScore || 0,
+          globalRank: stats.globalRank || 0,
+          gamesPlayed: stats.gamesPlayed || 0,
         })
       } catch (error) {
         console.error('Failed to fetch profile:', error)
@@ -69,9 +73,7 @@ export default function ProfilePage() {
           joinedDate: '',
           totalScore: 0,
           globalRank: 0,
-          wins: 0,
-          losses: 0,
-          winRate: 0,
+          gamesPlayed: 0,
         })
       } finally {
         setLoading(false)
