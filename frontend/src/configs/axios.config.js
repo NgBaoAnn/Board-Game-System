@@ -40,7 +40,10 @@ axiosInstance.interceptors.response.use(
 
             if (!refreshPromise) {
                 refreshPromise = axios
-                    .post(`${API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true })
+                    .post(`${API_BASE_URL}/auth/refresh-token`, {}, {
+                        withCredentials: true,
+                        headers: { 'x-api-key': import.meta.env.VITE_API_KEY }
+                    })
                     .then((res) => res.data?.data?.access_token)
                     .catch(() => null)
                     .finally(() => { refreshPromise = null })
