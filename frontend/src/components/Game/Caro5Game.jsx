@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback ,  memo } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
+import DifficultySelector from './DifficultySelector.jsx'
+import { getCaroAIMove, AI_DIFFICULTY, DIFFICULTY_INFO } from '../../utils/gameAI.js'
 
 /**
  * Caro5Game - Caro game with 5-in-a-row win condition (Gomoku)
- * Player can choose X or O before starting
+ * Player can choose difficulty level and X or O before starting
  */
 function Caro5Game({
     isPlaying = false,
@@ -18,6 +20,10 @@ function Caro5Game({
     cursorCol = 0,
     cellClickRef = null,
 }) {
+    // AI difficulty selection state
+    const [aiDifficulty, setAiDifficulty] = useState(savedState?.ai_difficulty || null)
+    const [hasSelectedDifficulty, setHasSelectedDifficulty] = useState(savedState?.has_selected_difficulty || false)
+
     // Player symbol selection state
     const [playerSymbol, setPlayerSymbol] = useState(savedState?.player_symbol || null)
     const [hasSelectedSymbol, setHasSelectedSymbol] = useState(savedState?.has_selected || false)
@@ -42,6 +48,12 @@ function Caro5Game({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null)
     const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
+
+    // Handle difficulty selection
+    const handleSelectDifficulty = (difficulty) => {
+        setAiDifficulty(difficulty)
+        setHasSelectedDifficulty(true)
+    }
 
     // Handle symbol selection
     const handleSelectSymbol = (symbol) => {
@@ -108,71 +120,30 @@ function Caro5Game({
         setIsAiThinking(false)
         setShowResultMessage(null)
         setLastAiMove(null)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [boardRows, boardCols])
 
-    // Evaluate position score for AI
-    const evaluatePosition = useCallback((boardState, row, col, player) => {
-        const rows = boardState.length
-        const cols = boardState[0].length
-        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]]
-        let score = 0
-
-        for (const [dr, dc] of directions) {
-            let count = 1
-            let openEnds = 0
-
-            for (let i = 1; i <= 4; i++) {
-                const nr = row + dr * i
-                const nc = col + dc * i
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                    if (boardState[nr][nc] === player) count++
-                    else if (boardState[nr][nc] === null) { openEnds++; break }
-                    else break
-                }
-            }
-
-            for (let i = 1; i <= 4; i++) {
-                const nr = row - dr * i
-                const nc = col - dc * i
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                    if (boardState[nr][nc] === player) count++
-                    else if (boardState[nr][nc] === null) { openEnds++; break }
-                    else break
-                }
-            }
-
-            if (count >= 5) score += 10000
-            else if (count === 4 && openEnds >= 1) score += 1000
-            else if (count === 3 && openEnds === 2) score += 100
-            else if (count === 3 && openEnds === 1) score += 50
-            else if (count === 2 && openEnds === 2) score += 10
-        }
-
-        return score
-    }, [])
-
-    // AI makes a smart move
+    // AI makes a move based on difficulty
     const makeAiMove = useCallback((currentBoard) => {
-        if (!isPlaying || !hasSelectedSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty) return
 
         setIsAiThinking(true)
 
-        // Find all empty cells
-        const emptyCells = []
-        for (let row = 0; row < boardRows; row++) {
-            for (let col = 0; col < boardCols; col++) {
-                if (currentBoard[row][col] === null) {
-                    emptyCells.push({ row, col })
-                }
-            }
-        }
+        // Get AI move based on difficulty
+        const move = getCaroAIMove(currentBoard, aiSymbol, playerSymbol, aiDifficulty, 5, boardRows, boardCols)
 
-        if (emptyCells.length === 0) {
+        if (!move) {
             setIsAiThinking(false)
             return
         }
 
-        const delay = 500 + Math.random() * 1000
+        // Delay based on difficulty
+        const delayMap = {
+            [AI_DIFFICULTY.EASY]: 400 + Math.random() * 400,
+            [AI_DIFFICULTY.MEDIUM]: 600 + Math.random() * 600,
+            [AI_DIFFICULTY.HARD]: 800 + Math.random() * 800,
+        }
+        const delay = delayMap[aiDifficulty] || 500
 
         setTimeout(() => {
             if (!isPlaying) {
@@ -180,35 +151,7 @@ function Caro5Game({
                 return
             }
 
-            // Evaluate each possible move
-            let bestMove = null
-            let bestScore = -Infinity
-
-            for (const { row, col } of emptyCells) {
-                const attackScore = evaluatePosition(currentBoard, row, col, aiSymbol)
-                const blockScore = evaluatePosition(currentBoard, row, col, playerSymbol) * 1.2
-                const totalScore = attackScore + blockScore
-                const randomBonus = Math.random() * 5
-
-                if (totalScore + randomBonus > bestScore) {
-                    bestScore = totalScore + randomBonus
-                    bestMove = { row, col }
-                }
-            }
-
-            // If no good move found, pick center-ish
-            if (!bestMove || bestScore < 10) {
-                const centerRow = Math.floor(boardRows / 2)
-                const centerCol = Math.floor(boardCols / 2)
-                const sortedCells = [...emptyCells].sort((a, b) => {
-                    const distA = Math.abs(a.row - centerRow) + Math.abs(a.col - centerCol)
-                    const distB = Math.abs(b.row - centerRow) + Math.abs(b.col - centerCol)
-                    return distA - distB
-                })
-                bestMove = sortedCells[0]
-            }
-
-            const { row, col } = bestMove
+            const { row, col } = move
 
             setBoard(prev => {
                 const newBoard = prev.map(r => [...r])
@@ -241,11 +184,11 @@ function Caro5Game({
 
             setIsAiThinking(false)
         }, delay)
-    }, [isPlaying, hasSelectedSymbol, aiSymbol, playerSymbol, checkWinner, resetBoard, boardRows, boardCols, evaluatePosition])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, aiSymbol, playerSymbol, aiDifficulty, checkWinner, resetBoard, boardRows, boardCols])
 
     // Player makes a move
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || !hasSelectedSymbol || winner || isAiThinking || currentPlayer !== playerSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol) return
         if (board[row][col] !== null) return
 
         const newBoard = board.map(r => [...r])
@@ -271,14 +214,14 @@ function Caro5Game({
         } else {
             setCurrentPlayer(aiSymbol)
         }
-    }, [isPlaying, hasSelectedSymbol, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
 
     // AI move when it's AI's turn
     useEffect(() => {
-        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && !winner && !isAiThinking) {
+        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && hasSelectedDifficulty && !winner && !isAiThinking) {
             makeAiMove(board)
         }
-    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, winner, isAiThinking, board, makeAiMove])
+    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, board, makeAiMove])
 
     // Notify parent of state changes for saving
     useEffect(() => {
@@ -287,12 +230,14 @@ function Caro5Game({
             current_player: currentPlayer,
             player_symbol: playerSymbol,
             has_selected: hasSelectedSymbol,
+            ai_difficulty: aiDifficulty,
+            has_selected_difficulty: hasSelectedDifficulty,
             games_won: gamesWon,
             games_lost: gamesLost,
             games_draw: gamesDraw,
             games_played: gamesPlayed,
         })
-    }, [board, currentPlayer, playerSymbol, hasSelectedSymbol, gamesWon, gamesLost, gamesDraw, gamesPlayed, onStateChange])
+    }, [board, currentPlayer, playerSymbol, hasSelectedSymbol, aiDifficulty, hasSelectedDifficulty, gamesWon, gamesLost, gamesDraw, gamesPlayed, onStateChange])
 
     // Restore saved state
     useEffect(() => {
@@ -301,11 +246,14 @@ function Caro5Game({
             setCurrentPlayer(savedState.current_player || 'X')
             setPlayerSymbol(savedState.player_symbol || null)
             setHasSelectedSymbol(savedState.has_selected || false)
+            setAiDifficulty(savedState.ai_difficulty || null)
+            setHasSelectedDifficulty(savedState.has_selected_difficulty || false)
             setGamesWon(savedState.games_won || 0)
             setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [savedState])
 
     // Hook cellClickRef for keyboard navigation
@@ -353,30 +301,49 @@ function Caro5Game({
         return null
     }
 
-    // Symbol selection screen
+    // Difficulty selection screen (Step 1)
+    if (!hasSelectedDifficulty) {
+        return (
+            <DifficultySelector
+                onSelect={handleSelectDifficulty}
+                gameTitle="Caro 5 - Gomoku (5 để thắng)"
+            />
+        )
+    }
+
+    // Symbol selection screen (Step 2)
     if (!hasSelectedSymbol) {
+        const diffInfo = DIFFICULTY_INFO[aiDifficulty]
         return (
             <div className="flex flex-col items-center gap-6 p-6">
-                <h2 className="text-xl font-bold text-slate-700">Chọn quân cờ của bạn</h2>
-                <p className="text-sm text-slate-500">X luôn đi trước • 5 để thắng</p>
+                <div className="text-center">
+                    <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Chọn quân cờ của bạn</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">X luôn đi trước • 5 để thắng</p>
+                    <div className="mt-2 px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full inline-flex items-center gap-2">
+                        <span>{diffInfo?.emoji}</span>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                            AI: {diffInfo?.label}
+                        </span>
+                    </div>
+                </div>
 
                 <div className="flex gap-6">
                     <button
                         onClick={() => handleSelectSymbol('X')}
-                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-400 transition-all group"
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:border-indigo-400 transition-all group"
                     >
-                        <X size={48} className="text-indigo-600 stroke-[3] group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-indigo-700">Đi X</span>
-                        <span className="text-xs text-indigo-500">Bạn đi trước</span>
+                        <X size={48} className="text-indigo-600 dark:text-indigo-400 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-indigo-700 dark:text-indigo-300">Đi X</span>
+                        <span className="text-xs text-indigo-500 dark:text-indigo-400">Bạn đi trước</span>
                     </button>
 
                     <button
                         onClick={() => handleSelectSymbol('O')}
-                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 hover:border-rose-400 transition-all group"
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-rose-200 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-400 transition-all group"
                     >
-                        <Circle size={44} className="text-rose-500 stroke-[3] group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-rose-600">Đi O</span>
-                        <span className="text-xs text-rose-400">Máy đi trước</span>
+                        <Circle size={44} className="text-rose-500 dark:text-rose-400 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-rose-600 dark:text-rose-300">Đi O</span>
+                        <span className="text-xs text-rose-400 dark:text-rose-500">Máy đi trước</span>
                     </button>
                 </div>
             </div>

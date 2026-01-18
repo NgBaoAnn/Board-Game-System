@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
+import DifficultySelector from './DifficultySelector.jsx'
+import { getTicTacToeAIMove, AI_DIFFICULTY, DIFFICULTY_INFO } from '../../utils/gameAI.js'
 
 /**
  * TicTacToeGame - Tic Tac Toe game component with AI opponent
- * Player can choose X or O before starting
+ * Player can choose difficulty level and X or O before starting
  */
 function TicTacToeGame({
     isPlaying = false,
@@ -16,6 +18,10 @@ function TicTacToeGame({
     cursorCol = 0,
     cellClickRef = null,
 }) {
+    // AI difficulty selection state
+    const [aiDifficulty, setAiDifficulty] = useState(savedState?.ai_difficulty || null)
+    const [hasSelectedDifficulty, setHasSelectedDifficulty] = useState(savedState?.has_selected_difficulty || false)
+
     // Player symbol selection state
     const [playerSymbol, setPlayerSymbol] = useState(savedState?.player_symbol || null) // 'X' or 'O'
     const [hasSelectedSymbol, setHasSelectedSymbol] = useState(savedState?.has_selected || false)
@@ -41,6 +47,12 @@ function TicTacToeGame({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
     const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
+
+    // Handle difficulty selection
+    const handleSelectDifficulty = (difficulty) => {
+        setAiDifficulty(difficulty)
+        setHasSelectedDifficulty(true)
+    }
 
     // Handle symbol selection
     const handleSelectSymbol = (symbol) => {
@@ -90,7 +102,7 @@ function TicTacToeGame({
         return null
     }, [])
 
-    // Reset board for new round (keep symbol selection)
+    // Reset board for new round (keep symbol and difficulty selection)
     const resetBoard = useCallback(() => {
         setBoard([
             [null, null, null],
@@ -105,29 +117,27 @@ function TicTacToeGame({
         setLastAiMove(null)
     }, [])
 
-    // AI makes a random move
+    // AI makes a move based on difficulty
     const makeAiMove = useCallback((currentBoard) => {
-        if (!isPlaying || !hasSelectedSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty) return
 
         setIsAiThinking(true)
 
-        // Find all empty cells
-        const emptyCells = []
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 3; col++) {
-                if (currentBoard[row][col] === null) {
-                    emptyCells.push({ row, col })
-                }
-            }
-        }
+        // Get AI move based on difficulty
+        const move = getTicTacToeAIMove(currentBoard, aiSymbol, playerSymbol, aiDifficulty)
 
-        if (emptyCells.length === 0) {
+        if (!move) {
             setIsAiThinking(false)
             return
         }
 
-        // Random delay 1-2 seconds
-        const delay = 1000 + Math.random() * 1000
+        // Delay based on difficulty (harder = thinks longer)
+        const delayMap = {
+            [AI_DIFFICULTY.EASY]: 500 + Math.random() * 500,
+            [AI_DIFFICULTY.MEDIUM]: 800 + Math.random() * 700,
+            [AI_DIFFICULTY.HARD]: 1000 + Math.random() * 1000,
+        }
+        const delay = delayMap[aiDifficulty] || 1000
 
         setTimeout(() => {
             if (!isPlaying) {
@@ -135,9 +145,7 @@ function TicTacToeGame({
                 return
             }
 
-            // Pick random empty cell
-            const randomIndex = Math.floor(Math.random() * emptyCells.length)
-            const { row, col } = emptyCells[randomIndex]
+            const { row, col } = move
 
             setBoard(prev => {
                 const newBoard = prev.map(r => [...r])
@@ -175,11 +183,11 @@ function TicTacToeGame({
 
             setIsAiThinking(false)
         }, delay)
-    }, [isPlaying, hasSelectedSymbol, aiSymbol, playerSymbol, checkWinner, resetBoard])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, aiSymbol, playerSymbol, aiDifficulty, checkWinner, resetBoard])
 
     // Player makes a move
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || !hasSelectedSymbol || winner || isAiThinking || currentPlayer !== playerSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol) return
         if (board[row][col] !== null) return
 
         const newBoard = board.map(r => [...r])
@@ -214,14 +222,14 @@ function TicTacToeGame({
             // Switch to AI
             setCurrentPlayer(aiSymbol)
         }
-    }, [isPlaying, hasSelectedSymbol, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
 
     // AI move when it's AI's turn
     useEffect(() => {
-        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && !winner && !isAiThinking) {
+        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && hasSelectedDifficulty && !winner && !isAiThinking) {
             makeAiMove(board)
         }
-    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, winner, isAiThinking, board, makeAiMove])
+    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, board, makeAiMove])
 
     // Notify parent of state changes for saving
     useEffect(() => {
@@ -230,12 +238,14 @@ function TicTacToeGame({
             current_player: currentPlayer,
             player_symbol: playerSymbol,
             has_selected: hasSelectedSymbol,
+            ai_difficulty: aiDifficulty,
+            has_selected_difficulty: hasSelectedDifficulty,
             games_won: gamesWon,
             games_lost: gamesLost,
             games_draw: gamesDraw,
             games_played: gamesPlayed,
         })
-    }, [board, currentPlayer, playerSymbol, hasSelectedSymbol, gamesWon, gamesLost, gamesDraw, gamesPlayed, onStateChange])
+    }, [board, currentPlayer, playerSymbol, hasSelectedSymbol, aiDifficulty, hasSelectedDifficulty, gamesWon, gamesLost, gamesDraw, gamesPlayed, onStateChange])
 
     // Restore saved state
     useEffect(() => {
@@ -244,6 +254,8 @@ function TicTacToeGame({
             setCurrentPlayer(savedState.current_player || 'X')
             setPlayerSymbol(savedState.player_symbol || null)
             setHasSelectedSymbol(savedState.has_selected || false)
+            setAiDifficulty(savedState.ai_difficulty || null)
+            setHasSelectedDifficulty(savedState.has_selected_difficulty || false)
             setGamesWon(savedState.games_won || 0)
             setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
@@ -295,30 +307,49 @@ function TicTacToeGame({
         return null
     }
 
-    // Symbol selection screen
+    // Difficulty selection screen (Step 1)
+    if (!hasSelectedDifficulty) {
+        return (
+            <DifficultySelector
+                onSelect={handleSelectDifficulty}
+                gameTitle="Tic Tac Toe"
+            />
+        )
+    }
+
+    // Symbol selection screen (Step 2)
     if (!hasSelectedSymbol) {
+        const diffInfo = DIFFICULTY_INFO[aiDifficulty]
         return (
             <div className="flex flex-col items-center gap-6 p-6">
-                <h2 className="text-xl font-bold text-slate-700">Chọn quân cờ của bạn</h2>
-                <p className="text-sm text-slate-500">X luôn đi trước</p>
+                <div className="text-center">
+                    <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Chọn quân cờ của bạn</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">X luôn đi trước</p>
+                    <div className="mt-2 px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full inline-flex items-center gap-2">
+                        <span>{diffInfo?.emoji}</span>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                            AI: {diffInfo?.label}
+                        </span>
+                    </div>
+                </div>
 
                 <div className="flex gap-6">
                     <button
                         onClick={() => handleSelectSymbol('X')}
-                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-400 transition-all group"
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:border-indigo-400 transition-all group"
                     >
-                        <X size={48} className="text-indigo-600 stroke-[3] group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-indigo-700">Đi X</span>
-                        <span className="text-xs text-indigo-500">Bạn đi trước</span>
+                        <X size={48} className="text-indigo-600 dark:text-indigo-400 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-indigo-700 dark:text-indigo-300">Đi X</span>
+                        <span className="text-xs text-indigo-500 dark:text-indigo-400">Bạn đi trước</span>
                     </button>
 
                     <button
                         onClick={() => handleSelectSymbol('O')}
-                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 hover:border-rose-400 transition-all group"
+                        className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-rose-200 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-400 transition-all group"
                     >
-                        <Circle size={44} className="text-rose-500 stroke-[3] group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-rose-600">Đi O</span>
-                        <span className="text-xs text-rose-400">Máy đi trước</span>
+                        <Circle size={44} className="text-rose-500 dark:text-rose-400 stroke-[3] group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-rose-600 dark:text-rose-300">Đi O</span>
+                        <span className="text-xs text-rose-400 dark:text-rose-500">Máy đi trước</span>
                     </button>
                 </div>
             </div>
