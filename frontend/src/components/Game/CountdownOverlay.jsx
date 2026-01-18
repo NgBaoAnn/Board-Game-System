@@ -1,15 +1,24 @@
-import { memo, useEffect, useState } from 'react'
+import { memo, useEffect, useState, useRef } from 'react'
 
 /**
  * CountdownOverlay - Shows a 3-2-1 countdown before game starts
  * Displays an animated countdown overlay that disappears after completion
+ * @param {boolean} isActive - Whether countdown should be active
+ * @param {boolean} isPaused - Whether countdown should be paused (e.g., during tutorial)
+ * @param {function} onComplete - Callback when countdown finishes
  */
-function CountdownOverlay({ isActive, onComplete }) {
+function CountdownOverlay({ isActive, isPaused = false, onComplete }) {
     const [count, setCount] = useState(3)
     const [isVisible, setIsVisible] = useState(false)
+    const intervalRef = useRef(null)
+    const completionTimeoutRef = useRef(null)
 
     useEffect(() => {
         if (!isActive) {
+            // Clear any running timers
+            if (intervalRef.current) clearInterval(intervalRef.current)
+            if (completionTimeoutRef.current) clearTimeout(completionTimeoutRef.current)
+
             const timer = setTimeout(() => {
                 setCount(3)
                 setIsVisible(false)
@@ -22,11 +31,33 @@ function CountdownOverlay({ isActive, onComplete }) {
             setCount(3)
         }, 0)
 
-        const interval = setInterval(() => {
+        return () => {
+            clearTimeout(timer)
+            if (intervalRef.current) clearInterval(intervalRef.current)
+            if (completionTimeoutRef.current) clearTimeout(completionTimeoutRef.current)
+        }
+    }, [isActive])
+
+    // Separate effect for countdown that respects isPaused
+    useEffect(() => {
+        if (!isActive || !isVisible) return
+
+        // If paused, don't start/continue the interval
+        if (isPaused) {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+                intervalRef.current = null
+            }
+            return
+        }
+
+        // Start countdown interval
+        intervalRef.current = setInterval(() => {
             setCount(prev => {
                 if (prev <= 1) {
-                    clearInterval(interval)
-                    setTimeout(() => {
+                    clearInterval(intervalRef.current)
+                    intervalRef.current = null
+                    completionTimeoutRef.current = setTimeout(() => {
                         setIsVisible(false)
                         onComplete?.()
                     }, 500)
@@ -37,10 +68,12 @@ function CountdownOverlay({ isActive, onComplete }) {
         }, 1000)
 
         return () => {
-            clearInterval(interval)
-            clearTimeout(timer)
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+                intervalRef.current = null
+            }
         }
-    }, [isActive, onComplete])
+    }, [isActive, isVisible, isPaused, onComplete])
 
     if (!isVisible) return null
 

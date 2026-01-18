@@ -324,7 +324,7 @@ function MemoryGame({
 
     return (
         <div className="flex flex-col items-center gap-3">
-            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+            <CountdownOverlay isActive={showCountdown} isPaused={!isPlaying} onComplete={handleCountdownComplete} />
 
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm flex-wrap justify-center">

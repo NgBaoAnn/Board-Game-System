@@ -363,7 +363,7 @@ function TicTacToeGame({
 
     return (
         <div className="flex flex-col items-center gap-4">
-            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+            <CountdownOverlay isActive={showCountdown} isPaused={!isPlaying} onComplete={handleCountdownComplete} />
 
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm">

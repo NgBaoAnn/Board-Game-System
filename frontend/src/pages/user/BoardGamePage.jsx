@@ -17,6 +17,7 @@ import GamePlayArea from '../../components/BoardGame/GamePlayArea.jsx'
 import MobileDPad from '../../components/BoardGame/MobileDPad.jsx'
 import GameModals from '../../components/BoardGame/GameModals.jsx'
 import GameInstructionsModal from '../../components/BoardGame/GameInstructionsModal.jsx'
+import { TutorialOverlay, getTutorial, isTutorialCompleted } from '../../components/Tutorial'
 import gameApi from '../../api/api-game.js'
 import { message, Modal } from 'antd'
 import { useGameSession } from '../../context/GameSessionProvider'
@@ -82,6 +83,7 @@ export default function BoardGamePage() {
     const [selectedTime, setSelectedTime] = useState(0) // Duration in seconds
     const [symbolSelected, setSymbolSelected] = useState(false) // Track if player has selected X/O
     const [showExitConfirm, setShowExitConfirm] = useState(false) // Exit confirmation modal
+    const [showTutorial, setShowTutorial] = useState(false) // Tutorial overlay
 
     // Switch Game State
     const [showSwitchConfirm, setShowSwitchConfirm] = useState(false)
@@ -720,6 +722,39 @@ export default function BoardGamePage() {
         setCursorCol(0)
     }, [currentGame, gameStarted])
 
+    // Auto-show tutorial for first-time players (and pause game)
+    useEffect(() => {
+        if (gameStarted && currentGame && !showTutorial) {
+            const gameCode = currentGame.code
+            if (!isTutorialCompleted(gameCode)) {
+                // Small delay to let game render first, then pause and show tutorial
+                const timer = setTimeout(() => {
+                    setIsPlaying(false) // Pause game during tutorial
+                    setShowTutorial(true)
+                }, 500)
+                return () => clearTimeout(timer)
+            }
+        }
+    }, [gameStarted, currentGame, showTutorial])
+
+    // Handle tutorial complete - resume game
+    const handleTutorialComplete = useCallback(() => {
+        setShowTutorial(false)
+        setIsPlaying(true) // Resume game after tutorial
+    }, [])
+
+    // Handle tutorial skip - resume game
+    const handleTutorialSkip = useCallback(() => {
+        setShowTutorial(false)
+        setIsPlaying(true) // Resume game after skip
+    }, [])
+
+    // Handle help button click to show tutorial (pause game first)
+    const handleShowTutorial = useCallback(() => {
+        setIsPlaying(false) // Pause game while viewing tutorial
+        setShowTutorial(true)
+    }, [])
+
     // Render game component based on current game
     const renderGame = () => {
         if (!currentGame || !gameStarted) return null
@@ -1027,7 +1062,7 @@ export default function BoardGamePage() {
                 onPause={handlePauseClick}
                 onResume={handleResumeGameClick}
                 onSave={handleSave}
-                onHelp={() => setShowHelpModal(true)}
+                onHelp={handleShowTutorial}
                 onPrevGame={() => handleSwitchRequest('prev')}
                 onNextGame={() => handleSwitchRequest('next')}
                 canGoPrev={games.length > 1}
@@ -1094,6 +1129,15 @@ export default function BoardGamePage() {
                 reason={endGameReason}
                 onNewGame={handleNewGame}
                 onExit={handleScoreModalClose}
+            />
+
+            {/* Tutorial Overlay */}
+            <TutorialOverlay
+                isActive={showTutorial}
+                steps={currentGame ? getTutorial(currentGame.code) || [] : []}
+                gameCode={currentGame?.code || ''}
+                onComplete={handleTutorialComplete}
+                onSkip={handleTutorialSkip}
             />
         </div>
     )
