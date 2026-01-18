@@ -1,7 +1,13 @@
 const HTTP_STATUS = require("../constants/http-status");
 
 const apiKeyMiddleware = (req, res, next) => {
-  const apiKey = req.headers["x-api-key"];
+  // Bypass for /docs routes - they use login authentication only
+  if (req.path.startsWith("/docs")) {
+    return next();
+  }
+
+  // Support API key from header OR query parameter (for browser access)
+  const apiKey = req.headers["x-api-key"] || req.query["api-key"];
   const validApiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey !== validApiKey) {
