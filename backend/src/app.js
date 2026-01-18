@@ -8,9 +8,11 @@ const cors = require("cors");
 const corsConfig = require("./configs/cors.config");
 const cookieParser = require("cookie-parser");
 const cookieConfig = require("./configs/cookie.config");
+const apiKeyMiddleware = require("./middlewares/api-key.middleware");
 
 app.use(cors(corsConfig));
 app.use(cookieParser(cookieConfig.secret));
+app.use(apiKeyMiddleware);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
