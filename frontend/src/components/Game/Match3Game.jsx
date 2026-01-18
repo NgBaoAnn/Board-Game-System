@@ -73,7 +73,7 @@ function Match3Game({
     const [movesCount, setMovesCount] = useState(savedState?.moves || 0)
     const [totalMatches, setTotalMatches] = useState(savedState?.totalMatches || 0)
     const [showCountdown, setShowCountdown] = useState(false)
-    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(false)
 
     // Refs
     const boardRef = useRef(board)
@@ -83,13 +83,13 @@ function Match3Game({
         boardRef.current = board
     }, [board])
 
-    // Start countdown when game starts
+    // Start countdown when game starts (new or resume)
     useEffect(() => {
-        if (isPlaying && !savedState && !isCountdownComplete && !showCountdown) {
+        if (isPlaying && !isCountdownComplete && !showCountdown) {
             const timer = setTimeout(() => setShowCountdown(true), 0)
             return () => clearTimeout(timer)
         }
-    }, [isPlaying, savedState, isCountdownComplete, showCountdown])
+    }, [isPlaying, isCountdownComplete, showCountdown])
 
     // Handle countdown complete
     const handleCountdownComplete = useCallback(() => {

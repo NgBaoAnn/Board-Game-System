@@ -211,20 +211,27 @@ function MemoryGame({
 
     // Notify parent of state changes
     useEffect(() => {
+        // Create sanitized state for saving - unflip unmatched cards
+        // This ensures resuming feels like a fresh turn
+        const savedCards = cards.map(c =>
+            c.isMatched ? c : { ...c, isFlipped: false }
+        )
+
         onStateChange?.({
-            cards,
+            cards: savedCards,
             matchedPairs,
             attempts,
             countdown_complete: isCountdownComplete, // Include countdown status
         })
     }, [cards, matchedPairs, attempts, isCountdownComplete, onStateChange])
 
-    // When savedState is provided, ensure countdown is marked complete
+    // When savedState is provided, ensure countdown starts
     useEffect(() => {
-        if (savedState && !isCountdownComplete) {
-            setIsCountdownComplete(true)
+        if (savedState) {
+            setIsCountdownComplete(false)
+            setShowCountdown(true)
         }
-    }, [savedState, isCountdownComplete])
+    }, [savedState])
 
     // Calculate accuracy
     const accuracy = attempts > 0 ? Math.round((matchedPairs / attempts) * 100) : 0

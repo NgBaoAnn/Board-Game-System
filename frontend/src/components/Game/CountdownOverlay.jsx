@@ -76,7 +76,7 @@ function CountdownOverlay({ isActive, onComplete }) {
                         </span>
                     ) : (
                         <span
-                            className="text-4xl font-black text-emerald-400 drop-shadow-2xl"
+                            className="text-3xl font-black text-emerald-400 drop-shadow-2xl text-center leading-tight"
                             style={{
                                 textShadow: '0 0 30px rgba(52, 211, 153, 0.8), 0 0 60px rgba(16, 185, 129, 0.6)',
                                 animation: 'pulse 0.5s ease-out'

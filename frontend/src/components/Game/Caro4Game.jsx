@@ -260,7 +260,8 @@ function Caro4Game({
             setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
-            setIsCountdownComplete(true)
+            setIsCountdownComplete(false)
+            setShowCountdown(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [savedState])

@@ -78,7 +78,14 @@ function SnakeGame({
     const [speed, setSpeed] = useState(150) // ms between moves
     const [showMessage, setShowMessage] = useState(null)
     const [showCountdown, setShowCountdown] = useState(false)
-    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(false)
+
+    // Start countdown when game starts (new or resume)
+    useEffect(() => {
+        if (isPlaying && !isCountdownComplete && !showCountdown) {
+            setShowCountdown(true)
+        }
+    }, [isPlaying, isCountdownComplete, showCountdown])
 
     // Refs for game loop
     const directionRef = useRef(direction)

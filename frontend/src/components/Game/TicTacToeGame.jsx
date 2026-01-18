@@ -261,10 +261,10 @@ function TicTacToeGame({
             setAiDifficulty(savedState.ai_difficulty || null)
             setHasSelectedDifficulty(savedState.has_selected_difficulty || false)
             setGamesWon(savedState.games_won || 0)
-            setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
-            setIsCountdownComplete(true)
+            setIsCountdownComplete(false)
+            setShowCountdown(true)
         }
     }, [savedState])
 

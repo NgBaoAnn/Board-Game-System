@@ -67,7 +67,7 @@ function FreeDrawGame({
     const [pixelCount, setPixelCount] = useState(savedState?.pixelCount || 0)
     const [lastAction, setLastAction] = useState(null)
     const [showCountdown, setShowCountdown] = useState(false)
-    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(false)
 
     // Palette navigation state
     const [isPaletteMode, setIsPaletteMode] = useState(false)
@@ -78,12 +78,12 @@ function FreeDrawGame({
         return Math.max(16, Math.min(24, 480 / Math.max(boardRows, boardCols)))
     }, [boardRows, boardCols])
 
-    // Start countdown when game starts
+    // Start countdown when game starts (new or resume)
     useEffect(() => {
-        if (isPlaying && !savedState && !isCountdownComplete && !showCountdown) {
+        if (isPlaying && !isCountdownComplete && !showCountdown) {
             setShowCountdown(true)
         }
-    }, [isPlaying, savedState, isCountdownComplete, showCountdown])
+    }, [isPlaying, isCountdownComplete, showCountdown])
 
     // Handle countdown complete
     const handleCountdownComplete = useCallback(() => {
