@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo ,  memo } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { Brain, Eye, EyeOff, Sparkles, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
+import CountdownOverlay from './CountdownOverlay.jsx'
 
 /**
  * MemoryGame - Classic Memory Card Matching Game
@@ -78,6 +79,8 @@ function MemoryGame({
     const [attempts, setAttempts] = useState(savedState?.attempts || 0)
     const [lastMatch, setLastMatch] = useState(false) // For animation
     const [showAll, setShowAll] = useState(false) // Peek mode at start
+    const [showCountdown, setShowCountdown] = useState(false)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete || false)
 
     // Calculate cell size
     const cellSize = useMemo(() => {
@@ -98,16 +101,23 @@ function MemoryGame({
         setTimeout(() => setShowAll(false), 2000)
     }, [createInitialCards])
 
-    // Show all cards briefly at start
+    // Start countdown when game starts
     useEffect(() => {
-        if (!savedState && isPlaying) {
-            setShowAll(true)
-            const timer = setTimeout(() => {
-                setShowAll(false)
-            }, 2000) // Show for 2 seconds
+        if (!savedState && isPlaying && !isCountdownComplete && !showCountdown) {
+            const timer = setTimeout(() => setShowCountdown(true), 0)
             return () => clearTimeout(timer)
         }
-    }, [isPlaying, savedState])
+    }, [isPlaying, savedState, isCountdownComplete, showCountdown])
+
+    // Handle countdown complete -> Show cards briefly
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+        setShowAll(true)
+        setTimeout(() => {
+            setShowAll(false)
+        }, 2000) // Show for 2 seconds
+    }, [])
 
     // Get card at position
     const getCardAt = useCallback((row, col) => {
@@ -116,7 +126,7 @@ function MemoryGame({
 
     // Handle card flip
     const handleFlip = useCallback((row, col) => {
-        if (!isPlaying || isChecking || showAll) return
+        if (!isPlaying || isChecking || showAll || !isCountdownComplete) return
 
         const card = getCardAt(row, col)
         if (!card || card.isFlipped || card.isMatched) return
@@ -185,7 +195,7 @@ function MemoryGame({
                 }, 1000)
             }
         }
-    }, [isPlaying, isChecking, showAll, getCardAt, flippedCards, score, onScoreChange, matchedPairs, totalPairs, attempts, resetGame])
+    }, [isPlaying, isChecking, showAll, getCardAt, flippedCards, score, onScoreChange, matchedPairs, totalPairs, attempts, resetGame, isCountdownComplete])
 
     // Handle cell click
     const handleCellClick = useCallback((row, col) => {
@@ -205,8 +215,16 @@ function MemoryGame({
             cards,
             matchedPairs,
             attempts,
+            countdown_complete: isCountdownComplete, // Include countdown status
         })
-    }, [cards, matchedPairs, attempts, onStateChange])
+    }, [cards, matchedPairs, attempts, isCountdownComplete, onStateChange])
+
+    // When savedState is provided, ensure countdown is marked complete
+    useEffect(() => {
+        if (savedState && !isCountdownComplete) {
+            setIsCountdownComplete(true)
+        }
+    }, [savedState, isCountdownComplete])
 
     // Calculate accuracy
     const accuracy = attempts > 0 ? Math.round((matchedPairs / attempts) * 100) : 0
@@ -299,6 +317,8 @@ function MemoryGame({
 
     return (
         <div className="flex flex-col items-center gap-3">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">

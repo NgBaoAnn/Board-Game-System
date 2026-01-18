@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef, useMemo ,  memo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react'
 import { Sparkles, Zap, Star, Move } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
+import CountdownOverlay from './CountdownOverlay.jsx'
 
 /**
  * Match3Game - Classic Match-3 puzzle game (like Candy Crush)
@@ -31,7 +32,6 @@ function Match3Game({
     isPlaying = false,
     score = 0,
     onScoreChange,
-    onGameEnd,
     savedState = null,
     onStateChange,
     boardRows = 8,
@@ -72,6 +72,8 @@ function Match3Game({
     const [lastScore, setLastScore] = useState(0) // Score added in last move
     const [movesCount, setMovesCount] = useState(savedState?.moves || 0)
     const [totalMatches, setTotalMatches] = useState(savedState?.totalMatches || 0)
+    const [showCountdown, setShowCountdown] = useState(false)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
 
     // Refs
     const boardRef = useRef(board)
@@ -80,6 +82,20 @@ function Match3Game({
     useEffect(() => {
         boardRef.current = board
     }, [board])
+
+    // Start countdown when game starts
+    useEffect(() => {
+        if (isPlaying && !savedState && !isCountdownComplete && !showCountdown) {
+            const timer = setTimeout(() => setShowCountdown(true), 0)
+            return () => clearTimeout(timer)
+        }
+    }, [isPlaying, savedState, isCountdownComplete, showCountdown])
+
+    // Handle countdown complete
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+    }, [])
 
     // Calculate cell size
     const cellSize = useMemo(() => {
@@ -188,48 +204,58 @@ function Match3Game({
     }, [])
 
     // Process matches with animation
-    const processMatches = useCallback(async (currentBoard, combo = 0) => {
-        const matches = findMatches(currentBoard)
+    const processMatches = useCallback(async (initialBoard) => {
+        let currentBoard = initialBoard
+        let combo = 0
+        let hasMatches = true
 
-        if (matches.length === 0) {
-            setIsAnimating(false)
-            isAnimatingRef.current = false
-            setComboCount(0)
-            return currentBoard
+        while (hasMatches) {
+            const matches = findMatches(currentBoard)
+
+            if (matches.length === 0) {
+                hasMatches = false
+                setIsAnimating(false)
+                isAnimatingRef.current = false
+                setComboCount(0)
+                break
+            }
+
+            // Show matched cells
+            setMatchedCells(matches)
+            setComboCount(combo + 1)
+            setTotalMatches(prev => prev + matches.length)
+
+            // Calculate score (more points for combos and longer matches)
+            const baseScore = matches.length * 10
+            const comboBonus = combo * 20
+            const addedScore = baseScore + comboBonus
+            setLastScore(addedScore)
+            onScoreChange?.(score + addedScore)
+
+            // Wait for animation
+            await new Promise(resolve => setTimeout(resolve, 300))
+
+            // Remove matches
+            let newBoard = removeMatches(currentBoard, matches)
+            setMatchedCells([])
+
+            // Wait briefly
+            await new Promise(resolve => setTimeout(resolve, 150))
+
+            // Apply gravity
+            newBoard = applyGravity(newBoard)
+            setBoard(newBoard)
+            boardRef.current = newBoard
+
+            // Wait for gravity animation
+            await new Promise(resolve => setTimeout(resolve, 250))
+
+            // Update for next iteration
+            currentBoard = newBoard
+            combo++
         }
 
-        // Show matched cells
-        setMatchedCells(matches)
-        setComboCount(combo + 1)
-        setTotalMatches(prev => prev + matches.length)
-
-        // Calculate score (more points for combos and longer matches)
-        const baseScore = matches.length * 10
-        const comboBonus = combo * 20
-        const addedScore = baseScore + comboBonus
-        setLastScore(addedScore)
-        onScoreChange?.(score + addedScore)
-
-        // Wait for animation
-        await new Promise(resolve => setTimeout(resolve, 300))
-
-        // Remove matches
-        let newBoard = removeMatches(currentBoard, matches)
-        setMatchedCells([])
-
-        // Wait briefly
-        await new Promise(resolve => setTimeout(resolve, 150))
-
-        // Apply gravity
-        newBoard = applyGravity(newBoard)
-        setBoard(newBoard)
-        boardRef.current = newBoard
-
-        // Wait for gravity animation
-        await new Promise(resolve => setTimeout(resolve, 250))
-
-        // Check for chain reactions
-        return processMatches(newBoard, combo + 1)
+        return currentBoard
     }, [findMatches, removeMatches, applyGravity, score, onScoreChange])
 
     // Handle swap between two cells
@@ -269,7 +295,7 @@ function Match3Game({
 
     // Handle cell click/enter
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || isAnimatingRef.current) return
+        if (!isPlaying || isAnimatingRef.current || !isCountdownComplete) return
 
         const clickedCell = { row, col }
 
@@ -286,7 +312,7 @@ function Match3Game({
             // Non-adjacent cell - select new cell
             setSelectedCell(clickedCell)
         }
-    }, [isPlaying, selectedCell, isAdjacent, handleSwap])
+    }, [isPlaying, selectedCell, isAdjacent, handleSwap, isCountdownComplete])
 
     // Expose cell click through ref for keyboard controls from BoardGamePage
     useEffect(() => {
@@ -301,8 +327,9 @@ function Match3Game({
             board,
             moves: movesCount,
             totalMatches,
+            countdown_complete: isCountdownComplete,
         })
-    }, [board, movesCount, totalMatches, onStateChange])
+    }, [board, movesCount, totalMatches, isCountdownComplete, onStateChange])
 
     // Check if cell is matched (for animation)
     const isMatched = useCallback((row, col) => {
@@ -362,6 +389,8 @@ function Match3Game({
 
     return (
         <div className="flex flex-col items-center gap-3">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">

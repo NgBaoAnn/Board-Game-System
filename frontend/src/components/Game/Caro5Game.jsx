@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 import DifficultySelector from './DifficultySelector.jsx'
+import CountdownOverlay from './CountdownOverlay.jsx'
 import { getCaroAIMove, AI_DIFFICULTY, DIFFICULTY_INFO } from '../../utils/gameAI.js'
 
 /**
@@ -48,6 +49,8 @@ function Caro5Game({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null)
     const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
+    const [showCountdown, setShowCountdown] = useState(false)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete || false)
 
     // Handle difficulty selection
     const handleSelectDifficulty = (difficulty) => {
@@ -59,8 +62,15 @@ function Caro5Game({
     const handleSelectSymbol = (symbol) => {
         setPlayerSymbol(symbol)
         setHasSelectedSymbol(true)
-        setCurrentPlayer('X')
+        setShowCountdown(true) // Start countdown
     }
+
+    // Handle countdown complete
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+        setCurrentPlayer('X') // X always starts
+    }, [])
 
     // Check for winner - 5 in a row
     const checkWinner = useCallback((boardState) => {
@@ -123,14 +133,14 @@ function Caro5Game({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [boardRows, boardCols])
 
-    // AI makes a move based on difficulty
-    const makeAiMove = useCallback((currentBoard) => {
-        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty) return
+    // AI move when it's AI's turn
+    useEffect(() => {
+        if (currentPlayer !== aiSymbol || !isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || !isCountdownComplete) return
 
         setIsAiThinking(true)
 
         // Get AI move based on difficulty
-        const move = getCaroAIMove(currentBoard, aiSymbol, playerSymbol, aiDifficulty, 5, boardRows, boardCols)
+        const move = getCaroAIMove(board, aiSymbol, playerSymbol, aiDifficulty, 5, boardRows, boardCols)
 
         if (!move) {
             setIsAiThinking(false)
@@ -140,7 +150,6 @@ function Caro5Game({
         // Delay based on difficulty
         const delayMap = {
             [AI_DIFFICULTY.EASY]: 400 + Math.random() * 400,
-            [AI_DIFFICULTY.MEDIUM]: 600 + Math.random() * 600,
             [AI_DIFFICULTY.HARD]: 800 + Math.random() * 800,
         }
         const delay = delayMap[aiDifficulty] || 500
@@ -153,42 +162,41 @@ function Caro5Game({
 
             const { row, col } = move
 
-            setBoard(prev => {
-                const newBoard = prev.map(r => [...r])
-                newBoard[row][col] = aiSymbol
+            // Create new board and update
+            const newBoard = board.map(r => [...r])
+            newBoard[row][col] = aiSymbol
+            setBoard(newBoard)
 
-                // Track AI's last move for red highlight
-                setLastAiMove({ row, col })
+            // Track AI's last move for red highlight
+            setLastAiMove({ row, col })
 
-                const result = checkWinner(newBoard)
-                if (result) {
-                    setWinner(result.winner)
-                    setWinningLine(result.line)
-                    setGamesPlayed(p => p + 1)
+            // Check for winner
+            const result = checkWinner(newBoard)
+            if (result) {
+                setWinner(result.winner)
+                setWinningLine(result.line)
+                setGamesPlayed(p => p + 1)
 
-                    if (result.winner === aiSymbol) {
-                        setGamesLost(l => l + 1)
-                        setShowResultMessage('lose')
-                        setTimeout(() => resetBoard(), 2000)
-                    } else if (result.winner === 'draw') {
-                        setGamesDraw(d => d + 1)
-                        setShowResultMessage('draw')
-                        setTimeout(() => resetBoard(), 1500)
-                    }
-                } else {
-                    setCurrentPlayer(playerSymbol)
+                if (result.winner === aiSymbol) {
+                    setGamesLost(l => l + 1)
+                    setShowResultMessage('lose')
+                    setTimeout(() => resetBoard(), 2000)
+                } else if (result.winner === 'draw') {
+                    setGamesDraw(d => d + 1)
+                    setShowResultMessage('draw')
+                    setTimeout(() => resetBoard(), 1500)
                 }
-
-                return newBoard
-            })
+            } else {
+                setCurrentPlayer(playerSymbol)
+            }
 
             setIsAiThinking(false)
         }, delay)
-    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, aiSymbol, playerSymbol, aiDifficulty, checkWinner, resetBoard, boardRows, boardCols])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, aiSymbol, playerSymbol, aiDifficulty, board, checkWinner, resetBoard, boardRows, boardCols, isCountdownComplete])
 
     // Player makes a move
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol || !isCountdownComplete) return
         if (board[row][col] !== null) return
 
         const newBoard = board.map(r => [...r])
@@ -214,14 +222,9 @@ function Caro5Game({
         } else {
             setCurrentPlayer(aiSymbol)
         }
-    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score, isCountdownComplete])
 
-    // AI move when it's AI's turn
-    useEffect(() => {
-        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && hasSelectedDifficulty && !winner && !isAiThinking) {
-            makeAiMove(board)
-        }
-    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, board, makeAiMove])
+
 
     // Notify parent of state changes for saving
     useEffect(() => {
@@ -252,6 +255,7 @@ function Caro5Game({
             setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
+            setIsCountdownComplete(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [savedState])
@@ -352,6 +356,8 @@ function Caro5Game({
 
     return (
         <div className="flex flex-col items-center gap-3">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Game info */}
             <div className="flex items-center gap-3 text-sm">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${playerSymbol === 'X' ? 'bg-indigo-50' : 'bg-rose-50'}`}>

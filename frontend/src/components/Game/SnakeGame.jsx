@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef, useMemo ,  memo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react'
 import { Skull, Apple, Pause } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
+import CountdownOverlay from './CountdownOverlay.jsx'
 
 /**
  * SnakeGame - Classic snake game using BoardGrid
@@ -76,6 +77,8 @@ function SnakeGame({
     const [currentScore, setCurrentScore] = useState(savedState?.current_score || 0)
     const [speed, setSpeed] = useState(150) // ms between moves
     const [showMessage, setShowMessage] = useState(null)
+    const [showCountdown, setShowCountdown] = useState(false)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
 
     // Refs for game loop
     const directionRef = useRef(direction)
@@ -143,11 +146,17 @@ function SnakeGame({
         setShowMessage(null)
         setCurrentScore(0)
         setSpeed(150)
-    }, [getInitialSnake, spawnFood])
+
+        // Reset countdown if needed
+        if (isPlaying) {
+            setShowCountdown(true)
+            setIsCountdownComplete(false)
+        }
+    }, [getInitialSnake, spawnFood, isPlaying])
 
     // Change direction function
     const changeDirection = useCallback((newDir) => {
-        if (gameOver) return
+        if (gameOver || !isCountdownComplete) return
 
         // Prevent 180-degree turns
         const opposites = {
@@ -161,7 +170,7 @@ function SnakeGame({
             setDirection(newDir)
             directionRef.current = newDir
         }
-    }, [gameOver])
+    }, [gameOver, isCountdownComplete])
 
     // Move snake - the main game logic
     const moveSnake = useCallback(() => {
@@ -256,9 +265,22 @@ function SnakeGame({
         snakeRef.current = newSnake
     }, [isWall, isSnakeCell, currentScore, highScore, score, spawnFood, onScoreChange, onGameEnd, resetGame])
 
+    // Start countdown when game starts
+    useEffect(() => {
+        if (isPlaying && !savedState && !isCountdownComplete && !showCountdown && !gameOver) {
+            setShowCountdown(true)
+        }
+    }, [isPlaying, savedState, isCountdownComplete, showCountdown, gameOver])
+
+    // Handle countdown complete
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+    }, [])
+
     // Game loop with requestAnimationFrame
     useEffect(() => {
-        if (!isPlaying || gameOver) {
+        if (!isPlaying || gameOver || !isCountdownComplete) {
             if (gameLoopRef.current) {
                 cancelAnimationFrame(gameLoopRef.current)
                 gameLoopRef.current = null
@@ -289,11 +311,11 @@ function SnakeGame({
                 gameLoopRef.current = null
             }
         }
-    }, [isPlaying, gameOver, speed, moveSnake])
+    }, [isPlaying, gameOver, speed, moveSnake, isCountdownComplete])
 
     // Keyboard controls for Snake - use capture phase to handle before BoardGamePage
     useEffect(() => {
-        if (!isPlaying || gameOver) return
+        if (!isPlaying || gameOver || !isCountdownComplete) return
 
         const handleSnakeKeyDown = (e) => {
             switch (e.key) {
@@ -333,7 +355,7 @@ function SnakeGame({
         // Use capture phase to handle before BoardGamePage
         window.addEventListener('keydown', handleSnakeKeyDown, true)
         return () => window.removeEventListener('keydown', handleSnakeKeyDown, true)
-    }, [isPlaying, gameOver, changeDirection])
+    }, [isPlaying, gameOver, changeDirection, isCountdownComplete])
 
     // Notify parent of state changes for saving
     useEffect(() => {
@@ -453,8 +475,23 @@ function SnakeGame({
         return null
     }, [getCellType, getSnakeSegmentIndex, direction, snake.length, cellSize, WALL, SNAKE_HEAD, SNAKE, FOOD])
 
+    // Notify parent of state changes
+    useEffect(() => {
+        onStateChange?.({
+            snake,
+            food,
+            direction,
+            current_score: currentScore,
+            high_score: highScore,
+            games_played: gamesPlayed,
+            countdown_complete: isCountdownComplete,
+        })
+    }, [snake, food, direction, currentScore, highScore, gamesPlayed, isCountdownComplete, onStateChange])
+
     return (
         <div className="flex flex-col items-center gap-3">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm flex-wrap justify-center">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-lg">

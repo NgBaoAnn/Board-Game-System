@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, memo } from 'react'
 import { X, Circle, RotateCcw } from 'lucide-react'
 import BoardGrid from '../Board/BoardGrid.jsx'
 import DifficultySelector from './DifficultySelector.jsx'
+import CountdownOverlay from './CountdownOverlay.jsx'
 import { getTicTacToeAIMove, AI_DIFFICULTY, DIFFICULTY_INFO } from '../../utils/gameAI.js'
 
 /**
@@ -47,6 +48,8 @@ function TicTacToeGame({
     const [winningLine, setWinningLine] = useState(null)
     const [showResultMessage, setShowResultMessage] = useState(null) // 'win' | 'lose' | 'draw' | null
     const [lastAiMove, setLastAiMove] = useState(null) // Track AI's last move for red highlight
+    const [showCountdown, setShowCountdown] = useState(false) // Countdown before game starts
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete || false)
 
     // Handle difficulty selection
     const handleSelectDifficulty = (difficulty) => {
@@ -58,13 +61,15 @@ function TicTacToeGame({
     const handleSelectSymbol = (symbol) => {
         setPlayerSymbol(symbol)
         setHasSelectedSymbol(true)
-        setCurrentPlayer('X') // X always starts
-
-        // If player chose O, AI (X) goes first
-        if (symbol === 'O') {
-            // AI will move in useEffect
-        }
+        setShowCountdown(true) // Start countdown
     }
+
+    // Handle countdown complete
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+        setCurrentPlayer('X') // X always starts
+    }, [])
 
     // Check for winner
     const checkWinner = useCallback((boardState) => {
@@ -131,10 +136,9 @@ function TicTacToeGame({
             return
         }
 
-        // Delay based on difficulty (harder = thinks longer)
+        // Delay based on difficulty
         const delayMap = {
             [AI_DIFFICULTY.EASY]: 500 + Math.random() * 500,
-            [AI_DIFFICULTY.MEDIUM]: 800 + Math.random() * 700,
             [AI_DIFFICULTY.HARD]: 1000 + Math.random() * 1000,
         }
         const delay = delayMap[aiDifficulty] || 1000
@@ -147,39 +151,39 @@ function TicTacToeGame({
 
             const { row, col } = move
 
-            setBoard(prev => {
-                const newBoard = prev.map(r => [...r])
-                newBoard[row][col] = aiSymbol
+            // Create new board and update
+            const newBoard = currentBoard.map(r => [...r])
+            newBoard[row][col] = aiSymbol
+            setBoard(newBoard)
 
-                // Track AI's last move for red highlight
-                setLastAiMove({ row, col })
-                const result = checkWinner(newBoard)
-                if (result) {
-                    setWinner(result.winner)
-                    setWinningLine(result.line)
-                    setGamesPlayed(p => p + 1)
+            // Track AI's last move for red highlight
+            setLastAiMove({ row, col })
 
-                    if (result.winner === aiSymbol) {
-                        // AI wins
-                        setGamesLost(l => l + 1)
-                        setShowResultMessage('lose')
-                        setTimeout(() => {
-                            resetBoard()
-                        }, 2000)
-                    } else if (result.winner === 'draw') {
-                        // Draw
-                        setGamesDraw(d => d + 1)
-                        setShowResultMessage('draw')
-                        setTimeout(() => {
-                            resetBoard()
-                        }, 1500)
-                    }
-                } else {
-                    setCurrentPlayer(playerSymbol)
+            // Check for winner
+            const result = checkWinner(newBoard)
+            if (result) {
+                setWinner(result.winner)
+                setWinningLine(result.line)
+                setGamesPlayed(p => p + 1)
+
+                if (result.winner === aiSymbol) {
+                    // AI wins
+                    setGamesLost(l => l + 1)
+                    setShowResultMessage('lose')
+                    setTimeout(() => {
+                        resetBoard()
+                    }, 2000)
+                } else if (result.winner === 'draw') {
+                    // Draw
+                    setGamesDraw(d => d + 1)
+                    setShowResultMessage('draw')
+                    setTimeout(() => {
+                        resetBoard()
+                    }, 1500)
                 }
-
-                return newBoard
-            })
+            } else {
+                setCurrentPlayer(playerSymbol)
+            }
 
             setIsAiThinking(false)
         }, delay)
@@ -187,7 +191,7 @@ function TicTacToeGame({
 
     // Player makes a move
     const handleCellClick = useCallback((row, col) => {
-        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol) return
+        if (!isPlaying || !hasSelectedSymbol || !hasSelectedDifficulty || winner || isAiThinking || currentPlayer !== playerSymbol || !isCountdownComplete) return
         if (board[row][col] !== null) return
 
         const newBoard = board.map(r => [...r])
@@ -222,14 +226,14 @@ function TicTacToeGame({
             // Switch to AI
             setCurrentPlayer(aiSymbol)
         }
-    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score])
+    }, [isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, currentPlayer, playerSymbol, aiSymbol, board, checkWinner, resetBoard, onScoreChange, score, isCountdownComplete])
 
     // AI move when it's AI's turn
     useEffect(() => {
-        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && hasSelectedDifficulty && !winner && !isAiThinking) {
+        if (currentPlayer === aiSymbol && isPlaying && hasSelectedSymbol && hasSelectedDifficulty && !winner && !isAiThinking && isCountdownComplete) {
             makeAiMove(board)
         }
-    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, board, makeAiMove])
+    }, [currentPlayer, aiSymbol, isPlaying, hasSelectedSymbol, hasSelectedDifficulty, winner, isAiThinking, board, makeAiMove, isCountdownComplete])
 
     // Notify parent of state changes for saving
     useEffect(() => {
@@ -260,6 +264,7 @@ function TicTacToeGame({
             setGamesLost(savedState.games_lost || 0)
             setGamesDraw(savedState.games_draw || 0)
             setGamesPlayed(savedState.games_played || 0)
+            setIsCountdownComplete(true)
         }
     }, [savedState])
 
@@ -358,6 +363,8 @@ function TicTacToeGame({
 
     return (
         <div className="flex flex-col items-center gap-4">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Game info */}
             <div className="flex items-center gap-4 text-sm">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${playerSymbol === 'X' ? 'bg-indigo-50' : 'bg-rose-50'}`}>

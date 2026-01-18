@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo ,  memo } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { Palette, Eraser, RotateCcw, Download, Pipette } from 'lucide-react'
+import CountdownOverlay from './CountdownOverlay.jsx'
 
 /**
  * FreeDrawGame - Pixel Art Drawing Game
@@ -65,6 +66,8 @@ function FreeDrawGame({
     const [isEraser, setIsEraser] = useState(false)
     const [pixelCount, setPixelCount] = useState(savedState?.pixelCount || 0)
     const [lastAction, setLastAction] = useState(null)
+    const [showCountdown, setShowCountdown] = useState(false)
+    const [isCountdownComplete, setIsCountdownComplete] = useState(savedState?.countdown_complete ?? !!savedState)
 
     // Palette navigation state
     const [isPaletteMode, setIsPaletteMode] = useState(false)
@@ -74,6 +77,19 @@ function FreeDrawGame({
     const cellSize = useMemo(() => {
         return Math.max(16, Math.min(24, 480 / Math.max(boardRows, boardCols)))
     }, [boardRows, boardCols])
+
+    // Start countdown when game starts
+    useEffect(() => {
+        if (isPlaying && !savedState && !isCountdownComplete && !showCountdown) {
+            setShowCountdown(true)
+        }
+    }, [isPlaying, savedState, isCountdownComplete, showCountdown])
+
+    // Handle countdown complete
+    const handleCountdownComplete = useCallback(() => {
+        setShowCountdown(false)
+        setIsCountdownComplete(true)
+    }, [])
 
     // Count painted pixels
     useEffect(() => {
@@ -89,7 +105,7 @@ function FreeDrawGame({
 
     // Paint a cell
     const paintCell = useCallback((row, col) => {
-        if (!isPlaying) return
+        if (!isPlaying || !isCountdownComplete) return
 
         setCanvas(prev => {
             const newCanvas = prev.map(r => [...r])
@@ -102,7 +118,7 @@ function FreeDrawGame({
             }
             return newCanvas
         })
-    }, [isPlaying, isEraser, selectedColor])
+    }, [isPlaying, isEraser, selectedColor, isCountdownComplete])
 
     // Handle cell click
     const handleCellClick = useCallback((row, col) => {
@@ -138,7 +154,7 @@ function FreeDrawGame({
 
     // Keyboard shortcuts for tools
     useEffect(() => {
-        if (!isPlaying) return
+        if (!isPlaying || !isCountdownComplete) return
 
         const handleToolKeyDown = (e) => {
             // If in palette mode, handle palette navigation
@@ -211,7 +227,7 @@ function FreeDrawGame({
 
             // Normal mode (canvas) keyboard shortcuts
             switch (e.key.toLowerCase()) {
-                case 'g':
+                case 'g': {
                     e.preventDefault()
                     e.stopPropagation()
                     // Enter palette mode
@@ -222,6 +238,7 @@ function FreeDrawGame({
                         setPaletteCursorIndex(colorIndex)
                     }
                     break
+                }
                 case 'e':
                     e.preventDefault()
                     toggleEraser()
@@ -244,7 +261,7 @@ function FreeDrawGame({
         // Use capture phase to handle before BoardGamePage
         window.addEventListener('keydown', handleToolKeyDown, true)
         return () => window.removeEventListener('keydown', handleToolKeyDown, true)
-    }, [isPlaying, isPaletteMode, paletteCursorIndex, selectedColor, toggleEraser, clearCanvas, pickColor, cursorRow, cursorCol])
+    }, [isPlaying, isPaletteMode, paletteCursorIndex, selectedColor, toggleEraser, clearCanvas, pickColor, cursorRow, cursorCol, isCountdownComplete])
 
     // Notify parent of state changes
     useEffect(() => {
@@ -252,8 +269,9 @@ function FreeDrawGame({
             canvas,
             selectedColor,
             pixelCount,
+            countdown_complete: isCountdownComplete,
         })
-    }, [canvas, selectedColor, pixelCount, onStateChange])
+    }, [canvas, selectedColor, pixelCount, isCountdownComplete, onStateChange])
 
     // Render the drawing canvas
     const renderCanvas = () => {
@@ -312,6 +330,8 @@ function FreeDrawGame({
 
     return (
         <div className="flex flex-col items-center gap-4">
+            <CountdownOverlay isActive={showCountdown} onComplete={handleCountdownComplete} />
+
             {/* Toolbar */}
             <div className="flex items-center gap-3 flex-wrap justify-center">
                 {/* Pixel count */}
