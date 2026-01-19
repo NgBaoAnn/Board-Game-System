@@ -1,73 +1,79 @@
+import axios from "axios";
 
-import axios from 'axios'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
 const axiosInstance = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 15000,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': import.meta.env.VITE_API_KEY,
-    },
-})
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": import.meta.env.VITE_API_KEY,
+  },
+});
 
-let refreshPromise = null
+let refreshPromise = null;
 
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('access_token')
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
-)
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
 
 axiosInstance.interceptors.response.use(
-    (response) => response.data,
-    async (error) => {
-        const originalRequest = error.config
+  (response) => response.data,
+  async (error) => {
+    const originalRequest = error.config;
 
-        if (
-            error.response?.status === 401 &&
-            !originalRequest._retry &&
-            !originalRequest.url?.includes('/auth/')
-        ) {
-            originalRequest._retry = true
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/")
+    ) {
+      originalRequest._retry = true;
 
-            if (!refreshPromise) {
-                refreshPromise = axios
-                    .post(`${API_BASE_URL}/auth/refresh-token`, {}, {
-                        withCredentials: true,
-                        headers: { 'x-api-key': import.meta.env.VITE_API_KEY }
-                    })
-                    .then((res) => res.data?.data?.access_token)
-                    .catch(() => null)
-                    .finally(() => { refreshPromise = null })
-            }
+      if (!refreshPromise) {
+        refreshPromise = axios
+          .post(
+            `${API_BASE_URL}/auth/refresh-token`,
+            {},
+            {
+              withCredentials: true,
+              headers: { "x-api-key": import.meta.env.VITE_API_KEY },
+            },
+          )
+          .then((res) => res.data?.data?.access_token)
+          .catch(() => null)
+          .finally(() => {
+            refreshPromise = null;
+          });
+      }
 
-            try {
-                const newToken = await refreshPromise
-                if (newToken) {
-                    localStorage.setItem('access_token', newToken)
-                    originalRequest.headers.Authorization = `Bearer ${newToken}`
-                    return axiosInstance(originalRequest)
-                }
-            } catch {
-                localStorage.removeItem('access_token')
-            }
+      try {
+        const newToken = await refreshPromise;
+        if (newToken) {
+          localStorage.setItem("access_token", newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return axiosInstance(originalRequest);
         }
-
-        if (error.response?.status === 401) {
-            localStorage.removeItem('access_token')
-        }
-
-        const errorMessage = error.response?.data?.message || error.message || 'Something went wrong'
-        return Promise.reject(new Error(errorMessage))
+      } catch {
+        localStorage.removeItem("access_token");
+      }
     }
-)
 
-export default axiosInstance
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access_token");
+    }
+
+    const errorMessage =
+      error.response?.data?.message || error.message || "Something went wrong";
+    return Promise.reject(new Error(errorMessage));
+  },
+);
+
+export default axiosInstance;
