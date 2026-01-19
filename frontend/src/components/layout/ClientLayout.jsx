@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
   Star,
+  LayoutDashboard,
 } from 'lucide-react'
 import { useAuth } from '@/store/useAuth'
 import { useTheme } from '@/context/ThemeContext'
@@ -85,6 +86,13 @@ export default function ClientLayout() {
   }
 
   const userMenuItems = [
+    // Admin Dashboard - only show if user is admin
+    ...(user?.role.name === 'admin' ? [{
+      key: 'admin-dashboard',
+      label: 'Admin Dashboard',
+      icon: <LayoutDashboard size={16} />,
+      onClick: () => navigate('/admin/dashboard'),
+    }] : []),
     {
       key: 'profile',
       label: 'Profile',
