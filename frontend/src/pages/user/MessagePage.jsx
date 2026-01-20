@@ -540,7 +540,7 @@ export default function MessagePage() {
   return (
     <div className="absolute inset-0 flex overflow-hidden">
       {/* Sidebar - Friends List */}
-      <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200/50 dark:border-slate-700/30 bg-white/80 dark:bg-slate-800/40 backdrop-blur-md">
+      <div className="w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200/30 dark:border-slate-700/20 bg-white/40 dark:bg-slate-800/20 backdrop-blur-sm">
         {/* Header */}
         <div className="p-4 border-b border-gray-200/50 dark:border-slate-700/30 flex justify-between items-center">
           <h2 className="font-bold text-lg text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-[#00f0ff] dark:to-[#a855f7] flex items-center gap-2">
@@ -608,7 +608,7 @@ export default function MessagePage() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="hidden md:flex flex-1 flex-col bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm relative">
+      <div className="hidden md:flex flex-1 flex-col bg-white/10 dark:bg-slate-900/10 backdrop-blur-[2px] relative">
         {activeConversation ? (
           <>
             {/* Chat Header */}
