@@ -8,10 +8,7 @@ import { Spin } from "antd";
  * If user is already logged in, redirect to home page
  */
 export default function RedirectIfAuth({ children }) {
-    const { authenticated, isAppLoading, user } = useAuth();
-
-    // Debug logging
-    console.log('[RedirectIfAuth] State:', { authenticated, isAppLoading, hasUser: !!user });
+    const { authenticated, isAppLoading } = useAuth();
 
     // Show loading while checking auth state
     if (isAppLoading) {
@@ -24,11 +21,11 @@ export default function RedirectIfAuth({ children }) {
 
     // If already authenticated, redirect to home
     if (authenticated) {
-        console.log('[RedirectIfAuth] User is authenticated, redirecting to home...');
         return <Navigate to="/" replace />;
     }
 
     // Not authenticated, show the auth page
     return children;
 }
+
 

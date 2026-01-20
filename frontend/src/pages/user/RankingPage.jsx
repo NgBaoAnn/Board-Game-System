@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Table, Avatar, Spin, Select as AntSelect } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle, Trophy } from 'lucide-react'
 import { PodiumCard } from '@/components/Ranking/PodiumCard'
 import { LeaderboardFilters } from '@/components/Ranking/LeaderboardFilters'
@@ -12,6 +13,7 @@ import gameApi from '@/api/api-game'
 export default function RankingPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [searchText, setSearchText] = useState('')
   const [gameFilter, setGameFilter] = useState(null)
   const [viewMode, setViewMode] = useState('Global')
@@ -135,7 +137,7 @@ export default function RankingPage() {
 
   const columns = [
     {
-      title: 'Rank',
+      title: t('ranking.rank'),
       dataIndex: 'rank',
       key: 'rank',
       width: 100,
@@ -149,7 +151,7 @@ export default function RankingPage() {
       ),
     },
     {
-      title: 'Player',
+      title: t('ranking.player'),
       dataIndex: 'name',
       key: 'name',
       render: (name, record) => (
@@ -187,7 +189,7 @@ export default function RankingPage() {
       ),
     },
     {
-      title: 'Best Score',
+      title: t('ranking.score'),
       dataIndex: 'rating',
       key: 'rating',
       render: (rating) => (
@@ -229,7 +231,7 @@ export default function RankingPage() {
             className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7] flex items-center gap-3"
           >
             <Trophy className="text-yellow-400" size={36} />
-            {viewMode === 'Global' ? 'Global Leaderboard' : 'Friends Leaderboard'}
+            {viewMode === 'Global' ? t('ranking.globalLeaderboard') : t('ranking.friendsLeaderboard')}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -238,8 +240,8 @@ export default function RankingPage() {
             className="text-gray-500 dark:text-slate-400 mt-2"
           >
             {viewMode === 'Global' 
-              ? 'Compete with the best players across all supported board games.'
-              : 'See how you rank among your friends.'
+              ? t('ranking.globalDesc')
+              : t('ranking.friendsDesc')
             }
           </motion.p>
         </div>
@@ -296,7 +298,7 @@ export default function RankingPage() {
           pagination={{ pageSize: 5, showSizeChanger: false }}
           rowClassName={(record) => (record.isCurrentUser ? 'current-user-row bg-blue-50/50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-slate-700/30')}
           className="ranking-table"
-          locale={{ emptyText: 'No rankings found' }}
+          locale={{ emptyText: t('ranking.noRankings') }}
         />
       </motion.div>
 
@@ -332,12 +334,12 @@ export default function RankingPage() {
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Your Rank</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{t('ranking.yourRank')}</p>
                   <p className="text-2xl font-black text-[#1d7af2] dark:text-[#00f0ff]">
                     {displayData.rank ? (
-                      <>#{displayData.rank} <span className="text-gray-900 dark:text-white font-bold text-base">of {totalPlayers}</span></>
+                      <>#{displayData.rank} <span className="text-gray-900 dark:text-white font-bold text-base">{t('ranking.of')} {totalPlayers}</span></>
                     ) : (
-                      <span className="text-gray-500 dark:text-slate-400 text-lg">Not ranked yet</span>
+                      <span className="text-gray-500 dark:text-slate-400 text-lg">{t('ranking.notRankedYet')}</span>
                     )}
                   </p>
                 </div>
@@ -345,7 +347,7 @@ export default function RankingPage() {
               <div className="flex gap-6">
                 <div className="text-center">
                   <p className="text-2xl font-black text-gray-900 dark:text-white">{(displayData.rating || 0).toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 uppercase">Best Score</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 uppercase">{t('ranking.score')}</p>
                 </div>
               </div>
             </div>

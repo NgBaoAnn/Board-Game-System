@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 // Direct imports for better bundle size
 import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
 import Trophy from 'lucide-react/dist/esm/icons/trophy'
@@ -60,6 +61,43 @@ const GAME_SHOWCASE = [
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  // Feature data with translation keys
+  const FEATURES = [
+    {
+      icon: Gamepad2,
+      titleKey: 'home.features.classicGames.title',
+      descriptionKey: 'home.features.classicGames.description',
+      gradient: 'from-purple-500 to-pink-500',
+    },
+    {
+      icon: Trophy,
+      titleKey: 'home.features.achievements.title',
+      descriptionKey: 'home.features.achievements.description',
+      gradient: 'from-yellow-500 to-orange-500',
+    },
+    {
+      icon: Users,
+      titleKey: 'home.features.community.title',
+      descriptionKey: 'home.features.community.description',
+      gradient: 'from-cyan-500 to-blue-500',
+    },
+    {
+      icon: Target,
+      titleKey: 'home.features.trackProgress.title',
+      descriptionKey: 'home.features.trackProgress.description',
+      gradient: 'from-green-500 to-emerald-500',
+    },
+  ]
+
+  // Stats data with translation keys
+  const STATS = [
+    { value: '7+', labelKey: 'home.stats.gamesAvailable' },
+    { value: '1000+', labelKey: 'home.stats.activePlayers' },
+    { value: '50K+', labelKey: 'home.stats.gamesPlayed' },
+    { value: '99%', labelKey: 'home.stats.uptime' },
+  ]
 
   const handlePlayNow = useCallback(() => {
     navigate('/boardgame')
@@ -93,21 +131,21 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
               <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium text-gray-800 dark:text-white/90">Welcome to Game Arcade</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-white/90">{t('home.welcome')}</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-              <span className="text-white">Play Classic Games</span>
+              <span className="text-white">{t('home.headline')}</span>
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-[#7C3AED] to-[#F43F5E]">
-                Anytime, Anywhere
+                {t('home.headlineSub')}
               </span>
             </h1>
 
             {/* Subheadline */}
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Discover a collection of timeless board games. Challenge yourself, track your progress, and compete with friends.
+              {t('home.description')}
             </p>
 
             {/* CTA Buttons */}
@@ -119,7 +157,7 @@ export default function HomePage() {
                 className="group px-8 py-4 bg-gradient-to-r from-[#7C3AED] to-[#F43F5E] text-white font-bold text-lg rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 flex items-center gap-2 cursor-pointer"
               >
                 <Gamepad2 className="w-5 h-5" />
-                Start Playing Now
+                {t('home.playNow')}
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
               
@@ -127,7 +165,7 @@ export default function HomePage() {
                 onClick={() => navigate('/ranking')}
                 className="px-8 py-4 bg-gray-100 dark:bg-white/10 backdrop-blur-sm text-gray-900 dark:text-white font-semibold text-lg rounded-xl border border-gray-300 dark:border-white/20 hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 cursor-pointer"
               >
-                View Leaderboard
+                {t('home.viewLeaderboard')}
               </button>
             </div>
           </motion.div>
@@ -157,10 +195,10 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED]">Game Arcade</span>?
+              {t('home.whyChoose')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED]">Game Arcade</span>{t('home.whyChooseSub')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Everything you need for the ultimate gaming experience
+              {t('home.everythingYouNeed')}
             </p>
           </motion.div>
 
@@ -185,8 +223,8 @@ export default function HomePage() {
                   </div>
                   
                   {/* Content */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t(feature.titleKey)}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{t(feature.descriptionKey)}</p>
                 </div>
               </motion.div>
             ))}
@@ -204,9 +242,9 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F43F5E] to-[#F97316]">Games</span>
+              {t('home.popularGames')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F43F5E] to-[#F97316]">{t('home.gamesSub')}</span>
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">Choose from our collection of classic games</p>
+            <p className="text-xl text-gray-600 dark:text-gray-400">{t('home.chooseFromCollection')}</p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -236,7 +274,7 @@ export default function HomePage() {
                 </div>
                 {/* Hover overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-purple-500/40 backdrop-blur-sm">
-                  <span className="px-4 py-2 bg-white text-black font-bold rounded-lg">Play Now</span>
+                  <span className="px-4 py-2 bg-white text-black font-bold rounded-lg">{t('game.playNow')}</span>
                 </div>
               </motion.div>
             ))}
@@ -260,7 +298,7 @@ export default function HomePage() {
                 <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#7C3AED] mb-2">
                   {stat.value}
                 </div>
-                <div className="text-gray-600 dark:text-gray-400 font-medium">{stat.label}</div>
+                <div className="text-gray-600 dark:text-gray-400 font-medium">{t(stat.labelKey)}</div>
               </motion.div>
             ))}
           </div>
@@ -283,10 +321,10 @@ export default function HomePage() {
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-            Ready to Start Playing?
+            {t('home.readyToPlay')}
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
-            Join thousands of players who are already enjoying our classic board games. No downloads required!
+            {t('home.readyToPlayDesc')}
           </p>
           
           <motion.button
@@ -297,7 +335,7 @@ export default function HomePage() {
           >
             <span className="flex items-center gap-3">
               <Zap className="w-6 h-6" />
-              Play Now — It's Free!
+              {t('home.playNowFree')}
               <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </span>
           </motion.button>

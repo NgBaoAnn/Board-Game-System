@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Form, Input, Switch, Select, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Sun,
   Moon,
@@ -100,6 +101,7 @@ function SettingRow({ icon: Icon, iconBg, iconColor, title, description, childre
 
 export default function SettingPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isDarkMode, toggleTheme } = useTheme()
   const { setUser, setAuthenticated } = useAuth()
   const [form] = Form.useForm()
@@ -110,10 +112,10 @@ export default function SettingPage() {
   const handlePasswordUpdate = async (values) => {
     setLoading(true)
     try {
-      message.success('Password updated successfully!')
+      message.success(t('settings.passwordUpdated'))
       form.resetFields()
     } catch (error) {
-      message.error(error.message || 'Failed to update password')
+      message.error(error.message || t('settings.passwordUpdateError'))
     } finally {
       setLoading(false)
     }
@@ -122,7 +124,7 @@ export default function SettingPage() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-      message.success('Logged out successfully')
+      message.success(t('auth.logout.success'))
     } catch (error) {
       // Ignore error during logout
       console.error('Logout error:', error)
@@ -138,17 +140,17 @@ export default function SettingPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-8 pb-20">
       
       <div>
-        <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Settings</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">{t('settings.title')}</h2>
         <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">
-          Manage your account preferences and game configurations.
+          {t('settings.subtitle')}
         </p>
       </div>
 
       
       <SettingsSection
         icon={Palette}
-        title="Theme"
-        description="Customize the look and feel of the dashboard."
+        title={t('settings.theme')}
+        description={t('settings.themeDesc')}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <ThemeCard
@@ -156,16 +158,16 @@ export default function SettingPage() {
             isSelected={!isDarkMode}
             onClick={() => isDarkMode && toggleTheme()}
             icon={Sun}
-            title="Light Mode"
-            subtitle="Default theme"
+            title={t('settings.lightMode')}
+            subtitle={t('settings.defaultTheme')}
           />
           <ThemeCard
             mode="dark"
             isSelected={isDarkMode}
             onClick={() => !isDarkMode && toggleTheme()}
             icon={Moon}
-            title="Dark Mode"
-            subtitle="Easy on the eyes"
+            title={t('settings.darkMode')}
+            subtitle={t('settings.easyOnEyes')}
           />
         </div>
       </SettingsSection>
@@ -173,16 +175,16 @@ export default function SettingPage() {
       
       <SettingsSection
         icon={Gamepad2}
-        title="Game Settings"
-        description="Adjust your gameplay experience."
+        title={t('settings.gameSettings')}
+        description={t('settings.gameSettingsDesc')}
       >
         <div className="space-y-6">
           <SettingRow
             icon={Volume2}
             iconBg="bg-blue-50 dark:bg-blue-900/20"
             iconColor="text-[#1d7af2]"
-            title="Sound Effects"
-            description="Play sounds during game actions and notifications"
+            title={t('settings.soundEffects')}
+            description={t('settings.soundEffectsDesc')}
           >
             <Switch
               checked={soundEnabled}
@@ -197,18 +199,18 @@ export default function SettingPage() {
             icon={Grid3X3}
             iconBg="bg-purple-50 dark:bg-purple-900/20"
             iconColor="text-purple-600 dark:text-purple-400"
-            title="Default Board Size"
-            description="Preferred grid dimensions for new games"
+            title={t('settings.defaultBoardSize')}
+            description={t('settings.defaultBoardSizeDesc')}
           >
             <Select
               value={boardSize}
               onChange={setBoardSize}
               className="min-w-[180px]"
               options={[
-                { value: '5x5', label: 'Small (5x5)' },
-                { value: '8x8', label: 'Standard (8x8)' },
-                { value: '15x15', label: 'Large (15x15)' },
-                { value: '19x19', label: 'Extra Large (19x19)' },
+                { value: '5x5', label: t('settings.boardSmall') },
+                { value: '8x8', label: t('settings.boardStandard') },
+                { value: '15x15', label: t('settings.boardLarge') },
+                { value: '19x19', label: t('settings.boardExtraLarge') },
               ]}
             />
           </SettingRow>
@@ -218,13 +220,13 @@ export default function SettingPage() {
       
       <SettingsSection
         icon={Shield}
-        title="Account & Security"
-        description="Manage your login details."
+        title={t('settings.accountSecurity')}
+        description={t('settings.accountSecurityDesc')}
       >
         <div className="space-y-6">
           <Form form={form} layout="vertical" onFinish={handlePasswordUpdate}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Form.Item label={<span className="font-semibold text-gray-900 dark:text-white">Current Password</span>}>
+              <Form.Item label={<span className="font-semibold text-gray-900 dark:text-white">{t('settings.currentPassword')}</span>}>
                 <Input.Password
                   disabled
                   value="••••••••••••"
@@ -235,7 +237,7 @@ export default function SettingPage() {
 
               <Form.Item
                 name="newPassword"
-                label={<span className="font-semibold text-gray-900 dark:text-white">New Password</span>}
+                label={<span className="font-semibold text-gray-900 dark:text-white">{t('settings.newPassword')}</span>}
                 rules={[joiValidator(passwordSchema.extract('newPassword'))]}
               >
                 <div className="flex space-x-2">
@@ -248,7 +250,7 @@ export default function SettingPage() {
                     disabled={loading}
                     className="bg-[#1d7af2] hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-70"
                   >
-                    Update
+                    {t('settings.update')}
                   </button>
                 </div>
               </Form.Item>
@@ -259,9 +261,9 @@ export default function SettingPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white">Sign out</p>
+              <p className="font-semibold text-gray-900 dark:text-white">{t('settings.signOut')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                End your current session securely
+                {t('settings.signOutDesc')}
               </p>
             </div>
             <button
@@ -269,7 +271,7 @@ export default function SettingPage() {
               className="flex items-center px-5 py-2.5 bg-white dark:bg-transparent text-red-600 dark:text-red-400 border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow"
             >
               <LogOut size={18} className="mr-2" />
-              Logout
+              {t('user.logout')}
             </button>
           </div>
         </div>

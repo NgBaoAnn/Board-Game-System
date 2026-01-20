@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Tabs, Select, Input, message, Modal, Spin } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Users, Search, Gamepad2, Sparkles, Globe } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { FriendCard } from '@/components/Community/FriendCard'
@@ -11,6 +12,7 @@ import friendApi from '@/api/api-friend'
 
 export default function CommunityPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [requests, setRequests] = useState([])
   const [friends, setFriends] = useState([])
   const [allPlayers, setAllPlayers] = useState([])
@@ -176,9 +178,9 @@ export default function CommunityPage() {
       await friendApi.acceptRequest(id)
       setRequests((prev) => prev.filter((r) => r.id !== id))
       await fetchFriends() // Refresh friends list
-      message.success(`${accepted.name} is now your friend!`)
+      message.success(t('community.friendAccepted', { name: accepted.name }))
     } catch (error) {
-      message.error(error.message || 'Failed to accept request')
+      message.error(error.message || t('community.acceptError'))
     }
   }
 
@@ -188,9 +190,9 @@ export default function CommunityPage() {
     try {
       await friendApi.declineRequest(id)
       setRequests((prev) => prev.filter((r) => r.id !== id))
-      message.info(`Declined friend request from ${declined?.name}`)
+      message.info(t('community.requestDeclined', { name: declined?.name }))
     } catch (error) {
-      message.error(error.message || 'Failed to decline request')
+      message.error(error.message || t('community.declineError'))
     }
   }
 
@@ -200,26 +202,27 @@ export default function CommunityPage() {
 
   const handleInvite = (friend, type) => {
     if (type === 'spectate') {
-      message.info(`Spectating ${friend.name}'s game...`)
+      message.info(t('community.spectating', { name: friend.name }))
     } else {
-      message.success(`Game invite sent to ${friend.name}!`)
+      message.success(t('community.inviteSent', { name: friend.name }))
     }
   }
 
   const handleRemoveFriend = (id) => {
     const friend = friends.find((f) => f.id === id)
     Modal.confirm({
-      title: 'Remove Friend',
-      content: `Are you sure you want to remove ${friend?.name} from your friends?`,
-      okText: 'Remove',
+      title: t('community.removeFriendTitle'),
+      content: t('community.removeFriendConfirm', { name: friend?.name }),
+      okText: t('common.delete'),
       okType: 'danger',
+      cancelText: t('common.cancel'),
       onOk: async () => {
         try {
           await friendApi.removeFriend(id)
           setFriends((prev) => prev.filter((f) => f.id !== id))
-          message.success(`${friend?.name} has been removed`)
+          message.success(t('community.friendRemoved', { name: friend?.name }))
         } catch (error) {
-          message.error(error.message || 'Failed to remove friend')
+          message.error(error.message || t('community.removeError'))
         }
       },
     })
@@ -229,9 +232,9 @@ export default function CommunityPage() {
     try {
       await friendApi.sendRequest(player.id)
       setSentRequestIds(prev => new Set([...prev, player.id]))
-      message.success(`Friend request sent to ${player.name}!`)
+      message.success(t('community.requestSent', { name: player.name }))
     } catch (error) {
-      message.error(error.message || 'Failed to send friend request')
+      message.error(error.message || t('community.sendRequestError'))
     }
   }
 
@@ -244,7 +247,7 @@ export default function CommunityPage() {
       key: 'friends',
       label: (
         <span className={`flex items-center gap-2 ${activeTab === 'friends' ? '' : 'text-black dark:text-white'}`}>
-          Friend List
+          {t('community.friendList')}
           <span className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 py-0.5 px-2.5 rounded-full text-xs font-semibold">
             {friends.length}
           </span>
@@ -255,7 +258,7 @@ export default function CommunityPage() {
       key: 'requests',
       label: (
         <span className={`flex items-center gap-2 ${activeTab === 'requests' ? '' : 'text-black dark:text-white'}`}>
-          Friend Requests
+          {t('community.friendRequests')}
           {requests.length > 0 && (
             <span className="bg-gradient-to-r from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7] text-white py-0.5 px-2.5 rounded-full text-xs font-bold">
               {requests.length}
@@ -269,7 +272,7 @@ export default function CommunityPage() {
       label: (
         <span className={`flex items-center gap-2 ${activeTab === 'players' ? '' : 'text-black dark:text-white'}`}>
           <Globe size={14} />
-          All Players
+          {t('community.allPlayers')}
         </span>
       ),
     },
@@ -278,7 +281,7 @@ export default function CommunityPage() {
   if (loading) {
     return (
       <div className="p-6 lg:p-8 max-w-7xl mx-auto flex items-center justify-center min-h-[400px]">
-        <Spin size="large" tip="Loading..." />
+        <Spin size="large" tip={t('common.loading')} />
       </div>
     )
   }
@@ -294,19 +297,19 @@ export default function CommunityPage() {
         <div className="flex items-center gap-3">
           <Users className="text-[#1d7af2] dark:text-[#00f0ff]" size={28} />
           <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#1d7af2] via-gray-900 to-[#6366f1] dark:from-[#00f0ff] dark:via-white dark:to-[#a855f7]">
-            Friends & Community
+            {t('community.title')}
           </h1>
           
           <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 px-3 py-1 rounded-full">
             <span className="w-2 h-2 bg-green-500 rounded-full online-status-pulse" />
-            <span className="text-xs font-bold text-green-600 dark:text-green-400">{onlineCount} Online</span>
+            <span className="text-xs font-bold text-green-600 dark:text-green-400">{onlineCount} {t('community.online')}</span>
           </div>
         </div>
 
         
         <div className="flex-1 max-w-md">
           <Input
-            placeholder={activeTab === 'players' ? 'Search all players...' : 'Search friends...'}
+            placeholder={activeTab === 'players' ? t('community.searchAllPlayers') : t('community.searchFriends')}
             prefix={<Search size={16} className="text-gray-400 dark:text-slate-400" />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -337,7 +340,7 @@ export default function CommunityPage() {
           >
             <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Sparkles size={14} />
-              Pending Requests ({requests.length})
+              {t('community.pendingRequests')} ({requests.length})
             </h2>
             {requests.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -369,10 +372,10 @@ export default function CommunityPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Gamepad2 size={14} />
-                All Friends ({filteredFriends.length})
+                {t('community.allFriends')} ({filteredFriends.length})
               </h2>
               <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-slate-400">
-                <span>Sort by:</span>
+                <span>{t('community.sortBy')}:</span>
                 <Select
                   value={sortBy}
                   onChange={setSortBy}
@@ -380,8 +383,8 @@ export default function CommunityPage() {
                   className="font-medium"
                   popupClassName="dark:bg-slate-800"
                   options={[
-                    { value: 'status', label: 'Online Status' },
-                    { value: 'name', label: 'Name (A-Z)' },
+                    { value: 'status', label: t('community.onlineStatus') },
+                    { value: 'name', label: t('community.nameAZ') },
                   ]}
                 />
               </div>
@@ -416,7 +419,7 @@ export default function CommunityPage() {
           >
             <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Globe size={14} />
-              All Players ({filteredPlayers.length})
+              {t('community.allPlayers')} ({filteredPlayers.length})
             </h2>
             {filteredPlayers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
