@@ -4,6 +4,7 @@ import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import RequireAdmin from '@/components/common/RequireAdmin'
 import RequireAuth from '@/components/common/RequireAuth'
+import RedirectIfAuth from '@/components/common/RedirectIfAuth'
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import('../pages/user/HomePage'))
@@ -59,6 +60,15 @@ const withAuth = (Component) => (
   </RequireAuth>
 )
 
+// Wrap element with RedirectIfAuth and Suspense (for guest-only pages like login/register)
+const withGuest = (Component) => (
+  <RedirectIfAuth>
+    <Suspense fallback={<PageLoader />}>
+      <Component />
+    </Suspense>
+  </RedirectIfAuth>
+)
+
 export const router = createBrowserRouter([
   {
     element: <ClientLayout />,
@@ -104,23 +114,23 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: withSuspense(LoginPage),
+    element: withGuest(LoginPage),
   },
   {
     path: '/register',
-    element: withSuspense(RegisterPage),
+    element: withGuest(RegisterPage),
   },
   {
     path: '/forgot-password',
-    element: withSuspense(ForgotPasswordPage),
+    element: withGuest(ForgotPasswordPage),
   },
   {
     path: '/verify-otp',
-    element: withSuspense(VerifyOTPPage),
+    element: withGuest(VerifyOTPPage),
   },
   {
     path: '/reset-password',
-    element: withSuspense(ResetPasswordPage),
+    element: withGuest(ResetPasswordPage),
   },
   {
     path: '/unauthorized',

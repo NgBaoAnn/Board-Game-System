@@ -18,6 +18,7 @@ export default function RankingPage() {
   const [leaderboardData, setLeaderboardData] = useState([])
   const [loading, setLoading] = useState(true)
   const [games, setGames] = useState([])
+  const [myRankData, setMyRankData] = useState(null) // Current user's rank data
 
   // Fetch available games
   useEffect(() => {
@@ -88,6 +89,42 @@ export default function RankingPage() {
   useEffect(() => {
     fetchLeaderboard()
   }, [fetchLeaderboard])
+
+  // Fetch current user's rank separately
+  useEffect(() => {
+    if (!gameFilter || !user?.id) {
+      setMyRankData(null)
+      return
+    }
+
+    const fetchMyRank = async () => {
+      try {
+        const response = await rankingApi.getMyRanking(gameFilter)
+        console.log('My ranking response:', response)
+        
+        // Get best score from response
+        const data = response?.data
+        if (data && (data.best_score !== undefined || data.rank !== undefined)) {
+          setMyRankData({
+            rank: data.rank || null,
+            bestScore: data.best_score || 0,
+            totalPlayers: data.total_players || leaderboardData.length,
+            username: user.username,
+            avatar: user.avatar_url,
+            initials: (user.username || 'U').substring(0, 2).toUpperCase(),
+          })
+        } else {
+          // User hasn't played this game yet
+          setMyRankData(null)
+        }
+      } catch (error) {
+        console.error('Failed to fetch my ranking:', error)
+        setMyRankData(null)
+      }
+    }
+
+    fetchMyRank()
+  }, [gameFilter, user?.id, user?.username, user?.avatar_url, leaderboardData.length])
 
   const top3 = leaderboardData.filter(p => p.rank <= 3).sort((a, b) => a.rank - b.rank)
 
@@ -256,17 +293,27 @@ export default function RankingPage() {
           dataSource={filteredPlayers}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 10, showSizeChanger: false }}
+          pagination={{ pageSize: 5, showSizeChanger: false }}
           rowClassName={(record) => (record.isCurrentUser ? 'current-user-row bg-blue-50/50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-slate-700/30')}
           className="ranking-table"
           locale={{ emptyText: 'No rankings found' }}
         />
       </motion.div>
 
-      {/* Current User Rank Card */}
-      {user && leaderboardData.length > 0 && (() => {
-        const currentUserData = leaderboardData.find(p => p.isCurrentUser)
-        if (!currentUserData) return null
+      {/* Current User Rank Card - Always show if user has played */}
+      {user && (myRankData || leaderboardData.find(p => p.isCurrentUser)) && (() => {
+        const currentUserInList = leaderboardData.find(p => p.isCurrentUser)
+        const displayData = currentUserInList || (myRankData ? {
+          rank: myRankData.rank,
+          rating: myRankData.bestScore,
+          avatar: myRankData.avatar,
+          initials: myRankData.initials,
+          name: myRankData.username,
+        } : null)
+        
+        if (!displayData) return null
+        
+        const totalPlayers = myRankData?.totalPlayers || leaderboardData.length
         
         return (
           <motion.div
@@ -277,23 +324,27 @@ export default function RankingPage() {
           >
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                {currentUserData.avatar ? (
-                  <Avatar src={currentUserData.avatar} size={56} className="border-2 border-[#1d7af2] dark:border-[#00f0ff]" />
+                {displayData.avatar ? (
+                  <Avatar src={displayData.avatar} size={56} className="border-2 border-[#1d7af2] dark:border-[#00f0ff]" />
                 ) : (
                   <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br from-[#1d7af2] to-[#6366f1] dark:from-[#00f0ff] dark:to-[#a855f7]">
-                    {currentUserData.initials}
+                    {displayData.initials}
                   </div>
                 )}
                 <div>
                   <p className="text-sm text-gray-500 dark:text-slate-400">Your Rank</p>
                   <p className="text-2xl font-black text-[#1d7af2] dark:text-[#00f0ff]">
-                    #{currentUserData.rank} <span className="text-gray-900 dark:text-white font-bold text-base">of {leaderboardData.length}</span>
+                    {displayData.rank ? (
+                      <>#{displayData.rank} <span className="text-gray-900 dark:text-white font-bold text-base">of {totalPlayers}</span></>
+                    ) : (
+                      <span className="text-gray-500 dark:text-slate-400 text-lg">Not ranked yet</span>
+                    )}
                   </p>
                 </div>
               </div>
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-2xl font-black text-gray-900 dark:text-white">{currentUserData.rating.toLocaleString()}</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white">{(displayData.rating || 0).toLocaleString()}</p>
                   <p className="text-xs text-gray-500 dark:text-slate-400 uppercase">Best Score</p>
                 </div>
               </div>

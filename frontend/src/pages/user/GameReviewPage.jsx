@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Spin, Rate, Avatar, Empty, Modal, Input, Button, message, Tabs, Tooltip } from 'antd'
@@ -175,6 +175,21 @@ export default function GameReviewPage() {
     return d.toLocaleDateString('vi-VN')
   }, [])
 
+  // Sort reviews based on sortBy
+  const sortedReviews = useMemo(() => {
+    const sorted = [...reviews]
+    switch (sortBy) {
+      case 'recent':
+        return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      case 'positive':
+        return sorted.sort((a, b) => b.rating - a.rating)
+      case 'negative':
+        return sorted.sort((a, b) => a.rating - b.rating)
+      default:
+        return sorted
+    }
+  }, [reviews, sortBy])
+
   // Calculate stats
   const positiveCount = reviews.filter(r => r.rating >= 4).length
   const negativeCount = reviews.filter(r => r.rating < 4).length
@@ -303,7 +318,6 @@ export default function GameReviewPage() {
               }`}
           >
             <option value="recent">Mới nhất</option>
-            <option value="helpful">Hữu ích nhất</option>
             <option value="positive">Tích cực</option>
             <option value="negative">Tiêu cực</option>
           </select>
@@ -336,7 +350,7 @@ export default function GameReviewPage() {
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
-            {reviews.map((review, index) => {
+            {sortedReviews.map((review, index) => {
               const isPositive = review.rating >= 4
               return (
                 <motion.div
@@ -411,30 +425,6 @@ export default function GameReviewPage() {
                       <p className={`leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-slate-700'}`}>
                         {review.comment || 'Người dùng không để lại nhận xét.'}
                       </p>
-
-                      {/* Footer - Helpful */}
-                      <div className={`flex items-center gap-4 mt-4 pt-3 border-t ${isDarkMode ? 'border-slate-700' : 'border-gray-100'
-                        }`}>
-                        <span className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-slate-500'}`}>
-                          Đánh giá này có hữu ích?
-                        </span>
-                        <div className="flex gap-2">
-                          <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors cursor-pointer ${isDarkMode
-                            ? 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                            : 'bg-gray-100 text-slate-600 hover:bg-gray-200'
-                            }`}>
-                            <ThumbsUp className="w-3.5 h-3.5" />
-                            Có
-                          </button>
-                          <button className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors cursor-pointer ${isDarkMode
-                            ? 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                            : 'bg-gray-100 text-slate-600 hover:bg-gray-200'
-                            }`}>
-                            <ThumbsDown className="w-3.5 h-3.5" />
-                            Không
-                          </button>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </motion.div>
