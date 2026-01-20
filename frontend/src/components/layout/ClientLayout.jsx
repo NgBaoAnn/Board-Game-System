@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Dropdown, Avatar, message, Input, Tooltip } from 'antd'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import {
   Gamepad2,
   Home,
@@ -24,21 +25,24 @@ import { useTheme } from '@/context/ThemeContext'
 import authApi from '@/api/api-auth'
 import conversationApi from '@/api/api-conversation'
 import GamingParticles from '@/components/common/GamingParticles'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher'
 
 
-const menuItems = [
-  { key: '/', icon: Home, label: 'Home' },
-  { key: '/boardgame', icon: Gamepad2, label: 'Board Game' },
-  { key: '/reviews', icon: Star, label: 'Reviews' },
-  { key: '/community', icon: Users, label: 'Community' },
-  { key: '/rankings', icon: Trophy, label: 'Rankings' },
-  { key: '/settings', icon: Settings, label: 'Settings' },
+// Menu items with i18n keys for labels
+const menuItemsConfig = [
+  { key: '/', icon: Home, labelKey: 'nav.home' },
+  { key: '/boardgame', icon: Gamepad2, labelKey: 'nav.boardGame' },
+  { key: '/reviews', icon: Star, labelKey: 'nav.reviews' },
+  { key: '/community', icon: Users, labelKey: 'nav.community' },
+  { key: '/rankings', icon: Trophy, labelKey: 'nav.rankings' },
+  { key: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ]
 
 
 export default function ClientLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { user, authenticated, setUser, setAuthenticated } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -72,7 +76,7 @@ export default function ClientLayout() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-      message.success('Logged out successfully')
+      message.success(t('auth.logout.success'))
     } catch (e) {
       // Ignore error during logout (e.g. 401 if already expired)
       console.error('Logout error:', e)
@@ -89,26 +93,26 @@ export default function ClientLayout() {
     // Admin Dashboard - only show if user is admin
     ...(user?.role.name === 'admin' ? [{
       key: 'admin-dashboard',
-      label: 'Admin Dashboard',
+      label: t('user.adminDashboard'),
       icon: <LayoutDashboard size={16} />,
       onClick: () => navigate('/admin/dashboard'),
     }] : []),
     {
       key: 'profile',
-      label: 'Profile',
+      label: t('user.profile'),
       icon: <User size={16} />,
       onClick: () => navigate('/profile'),
     },
     {
       key: 'settings',
-      label: 'Settings',
+      label: t('user.settings'),
       icon: <Settings size={16} />,
       onClick: () => navigate('/settings'),
     },
     { type: 'divider' },
     {
       key: 'logout',
-      label: 'Logout',
+      label: t('user.logout'),
       icon: <LogOut size={16} />,
       danger: true,
       onClick: handleLogout,
@@ -146,15 +150,15 @@ export default function ClientLayout() {
                   className={`text-lg font-bold leading-tight tracking-tight transition-colors ${isDarkMode ? 'text-white' : 'text-slate-800'
                     }`}
                 >
-                  BoardGameHub
+                  {t('brand.name')}
                 </h1>
-                <p className="text-xs font-medium text-[#00f0ff]">Strategy Awaits</p>
+                <p className="text-xs font-medium text-[#00f0ff]">{t('brand.tagline')}</p>
               </div>
             </Link>
 
 
             <nav className="flex flex-col gap-1.5 mt-4">
-              {menuItems.map((item) => {
+              {menuItemsConfig.map((item) => {
                 const isActive = location.pathname === item.key
                 const IconComponent = item.icon
                 return (
@@ -181,7 +185,7 @@ export default function ClientLayout() {
                       <motion.div whileHover={{ scale: 1.15, rotate: 5 }}>
                         <IconComponent size={22} className={isActive ? 'text-[#00f0ff]' : ''} />
                       </motion.div>
-                      <span className={isActive ? 'font-bold' : 'font-medium'}>{item.label}</span>
+                      <span className={isActive ? 'font-bold' : 'font-medium'}>{t(item.labelKey)}</span>
                     </motion.div>
                   </Link>
                 )
@@ -194,13 +198,13 @@ export default function ClientLayout() {
 
 
             {authenticated && (
-              <Tooltip title="Logout" placement="right">
+              <Tooltip title={t('user.logout')} placement="right">
                 <button
                   onClick={handleLogout}
                   className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/30"
                 >
                   <LogOut size={18} />
-                  <span>Log Out</span>
+                  <span>{t('user.logout')}</span>
                 </button>
               </Tooltip>
             )}
@@ -242,7 +246,7 @@ export default function ClientLayout() {
                 </button>
 
                 <div className="flex flex-col gap-4 mt-12">
-                  {menuItems.map((item) => {
+                  {menuItemsConfig.map((item) => {
                     const isActive = location.pathname === item.key
                     const IconComponent = item.icon
                     return (
@@ -260,7 +264,7 @@ export default function ClientLayout() {
                           }`}
                       >
                         <IconComponent size={22} />
-                        <span>{item.label}</span>
+                        <span>{t(item.labelKey)}</span>
                       </Link>
                     )
                   })}
@@ -286,7 +290,7 @@ export default function ClientLayout() {
               <Menu size={24} />
             </button>
             <span className="text-lg font-bold text-slate-800 dark:text-white">
-              {menuItems.find((m) => m.key === location.pathname)?.label || 'Home'}
+              {t(menuItemsConfig.find((m) => m.key === location.pathname)?.labelKey || 'nav.home')}
             </span>
           </div>
 
@@ -297,7 +301,7 @@ export default function ClientLayout() {
 
 
                 <div className="flex items-center gap-1">
-                  <Tooltip title="Messages">
+                  <Tooltip title={t('nav.messages')}>
                     <Link
                       to="/messages"
                       className="relative flex size-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
@@ -316,7 +320,7 @@ export default function ClientLayout() {
                 </div>
 
 
-                <Tooltip title={isDarkMode ? 'Light Mode' : 'Dark Mode'}>
+                <Tooltip title={isDarkMode ? t('settings.light') : t('settings.dark')}>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9, rotate: 180 }}
@@ -366,17 +370,21 @@ export default function ClientLayout() {
                       <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight">
                         {user?.username || 'User'}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Level 12</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('user.level')} 12</p>
                     </div>
                     <ChevronDown size={16} className="hidden sm:block text-gray-500" />
                   </button>
                 </Dropdown>
+                {/* Language Switcher */}
+                <LanguageSwitcher />
               </>
             ) : (
               <>
+                {/* Language Switcher for non-authenticated users */}
+                <LanguageSwitcher />
                 <Link to="/login">
                   <Button type="default" className="h-9 rounded-lg font-medium">
-                    Login
+                    {t('auth.login.submit')}
                   </Button>
                 </Link>
                 <Link to="/register">
@@ -385,7 +393,7 @@ export default function ClientLayout() {
                     className="h-9 rounded-lg font-medium"
                     style={{ background: 'linear-gradient(135deg, #00f0ff, #a855f7)', border: 'none' }}
                   >
-                    Register
+                    {t('auth.register.submit')}
                   </Button>
                 </Link>
               </>

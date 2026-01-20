@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Checkbox, message } from 'antd'
+import { useTranslation } from 'react-i18next'
 // Direct imports for better bundle size (rule: bundle-barrel-imports)
 import Gamepad2 from 'lucide-react/dist/esm/icons/gamepad-2'
 import Mail from 'lucide-react/dist/esm/icons/mail'
@@ -45,6 +46,7 @@ const buttonVariants = {
 export default function LoginPage() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { setUser, setAuthenticated, setAppLoading } = useAuth()
   const [formState, setFormState] = useState('idle') // idle | loading | error | success
   const loading = formState === 'loading'
@@ -59,17 +61,17 @@ export default function LoginPage() {
         setAuthenticated(true)
         setAppLoading(false)
         setFormState('success')
-        message.success('Login successful!')
+        message.success(t('auth.login.success'))
         setTimeout(() => navigate('/boardgame'), 300)
       } else {
         setAppLoading(false)
         setFormState('error')
-        message.error(result.error || 'Login failed!')
+        message.error(result.error || t('auth.login.error'))
         setTimeout(() => setFormState('idle'), 400)
       }
     } catch (error) {
       setFormState('error')
-      message.error(error.message || 'Login failed!')
+      message.error(error.message || t('auth.login.error'))
       setTimeout(() => setFormState('idle'), 400)
     }
   }
@@ -89,7 +91,7 @@ export default function LoginPage() {
             transition={{ delay: 0.5 }}
             className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-2 text-xs font-medium border border-[#00f0ff]/30 shadow-lg shadow-[#00f0ff]/10"
           >
-            <span className="text-[#00f0ff] mr-1">⚡</span> Top Rated Strategy Platform
+            <span className="text-[#00f0ff] mr-1">⚡</span> {t('brand.topRated')}
           </motion.div>
         </div>
 
@@ -132,11 +134,10 @@ export default function LoginPage() {
             transition={{ delay: 0.7 }}
           >
             <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-[#00f0ff] to-[#a855f7] bg-clip-text text-transparent">
-              Join the Community
+              {t('auth.login.joinCommunity')}
             </h2>
             <p className="text-gray-400 text-sm max-w-sm">
-              Connect with over <span className="text-[#00f0ff] font-semibold">10,000+</span> players worldwide.
-              Challenge friends, join tournaments, and master your favorite games.
+              {t('auth.login.communityDesc')}
             </p>
           </motion.div>
         </div>
@@ -166,10 +167,10 @@ export default function LoginPage() {
           </motion.div>
           <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-              BoardGameHub
+              {t('brand.name')}
             </h1>
             <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-widest">
-              Strategy Awaits
+              {t('brand.tagline')}
             </p>
           </div>
         </motion.div>
@@ -182,10 +183,10 @@ export default function LoginPage() {
           className="mb-8"
         >
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
-            Welcome back
+            {t('auth.login.title')}
           </h2>
           <p className="text-slate-500 dark:text-gray-400 text-sm">
-            Please enter your details to sign in.
+            {t('auth.login.subtitle')}
           </p>
         </motion.div>
 
@@ -201,7 +202,7 @@ export default function LoginPage() {
             name="email"
             label={
               <span className="block text-sm font-semibold text-slate-900 dark:text-gray-200">
-                Email Address
+                {t('auth.login.email')}
               </span>
             }
             rules={[joiValidator(loginSchema.extract('email'))]}
@@ -209,7 +210,7 @@ export default function LoginPage() {
             <Input
               size="large"
               prefix={<Mail className="text-gray-400" size={18} />}
-              placeholder="you@example.com"
+              placeholder={t('auth.login.emailPlaceholder')}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
           </Form.Item>
@@ -218,7 +219,7 @@ export default function LoginPage() {
             name="password"
             label={
               <span className="block text-sm font-semibold text-slate-900 dark:text-gray-200">
-                Password
+                {t('auth.login.password')}
               </span>
             }
             rules={[joiValidator(loginSchema.extract('password'))]}
@@ -226,21 +227,21 @@ export default function LoginPage() {
             <Input.Password
               size="large"
               prefix={<Lock className="text-gray-400" size={18} />}
-              placeholder="••••••••"
+              placeholder={t('auth.login.passwordPlaceholder')}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
           </Form.Item>
 
           <div className="flex items-center justify-between text-sm mb-6">
             <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox className="text-slate-500 dark:text-gray-400 " tabIndex={-1}>Remember me</Checkbox>
+              <Checkbox className="text-slate-500 dark:text-gray-400 " tabIndex={-1}>{t('auth.login.rememberMe')}</Checkbox>
             </Form.Item>
             <Link
               tabIndex={-1}
               to="/forgot-password"
               className="font-medium text-[#1d7af2] hover:text-blue-700 transition-colors"
             >
-              Forgot password?
+              {t('auth.login.forgotPassword')}
             </Link>
           </div>
 
@@ -271,7 +272,7 @@ export default function LoginPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    Sign in
+                    {t('auth.login.submit')}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -286,12 +287,12 @@ export default function LoginPage() {
           transition={{ delay: 0.4 }}
           className="text-center mt-6 text-sm text-slate-500 dark:text-gray-400"
         >
-          Don&apos;t have an account?{' '}
+          {t('auth.login.noAccount')}{' '}
           <Link
             to="/register"
             className="font-bold text-[#1d7af2] hover:text-blue-700 transition-colors"
           >
-            Create free account
+            {t('auth.login.createAccount')}
           </Link>
         </motion.div>
       </motion.div>

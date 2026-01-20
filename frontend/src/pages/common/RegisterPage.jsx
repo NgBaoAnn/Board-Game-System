@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Checkbox, message } from 'antd'
+import { useTranslation } from 'react-i18next'
 import { Gamepad2, Mail, Lock, User, KeyRound, Star, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Joi from 'joi'
@@ -54,6 +55,7 @@ const buttonVariants = {
 export default function RegisterPage() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [formState, setFormState] = useState('idle');
   const [password, setPassword] = useState('');
   const loading = formState === 'loading';
@@ -64,14 +66,14 @@ export default function RegisterPage() {
       const result = await authApi.register(values.email, values.password, values.username)
       if (result.success) {
         navigate('/login');
-        message.success('Registration successful!')
+        message.success(t('auth.register.success'))
       } else {
         setFormState('error')
-        message.error(result.error || 'Registration failed!')
+        message.error(result.error || t('auth.register.error'))
       }
     } catch (error) {
       setFormState('error')
-      message.error(error.message || 'Registration failed!')
+      message.error(error.message || t('auth.register.error'))
     }
   }
 
@@ -142,10 +144,10 @@ export default function RegisterPage() {
           </motion.div>
           <div>
             <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              BoardGameHub
+              {t('brand.name')}
             </span>
             <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase tracking-widest">
-              Join the Game
+              {t('brand.tagline')}
             </p>
           </div>
         </motion.div>
@@ -158,7 +160,7 @@ export default function RegisterPage() {
           className="mb-6"
         >
           <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-            Create your account
+            {t('auth.register.title')}
           </h1>
         </motion.div>
 
@@ -173,14 +175,14 @@ export default function RegisterPage() {
           <Form.Item
             name="username"
             label={
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('auth.register.username')}</span>
             }
             rules={[joiValidator(registerSchema.extract('username'))]}
           >
             <Input
               size="large"
               prefix={<User className="text-gray-400" size={18} />}
-              placeholder="StrategyMaster99"
+              placeholder={t('auth.register.usernamePlaceholder')}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
           </Form.Item>
@@ -189,7 +191,7 @@ export default function RegisterPage() {
             name="email"
             label={
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email Address
+                {t('auth.register.email')}
               </span>
             }
             rules={[joiValidator(registerSchema.extract('email'))]}
@@ -197,7 +199,7 @@ export default function RegisterPage() {
             <Input
               size="large"
               prefix={<Mail className="text-gray-400" size={18} />}
-              placeholder="you@example.com"
+              placeholder={t('auth.register.emailPlaceholder')}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
           </Form.Item>
@@ -205,14 +207,14 @@ export default function RegisterPage() {
           <Form.Item
             name="password"
             label={
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('auth.register.password')}</span>
             }
             rules={[joiValidator(registerSchema.extract('password'))]}
           >
             <Input.Password
               size="large"
               prefix={<Lock className="text-gray-400" size={18} />}
-              placeholder="••••••••"
+              placeholder={t('auth.register.passwordPlaceholder')}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
@@ -223,7 +225,7 @@ export default function RegisterPage() {
             name="confirmPassword"
             label={
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirm Password
+                {t('auth.register.confirmPassword')}
               </span>
             }
             dependencies={['password']}
@@ -233,7 +235,7 @@ export default function RegisterPage() {
                   if (!value || getFieldValue('password') === value) {
                     return Promise.resolve()
                   }
-                  return Promise.reject(new Error('Passwords do not match'))
+                  return Promise.reject(new Error(t('validation.password.mismatch')))
                 },
               }),
             ]}
@@ -241,7 +243,7 @@ export default function RegisterPage() {
             <Input.Password
               size="large"
               prefix={<KeyRound className="text-gray-400" size={18} />}
-              placeholder="••••••••"
+              placeholder={t('auth.register.confirmPasswordPlaceholder')}
               className="rounded-lg py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white input-focus-glow"
             />
           </Form.Item>
@@ -275,7 +277,7 @@ export default function RegisterPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    Create Account
+                    {t('auth.register.submit')}
                   </motion.span>
                 )}
               </AnimatePresence>

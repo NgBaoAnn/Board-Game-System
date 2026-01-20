@@ -1,0 +1,349 @@
+{
+  "nav": {
+    "home": "Home",
+    "boardGame": "Board Game",
+    "reviews": "Reviews",
+    "community": "Community",
+    "rankings": "Rankings",
+    "settings": "Settings",
+    "messages": "Messages"
+  },
+  "brand": {
+    "name": "BoardGameHub",
+    "tagline": "Strategy Awaits",
+    "topRated": "Top Rated Strategy Platform"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Please enter your details to sign in.",
+      "email": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create free account",
+      "success": "Login successful!",
+      "error": "Login failed!",
+      "joinCommunity": "Join the Community",
+      "communityDesc": "Connect with over 10,000+ players worldwide. Challenge friends, join tournaments, and master your favorite games."
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join us and start your gaming journey.",
+      "username": "Username",
+      "usernamePlaceholder": "Your username",
+      "email": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Create a strong password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "terms": "I agree to the Terms & Conditions",
+      "submit": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "success": "Registration successful! Please verify your email.",
+      "error": "Registration failed!"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email to receive a reset link.",
+      "email": "Email Address",
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to login",
+      "success": "Reset link sent to your email!",
+      "error": "Failed to send reset link!"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password.",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "submit": "Reset Password",
+      "success": "Password reset successfully!",
+      "error": "Failed to reset password!"
+    },
+    "verifyOTP": {
+      "title": "Verify OTP",
+      "subtitle": "Enter the verification code sent to your email.",
+      "code": "Verification Code",
+      "submit": "Verify",
+      "resend": "Resend Code",
+      "success": "Verification successful!",
+      "error": "Verification failed!"
+    },
+    "logout": {
+      "success": "Logged out successfully"
+    },
+    "social": {
+      "continueWith": "Or continue with",
+      "google": "Google",
+      "facebook": "Facebook"
+    }
+  },
+  "user": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "adminDashboard": "Admin Dashboard",
+    "level": "Level"
+  },
+  "home": {
+    "welcome": "Welcome to Game Arcade",
+    "headline": "Play Classic Games",
+    "headlineSub": "Anytime, Anywhere",
+    "description": "Discover a collection of timeless board games. Challenge yourself, track your progress, and compete with friends.",
+    "playNow": "Start Playing Now",
+    "viewLeaderboard": "View Leaderboard",
+    "whyChoose": "Why Choose",
+    "whyChooseSub": "?",
+    "everythingYouNeed": "Everything you need for the ultimate gaming experience",
+    "popularGames": "Popular",
+    "gamesSub": "Games",
+    "chooseFromCollection": "Choose from our collection of classic games",
+    "readyToPlay": "Ready to Start Playing?",
+    "readyToPlayDesc": "Join thousands of players who are already enjoying our classic board games. No downloads required!",
+    "playNowFree": "Play Now — It's Free!",
+    "features": {
+      "classicGames": {
+        "title": "Classic Games",
+        "description": "Enjoy timeless board games like Tic-Tac-Toe, Caro, Memory Match and more."
+      },
+      "achievements": {
+        "title": "Achievements",
+        "description": "Unlock achievements, earn badges and showcase your gaming skills."
+      },
+      "community": {
+        "title": "Community",
+        "description": "Connect with friends, challenge players and climb the leaderboards."
+      },
+      "trackProgress": {
+        "title": "Track Progress",
+        "description": "Save your game progress and continue anytime, anywhere."
+      }
+    },
+    "stats": {
+      "gamesAvailable": "Games Available",
+      "activePlayers": "Active Players",
+      "gamesPlayed": "Games Played",
+      "uptime": "Uptime"
+    }
+  },
+  "game": {
+    "start": "Start",
+    "resume": "Resume",
+    "pause": "Pause",
+    "save": "Save",
+    "exit": "Exit",
+    "back": "Back",
+    "playNow": "Play Now",
+    "selectTime": "Select Time",
+    "confirmExit": "Confirm Exit",
+    "exitMessage": "Are you sure you want to exit? Your progress will be saved.",
+    "exitWithoutSave": "Exit without saving",
+    "saveAndExit": "Save & Exit",
+    "cancel": "Cancel",
+    "switchGame": "Switch Game",
+    "switchMessage": "Do you want to save your current progress before switching?",
+    "saveAndSwitch": "Save & Switch",
+    "switchWithoutSave": "Switch without saving",
+    "timeSelection": {
+      "title": "Select Game Duration",
+      "unlimited": "Unlimited",
+      "minutes": "minutes",
+      "seconds": "seconds"
+    },
+    "achievements": {
+      "title": "Achievements",
+      "unlocked": "Unlocked",
+      "locked": "Locked"
+    },
+    "instructions": {
+      "title": "How to Play",
+      "close": "Got it!"
+    }
+  },
+  "community": {
+    "title": "Community",
+    "searchPlayers": "Search players...",
+    "allPlayers": "All Players",
+    "friends": "Friends",
+    "online": "Online",
+    "offline": "Offline",
+    "addFriend": "Add Friend",
+    "removeFriend": "Remove Friend",
+    "challenge": "Challenge",
+    "viewProfile": "View Profile",
+    "noPlayers": "No players found",
+    "noFriends": "You don't have any friends yet"
+  },
+  "ranking": {
+    "title": "Leaderboard",
+    "rank": "Rank",
+    "player": "Player",
+    "score": "Score",
+    "gamesPlayed": "Games Played",
+    "winRate": "Win Rate",
+    "topPlayers": "Top Players",
+    "yourRank": "Your Rank"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "stats": "Statistics",
+    "achievements": "Achievements",
+    "recentGames": "Recent Games",
+    "bio": "Bio",
+    "location": "Location",
+    "phone": "Phone",
+    "email": "Email",
+    "memberSince": "Member Since",
+    "totalScore": "Total Score",
+    "gamesPlayed": "Games Played",
+    "wins": "Wins",
+    "losses": "Losses",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile!"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "language": "Language",
+    "notifications": "Notifications",
+    "enableNotifications": "Enable Notifications",
+    "soundEffects": "Sound Effects",
+    "account": "Account",
+    "changePassword": "Change Password",
+    "deleteAccount": "Delete Account",
+    "saveChanges": "Save Changes"
+  },
+  "messages": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "newMessage": "New Message",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "offline": "Offline",
+    "noConversations": "No conversations yet",
+    "startConversation": "Start a conversation"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard",
+      "totalUsers": "Total Users",
+      "totalGames": "Total Games",
+      "activeUsers": "Active Users",
+      "gamesPlayed": "Games Played Today"
+    },
+    "users": {
+      "title": "User Management",
+      "search": "Search users...",
+      "addUser": "Add User",
+      "editUser": "Edit User",
+      "deleteUser": "Delete User",
+      "confirmDelete": "Are you sure you want to delete this user?"
+    },
+    "games": {
+      "title": "Game Management",
+      "addGame": "Add Game",
+      "editGame": "Edit Game",
+      "deleteGame": "Delete Game"
+    },
+    "achievements": {
+      "title": "Achievement Management",
+      "addAchievement": "Add Achievement",
+      "editAchievement": "Edit Achievement",
+      "deleteAchievement": "Delete Achievement"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page Not Found",
+      "message": "The page you're looking for doesn't exist.",
+      "goHome": "Go Home"
+    },
+    "forbidden": {
+      "title": "Access Denied",
+      "message": "You don't have permission to access this page.",
+      "goBack": "Go Back"
+    },
+    "unauthorized": {
+      "title": "Unauthorized",
+      "message": "Please log in to access this page.",
+      "login": "Login"
+    },
+    "serverError": {
+      "title": "Server Error",
+      "message": "Something went wrong. Please try again later."
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": {
+      "invalid": "Please enter a valid email address",
+      "required": "Email is required"
+    },
+    "password": {
+      "min": "Password must be at least 6 characters long",
+      "required": "Password is required",
+      "mismatch": "Passwords do not match"
+    },
+    "username": {
+      "min": "Username must be at least 3 characters",
+      "max": "Username must be at most 30 characters",
+      "required": "Username is required"
+    },
+    "terms": {
+      "required": "You must accept the terms and conditions"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "clear": "Clear",
+    "all": "All",
+    "none": "None",
+    "select": "Select",
+    "selected": "Selected",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "language": {
+    "title": "Language",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

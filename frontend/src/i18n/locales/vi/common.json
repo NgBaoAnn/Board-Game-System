@@ -1,0 +1,349 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "boardGame": "Trò chơi",
+    "reviews": "Đánh giá",
+    "community": "Cộng đồng",
+    "rankings": "Xếp hạng",
+    "settings": "Cài đặt",
+    "messages": "Tin nhắn"
+  },
+  "brand": {
+    "name": "BoardGameHub",
+    "tagline": "Chiến thuật chờ đợi",
+    "topRated": "Nền tảng chiến thuật hàng đầu"
+  },
+  "auth": {
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Vui lòng nhập thông tin để đăng nhập.",
+      "email": "Địa chỉ Email",
+      "emailPlaceholder": "ban@example.com",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Ghi nhớ đăng nhập",
+      "forgotPassword": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "createAccount": "Tạo tài khoản miễn phí",
+      "success": "Đăng nhập thành công!",
+      "error": "Đăng nhập thất bại!",
+      "joinCommunity": "Tham gia cộng đồng",
+      "communityDesc": "Kết nối với hơn 10,000+ người chơi trên toàn thế giới. Thách đấu bạn bè, tham gia giải đấu và thành thạo trò chơi yêu thích."
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "subtitle": "Tham gia ngay để bắt đầu hành trình chơi game.",
+      "username": "Tên người dùng",
+      "usernamePlaceholder": "Tên hiển thị của bạn",
+      "email": "Địa chỉ Email",
+      "emailPlaceholder": "ban@example.com",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Tạo mật khẩu mạnh",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "terms": "Tôi đồng ý với Điều khoản & Điều kiện",
+      "submit": "Tạo tài khoản",
+      "haveAccount": "Đã có tài khoản?",
+      "signIn": "Đăng nhập",
+      "success": "Đăng ký thành công! Vui lòng xác thực email.",
+      "error": "Đăng ký thất bại!"
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu",
+      "subtitle": "Nhập email để nhận liên kết đặt lại mật khẩu.",
+      "email": "Địa chỉ Email",
+      "submit": "Gửi liên kết",
+      "backToLogin": "Quay lại đăng nhập",
+      "success": "Đã gửi liên kết đặt lại mật khẩu!",
+      "error": "Gửi liên kết thất bại!"
+    },
+    "resetPassword": {
+      "title": "Đặt lại mật khẩu",
+      "subtitle": "Nhập mật khẩu mới của bạn.",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "submit": "Đặt lại mật khẩu",
+      "success": "Đặt lại mật khẩu thành công!",
+      "error": "Đặt lại mật khẩu thất bại!"
+    },
+    "verifyOTP": {
+      "title": "Xác thực OTP",
+      "subtitle": "Nhập mã xác thực đã gửi đến email của bạn.",
+      "code": "Mã xác thực",
+      "submit": "Xác thực",
+      "resend": "Gửi lại mã",
+      "success": "Xác thực thành công!",
+      "error": "Xác thực thất bại!"
+    },
+    "logout": {
+      "success": "Đăng xuất thành công"
+    },
+    "social": {
+      "continueWith": "Hoặc tiếp tục với",
+      "google": "Google",
+      "facebook": "Facebook"
+    }
+  },
+  "user": {
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "adminDashboard": "Bảng điều khiển Admin",
+    "level": "Cấp độ"
+  },
+  "home": {
+    "welcome": "Chào mừng đến Game Arcade",
+    "headline": "Chơi Game Cổ Điển",
+    "headlineSub": "Mọi lúc, Mọi nơi",
+    "description": "Khám phá bộ sưu tập các trò chơi board game kinh điển. Thử thách bản thân, theo dõi tiến trình và thi đấu với bạn bè.",
+    "playNow": "Bắt đầu chơi ngay",
+    "viewLeaderboard": "Xem bảng xếp hạng",
+    "whyChoose": "Tại sao chọn",
+    "whyChooseSub": "?",
+    "everythingYouNeed": "Tất cả những gì bạn cần cho trải nghiệm chơi game tuyệt vời",
+    "popularGames": "Trò chơi",
+    "gamesSub": "Phổ biến",
+    "chooseFromCollection": "Chọn từ bộ sưu tập game cổ điển của chúng tôi",
+    "readyToPlay": "Sẵn sàng bắt đầu chơi?",
+    "readyToPlayDesc": "Tham gia cùng hàng ngàn người chơi đang tận hưởng các trò chơi board game cổ điển. Không cần tải xuống!",
+    "playNowFree": "Chơi ngay — Miễn phí!",
+    "features": {
+      "classicGames": {
+        "title": "Game Cổ Điển",
+        "description": "Tận hưởng các trò chơi kinh điển như Tic-Tac-Toe, Cờ Caro, Memory Match và nhiều hơn nữa."
+      },
+      "achievements": {
+        "title": "Thành Tựu",
+        "description": "Mở khóa thành tựu, nhận huy hiệu và thể hiện kỹ năng chơi game."
+      },
+      "community": {
+        "title": "Cộng Đồng",
+        "description": "Kết nối với bạn bè, thách đấu người chơi và leo bảng xếp hạng."
+      },
+      "trackProgress": {
+        "title": "Theo Dõi Tiến Trình",
+        "description": "Lưu tiến trình game và tiếp tục chơi mọi lúc, mọi nơi."
+      }
+    },
+    "stats": {
+      "gamesAvailable": "Trò chơi",
+      "activePlayers": "Người chơi",
+      "gamesPlayed": "Lượt chơi",
+      "uptime": "Thời gian hoạt động"
+    }
+  },
+  "game": {
+    "start": "Bắt đầu",
+    "resume": "Tiếp tục",
+    "pause": "Tạm dừng",
+    "save": "Lưu",
+    "exit": "Thoát",
+    "back": "Quay lại",
+    "playNow": "Chơi ngay",
+    "selectTime": "Chọn thời gian",
+    "confirmExit": "Xác nhận thoát",
+    "exitMessage": "Bạn có chắc muốn thoát? Tiến trình sẽ được lưu lại.",
+    "exitWithoutSave": "Thoát không lưu",
+    "saveAndExit": "Lưu & Thoát",
+    "cancel": "Hủy",
+    "switchGame": "Đổi trò chơi",
+    "switchMessage": "Bạn có muốn lưu tiến trình hiện tại trước khi đổi game?",
+    "saveAndSwitch": "Lưu & Đổi",
+    "switchWithoutSave": "Đổi không lưu",
+    "timeSelection": {
+      "title": "Chọn thời gian chơi",
+      "unlimited": "Không giới hạn",
+      "minutes": "phút",
+      "seconds": "giây"
+    },
+    "achievements": {
+      "title": "Thành tựu",
+      "unlocked": "Đã mở khóa",
+      "locked": "Chưa mở khóa"
+    },
+    "instructions": {
+      "title": "Hướng dẫn chơi",
+      "close": "Đã hiểu!"
+    }
+  },
+  "community": {
+    "title": "Cộng đồng",
+    "searchPlayers": "Tìm người chơi...",
+    "allPlayers": "Tất cả người chơi",
+    "friends": "Bạn bè",
+    "online": "Đang online",
+    "offline": "Offline",
+    "addFriend": "Kết bạn",
+    "removeFriend": "Hủy kết bạn",
+    "challenge": "Thách đấu",
+    "viewProfile": "Xem hồ sơ",
+    "noPlayers": "Không tìm thấy người chơi",
+    "noFriends": "Bạn chưa có bạn bè nào"
+  },
+  "ranking": {
+    "title": "Bảng xếp hạng",
+    "rank": "Hạng",
+    "player": "Người chơi",
+    "score": "Điểm",
+    "gamesPlayed": "Số ván chơi",
+    "winRate": "Tỷ lệ thắng",
+    "topPlayers": "Top người chơi",
+    "yourRank": "Hạng của bạn"
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "stats": "Thống kê",
+    "achievements": "Thành tựu",
+    "recentGames": "Ván chơi gần đây",
+    "bio": "Giới thiệu",
+    "location": "Địa điểm",
+    "phone": "Số điện thoại",
+    "email": "Email",
+    "memberSince": "Thành viên từ",
+    "totalScore": "Tổng điểm",
+    "gamesPlayed": "Số ván chơi",
+    "wins": "Thắng",
+    "losses": "Thua",
+    "updateSuccess": "Cập nhật hồ sơ thành công!",
+    "updateError": "Cập nhật hồ sơ thất bại!"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "general": "Chung",
+    "theme": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống",
+    "language": "Ngôn ngữ",
+    "notifications": "Thông báo",
+    "enableNotifications": "Bật thông báo",
+    "soundEffects": "Hiệu ứng âm thanh",
+    "account": "Tài khoản",
+    "changePassword": "Đổi mật khẩu",
+    "deleteAccount": "Xóa tài khoản",
+    "saveChanges": "Lưu thay đổi"
+  },
+  "messages": {
+    "title": "Tin nhắn",
+    "conversations": "Cuộc trò chuyện",
+    "newMessage": "Tin nhắn mới",
+    "typeMessage": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "online": "Đang online",
+    "offline": "Offline",
+    "noConversations": "Chưa có cuộc trò chuyện nào",
+    "startConversation": "Bắt đầu cuộc trò chuyện"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Bảng điều khiển",
+      "totalUsers": "Tổng người dùng",
+      "totalGames": "Tổng số game",
+      "activeUsers": "Người dùng hoạt động",
+      "gamesPlayed": "Lượt chơi hôm nay"
+    },
+    "users": {
+      "title": "Quản lý người dùng",
+      "search": "Tìm kiếm người dùng...",
+      "addUser": "Thêm người dùng",
+      "editUser": "Sửa người dùng",
+      "deleteUser": "Xóa người dùng",
+      "confirmDelete": "Bạn có chắc muốn xóa người dùng này?"
+    },
+    "games": {
+      "title": "Quản lý game",
+      "addGame": "Thêm game",
+      "editGame": "Sửa game",
+      "deleteGame": "Xóa game"
+    },
+    "achievements": {
+      "title": "Quản lý thành tựu",
+      "addAchievement": "Thêm thành tựu",
+      "editAchievement": "Sửa thành tựu",
+      "deleteAchievement": "Xóa thành tựu"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "Không tìm thấy trang",
+      "message": "Trang bạn đang tìm kiếm không tồn tại.",
+      "goHome": "Về trang chủ"
+    },
+    "forbidden": {
+      "title": "Truy cập bị từ chối",
+      "message": "Bạn không có quyền truy cập trang này.",
+      "goBack": "Quay lại"
+    },
+    "unauthorized": {
+      "title": "Chưa đăng nhập",
+      "message": "Vui lòng đăng nhập để truy cập trang này.",
+      "login": "Đăng nhập"
+    },
+    "serverError": {
+      "title": "Lỗi máy chủ",
+      "message": "Đã xảy ra lỗi. Vui lòng thử lại sau."
+    }
+  },
+  "validation": {
+    "required": "Trường này là bắt buộc",
+    "email": {
+      "invalid": "Vui lòng nhập địa chỉ email hợp lệ",
+      "required": "Email là bắt buộc"
+    },
+    "password": {
+      "min": "Mật khẩu phải có ít nhất 6 ký tự",
+      "required": "Mật khẩu là bắt buộc",
+      "mismatch": "Mật khẩu không khớp"
+    },
+    "username": {
+      "min": "Tên người dùng phải có ít nhất 3 ký tự",
+      "max": "Tên người dùng tối đa 30 ký tự",
+      "required": "Tên người dùng là bắt buộc"
+    },
+    "terms": {
+      "required": "Bạn phải đồng ý với điều khoản và điều kiện"
+    }
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "add": "Thêm",
+    "search": "Tìm kiếm",
+    "loading": "Đang tải...",
+    "noData": "Không có dữ liệu",
+    "confirm": "Xác nhận",
+    "yes": "Có",
+    "no": "Không",
+    "ok": "OK",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "submit": "Gửi",
+    "reset": "Đặt lại",
+    "clear": "Xóa",
+    "all": "Tất cả",
+    "none": "Không có",
+    "select": "Chọn",
+    "selected": "Đã chọn",
+    "actions": "Hành động",
+    "status": "Trạng thái",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "enabled": "Đã bật",
+    "disabled": "Đã tắt",
+    "success": "Thành công",
+    "error": "Lỗi",
+    "warning": "Cảnh báo",
+    "info": "Thông tin"
+  },
+  "language": {
+    "title": "Ngôn ngữ",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}
