@@ -59,6 +59,16 @@ export default function ResetPasswordPage() {
     }
   }, [token, email, navigate])
 
+  // Auto redirect to login after successful password reset
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        navigate('/login')
+      }, 2000) // Redirect after 2 seconds
+      return () => clearTimeout(timer)
+    }
+  }, [isSuccess, navigate])
+
   const onFinish = async (values) => {
     setFormState('loading')
     try {
@@ -67,9 +77,8 @@ export default function ResetPasswordPage() {
       sessionStorage.removeItem('reset_email')
       sessionStorage.removeItem('reset_token')
       
-      setFormState('success')
-      setIsSuccess(true)
       message.success('Password reset successfully!')
+      navigate('/login') // Redirect immediately
     } catch (error) {
       setFormState('error')
       message.error(error.message || 'Failed to reset password')
