@@ -1,6 +1,14 @@
-# 🎲 Board Game System
+# Board Game System
 
 Hệ thống quản lý trò chơi Board Game.
+
+---
+
+## Live Demo
+
+🔗 **Website**: [https://board-game-system.vercel.app/](https://board-game-system.vercel.app/)
+
+> ⏳ **Lưu ý**: Lần truy cập đầu tiên có thể cần đợi **2-3 phút** để Render khởi động lại server backend (do sử dụng free tier). Vui lòng đợi và refresh lại trang.
 
 ---
 
