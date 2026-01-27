@@ -7,6 +7,7 @@ exports.seed = async function (knex) {
       "admin2@gmail.com",
       "admin3@gmail.com",
       "admin4@gmail.com",
+      "admin5@gmail.com",
     ])
     .del();
 
@@ -34,6 +35,12 @@ exports.seed = async function (knex) {
     {
       email: "admin4@gmail.com",
       username: "admin4",
+      password: passwordHashed,
+      role_id: 1,
+    },
+    {
+      email: "admin5@gmail.com",
+      username: "admin5",
       password: passwordHashed,
       role_id: 1,
     },

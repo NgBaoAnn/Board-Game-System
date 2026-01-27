@@ -1,6 +1,14 @@
-# 🎲 Board Game System
+# Board Game System
 
 Hệ thống quản lý trò chơi Board Game.
+
+---
+
+## Live Demo
+
+🔗 **Website**: [https://board-game-system.vercel.app/](https://board-game-system.vercel.app/)
+
+> ⏳ **Lưu ý**: Lần truy cập đầu tiên có thể cần đợi **2-3 phút** để Render khởi động lại server backend (do sử dụng free tier). Vui lòng đợi và refresh lại trang.
 
 ---
 
@@ -57,6 +65,20 @@ npm run dev
 
 ---
 
+## 👤 Tài khoản mẫu
+
+### Admin
+
+| Email            | Password |
+| ---------------- | -------- |
+| admin1@gmail.com | 123456@  |
+| admin2@gmail.com | 123456@  |
+| admin3@gmail.com | 123456@  |
+| admin4@gmail.com | 123456@  |
+| admin5@gmail.com | 123456@  |
+
+---
+
 ## 📚 API Documentation
 
 Sau khi khởi động backend, truy cập API docs tại:
@@ -64,6 +86,8 @@ Sau khi khởi động backend, truy cập API docs tại:
 ```
 http://localhost:8080/docs
 ```
+
+> 🔐 Đăng nhập bằng tài khoản admin hoặc player ở trên để xem API documentation.
 
 ---
 
