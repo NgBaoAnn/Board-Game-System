@@ -57,6 +57,20 @@ npm run dev
 
 ---
 
+## 👤 Tài khoản mẫu
+
+### Admin
+
+| Email            | Password |
+| ---------------- | -------- |
+| admin1@gmail.com | 123456@  |
+| admin2@gmail.com | 123456@  |
+| admin3@gmail.com | 123456@  |
+| admin4@gmail.com | 123456@  |
+| admin5@gmail.com | 123456@  |
+
+---
+
 ## 📚 API Documentation
 
 Sau khi khởi động backend, truy cập API docs tại:
@@ -64,6 +78,8 @@ Sau khi khởi động backend, truy cập API docs tại:
 ```
 http://localhost:8080/docs
 ```
+
+> 🔐 Đăng nhập bằng tài khoản admin hoặc player ở trên để xem API documentation.
 
 ---
 
