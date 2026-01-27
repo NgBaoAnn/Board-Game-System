@@ -25,13 +25,13 @@ const docsAuthMiddleware = (req, res, next) => {
   return res.redirect("/docs");
 };
 
-// Login page - always show fresh login
+// Login page - redirect to swagger if already authenticated
 router.get("/", (req, res) => {
-  // Clear any existing session to force re-login
   const sessionToken = req.cookies?.docs_session;
-  if (sessionToken) {
-    authenticatedSessions.delete(sessionToken);
-    res.clearCookie("docs_session");
+
+  // If already authenticated, redirect to swagger
+  if (sessionToken && authenticatedSessions.has(sessionToken)) {
+    return res.redirect("/docs/swagger");
   }
 
   res.sendFile(path.join(__dirname, "../views/docs-login.html"));
@@ -82,9 +82,9 @@ router.post("/login", express.json(), async (req, res) => {
   }
 });
 
-// Swagger UI (protected)
-router.get("/swagger", docsAuthMiddleware, swaggerUi.setup(swaggerDocument));
+// Swagger UI (protected) - serve must come before setup
 router.use("/swagger", docsAuthMiddleware, swaggerUi.serve);
+router.get("/swagger", docsAuthMiddleware, swaggerUi.setup(swaggerDocument));
 
 // Logout endpoint
 router.post("/logout", (req, res) => {
