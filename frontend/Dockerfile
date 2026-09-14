@@ -14,7 +14,8 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_API_KEY=$VITE_API_KEY
 ENV NODE_OPTIONS="--max-old-space-size=1536"
 
-RUN npm run build
+# Build only if dist does not already exist
+RUN if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then npm run build; else echo "Using pre-built dist"; fi
 
 # Serve stage
 FROM nginx:alpine
