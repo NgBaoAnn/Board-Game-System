@@ -1,0 +1,20 @@
+# Private SSH keys and certs
+boardgame_key.pem
+*.pem
+*.key
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependencies & build
+node_modules/
+dist/
+build/

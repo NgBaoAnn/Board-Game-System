@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: boardgame_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: boardgame
+      POSTGRES_USER: boardgame_user
+      POSTGRES_PASSWORD: boardgame_password_2026
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boardgame_user -d boardgame"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: boardgame_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://boardgame_user:boardgame_password_2026@db:5432/boardgame
+      - DB_SSL=false
+      - COOKIE_SECURE=false
+      - CORS_ORIGIN=http://52.22.154.75,http://localhost:8080,http://localhost:5173
+      - API_KEY=board-game-system-secure-api-key-2026
+      - JWT_SECRET=board-game-system-jwt-secret-key-2026-production
+      - COOKIE_SECRET=board-game-system-cookie-secret-key-2026-production
+      - ACCESS_TOKEN_EXPIRES_IN=1h
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USER=gameboardsystem@gmail.com
+      - MAIL_PASSWORD=omucqdbfmyngleuv
+      - MAIL_FROM=Game Board System <gameboardsystem@gmail.com>
+    volumes:
+      - ./api-docs:/api-docs:ro
+    expose:
+      - "8080"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_API_KEY: board-game-system-secure-api-key-2026
+    container_name: boardgame_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  db_data:

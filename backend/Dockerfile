@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["npm", "run", "dev"]
+CMD ["sh", "-c", "npx knex migrate:latest && node src/server.js"]
